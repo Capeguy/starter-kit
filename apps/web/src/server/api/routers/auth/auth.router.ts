@@ -1,8 +1,8 @@
 import { createTRPCRouter, publicProcedure } from '../../trpc'
-import { emailAuthRouter } from './auth.email.router'
+import { passkeyAuthRouter } from './auth.passkey.router'
 
 export const authRouter = createTRPCRouter({
-  email: emailAuthRouter,
+  passkey: passkeyAuthRouter,
   logout: publicProcedure.mutation(({ ctx }) => {
     ctx.session.destroy()
     return

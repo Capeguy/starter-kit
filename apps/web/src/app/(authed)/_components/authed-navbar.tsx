@@ -42,14 +42,14 @@ export const AuthedNavbar = () => {
             >
               <Avatar
                 size="xs"
-                name={user.email}
+                name={user.email ?? user.name ?? 'User'}
                 getInitials={(name) => name.slice(0, 2).toUpperCase()}
               >
                 <Avatar.Fallback />
               </Avatar>
             </Button>
             <Menu>
-              <MenuSection title={user.email}>
+              <MenuSection title={user.email ?? user.name ?? 'User'}>
                 <MenuItem startContent={<BiLogOut />} onPress={() => logout()}>
                   Logout
                 </MenuItem>

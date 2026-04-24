@@ -39,9 +39,10 @@ model VerificationToken {
 model User {
   id       String    @id @default(cuid(2))
   name     String?
-  email    String    @unique
+  email    String?   @unique
   image    String?
   accounts Account[]
+  passkeys Passkey[]
 
   lastLogin DateTime? @db.Timestamptz(3)
 }
@@ -55,5 +56,32 @@ model Account {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Passkey {
+  id                   String   @id @default(cuid(2))
+  userId               String   @map("user_id")
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialId         String   @unique @map("credential_id")
+  credentialPublicKey  Bytes    @map("credential_public_key")
+  counter              BigInt
+  credentialDeviceType String   @map("credential_device_type")
+  credentialBackedUp   Boolean  @map("credential_backed_up")
+  transports           String[] @default([])
+  name                 String?
+  createdAt            DateTime @default(now()) @db.Timestamptz(3)
+  lastUsedAt           DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([userId])
+}
+
+model PasskeyChallenge {
+  id        String   @id @default(cuid(2))
+  userId    String?  @map("user_id")
+  challenge String   @unique
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
   @@index([userId])
 }

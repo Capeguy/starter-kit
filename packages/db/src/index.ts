@@ -20,6 +20,11 @@ const createPrisma = () => {
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 export const db = globalForPrisma.prisma || createPrisma()
 
+export type DBType = ReturnType<typeof createPrisma>
+export type TransactionClient = Parameters<
+  Parameters<DBType['$transaction']>[0]
+>[0]
+
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
 
 // This export is needed to avoid the TypeScript error:

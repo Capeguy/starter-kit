@@ -12,5 +12,11 @@
     "plugins": [{ "name": "next" }]
   },
   "include": [".", ".next/types/**/*.ts", ".storybook/**/*"],
-  "exclude": ["node_modules", "public/mockServiceWorker.js", ".next"]
+  "exclude": [
+    "node_modules",
+    "public/mockServiceWorker.js",
+    ".next",
+    "coverage",
+    "tests/e2e/test-results"
+  ]
 }

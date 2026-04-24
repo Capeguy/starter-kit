@@ -38,6 +38,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# claude code local state (slash commands, session metadata)
+.claude/
+
 # typescript
 dist/
 .cache
