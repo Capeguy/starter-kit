@@ -15,6 +15,7 @@ import {
 } from '@opengovsg/oui'
 import { BiChevronDown, BiLogOut } from 'react-icons/bi'
 
+import { ThemeToggle } from '~/components/theme-toggle'
 import { ADMIN_ROOT_ROUTE, AUTHED_ROOT_ROUTE } from '~/constants'
 import { env } from '~/env'
 import { useAuth } from '~/lib/auth'
@@ -55,6 +56,9 @@ export const AuthedNavbar = () => {
             </NextLink>
           </NavbarItem>
         )}
+        <NavbarItem>
+          <ThemeToggle />
+        </NavbarItem>
         <NavbarItem>
           <NotificationBell />
         </NavbarItem>

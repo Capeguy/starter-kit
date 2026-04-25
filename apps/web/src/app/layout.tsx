@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { ThemeProvider } from 'next-themes'
 import NextTopLoader from 'nextjs-toploader'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
@@ -34,11 +35,17 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         )}
       >
         <NextTopLoader color="var(--color-interaction-main-default)" />
-        <ClientProviders>
-          <NuqsAdapter>{props.children}</NuqsAdapter>
-          <ReactQueryDevtools initialIsOpen={false} />
-          <Toaster />
-        </ClientProviders>
+        <ThemeProvider
+          attribute="data-theme"
+          defaultTheme="system"
+          enableSystem
+        >
+          <ClientProviders>
+            <NuqsAdapter>{props.children}</NuqsAdapter>
+            <ReactQueryDevtools initialIsOpen={false} />
+            <Toaster />
+          </ClientProviders>
+        </ThemeProvider>
       </body>
     </html>
   )
