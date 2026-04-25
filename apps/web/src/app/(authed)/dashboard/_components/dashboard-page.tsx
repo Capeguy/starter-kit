@@ -131,6 +131,7 @@ export const DashboardPage = () => {
                 >
                   <a
                     href={f.url}
+                    download={f.filename}
                     target="_blank"
                     rel="noreferrer"
                     className="text-base-content-brand truncate hover:underline"

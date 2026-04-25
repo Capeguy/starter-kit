@@ -104,7 +104,11 @@ export const uploadFile = async ({
   const record = await db.file.create({
     data: {
       userId,
-      url: blob.url,
+      // Vercel Blob exposes a `downloadUrl` (same content as `url` but the
+      // response carries Content-Disposition: attachment with the original
+      // filename, so the browser saves it as e.g. `resume.pdf` rather than
+      // the random-suffixed pathname `resume-XYZ123.pdf`).
+      url: blob.downloadUrl,
       pathname: blob.pathname,
       filename,
       mimeType: contentType,

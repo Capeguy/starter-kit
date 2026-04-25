@@ -78,6 +78,7 @@ export const AdminFilesPage = () => {
                   <td className="px-3 py-2">
                     <a
                       href={f.url}
+                      download={f.filename}
                       target="_blank"
                       rel="noreferrer"
                       className="text-base-content-brand hover:underline"
