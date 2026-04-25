@@ -101,38 +101,42 @@ export const LandingPageComponent = ({
           </div>
         </div>
       </LandingSection>
-      <LandingSection>
-        <SectionHeader>
-          All the government tools you need to manage your workflow
-        </SectionHeader>
-        <SectionBody>
-          Check out the <strong>Open Government Products Suite</strong>, and if
-          you are a public officer you can mix and match from our set of
-          productivity and collaboration tools.{' '}
-          <Link
-            href="https://reports.open.gov.sg/products"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-interaction-main-default hover:text-interaction-main-hover inline-flex items-center gap-0.5 underline underline-offset-4"
-          >
-            Full list of OGP products
-            <BiRightArrowAlt className="text-2xl" />
-          </Link>
-        </SectionBody>
-      </LandingSection>
+      {env.NEXT_PUBLIC_SHOW_OGP_BRANDING && (
+        <LandingSection>
+          <SectionHeader>
+            All the government tools you need to manage your workflow
+          </SectionHeader>
+          <SectionBody>
+            Check out the <strong>Open Government Products Suite</strong>, and
+            if you are a public officer you can mix and match from our set of
+            productivity and collaboration tools.{' '}
+            <Link
+              href="https://reports.open.gov.sg/products"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-interaction-main-default hover:text-interaction-main-hover inline-flex items-center gap-0.5 underline underline-offset-4"
+            >
+              Full list of OGP products
+              <BiRightArrowAlt className="text-2xl" />
+            </Link>
+          </SectionBody>
+        </LandingSection>
+      )}
       <LandingSection
         classNames={{
           section: 'bg-base-content-strong',
           inner: 'items-center gap-8',
         }}
       >
-        <Image
-          alt="ogp brand logo"
-          src="/assets/restricted-landing-ogp-logo.svg"
-          aria-hidden
-          width={56}
-          height={56}
-        />
+        {env.NEXT_PUBLIC_SHOW_OGP_BRANDING && (
+          <Image
+            alt="ogp brand logo"
+            src="/assets/restricted-landing-ogp-logo.svg"
+            aria-hidden
+            width={56}
+            height={56}
+          />
+        )}
         <SectionHeader className="text-white">
           Start building your app now
         </SectionHeader>
