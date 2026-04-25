@@ -10,6 +10,15 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHead,
+  DataTableHeader,
+  DataTableRoot,
+  DataTableRow,
+} from '~/components/ui/data-table'
 import { useTRPC } from '~/trpc/react'
 import { RoleEditor } from './role-editor'
 
@@ -61,21 +70,21 @@ export const RolesListPage = () => {
           No roles yet — that's a problem. Re-run the RBAC seed migration.
         </Infobox>
       ) : (
-        <div className="border-base-divide-medium overflow-x-auto rounded-md border">
-          <table className="w-full min-w-max text-left">
-            <thead className="prose-label-sm bg-base-canvas-alt text-base-content-medium">
+        <DataTable>
+          <DataTableRoot>
+            <DataTableHeader>
               <tr>
-                <th className="px-3 py-2">Name</th>
-                <th className="px-3 py-2">Description</th>
-                <th className="px-3 py-2">Capabilities</th>
-                <th className="px-3 py-2">Users</th>
-                <th className="px-3 py-2 text-right">Actions</th>
+                <DataTableHead>Name</DataTableHead>
+                <DataTableHead>Description</DataTableHead>
+                <DataTableHead>Capabilities</DataTableHead>
+                <DataTableHead>Users</DataTableHead>
+                <DataTableHead className="text-right">Actions</DataTableHead>
               </tr>
-            </thead>
-            <tbody className="prose-body-2">
+            </DataTableHeader>
+            <DataTableBody>
               {data.items.map((r) => (
-                <tr key={r.id} className="border-base-divide-subtle border-t">
-                  <td className="px-3 py-2">
+                <DataTableRow key={r.id}>
+                  <DataTableCell>
                     <div className="flex flex-col">
                       <span className="prose-label-md">{r.name}</span>
                       {r.isSystem && (
@@ -84,17 +93,17 @@ export const RolesListPage = () => {
                         </span>
                       )}
                     </div>
-                  </td>
-                  <td className="text-base-content-medium px-3 py-2">
+                  </DataTableCell>
+                  <DataTableCell className="text-base-content-medium">
                     {r.description ?? '—'}
-                  </td>
-                  <td className="text-base-content-medium px-3 py-2">
+                  </DataTableCell>
+                  <DataTableCell className="text-base-content-medium">
                     {r.capabilities.length === 0
                       ? '(none)'
                       : `${r.capabilities.length} granted`}
-                  </td>
-                  <td className="px-3 py-2">{r._count.users}</td>
-                  <td className="px-3 py-2">
+                  </DataTableCell>
+                  <DataTableCell>{r._count.users}</DataTableCell>
+                  <DataTableCell>
                     <div className="flex justify-end gap-2">
                       <Button
                         size="sm"
@@ -120,12 +129,12 @@ export const RolesListPage = () => {
                         Delete
                       </Button>
                     </div>
-                  </td>
-                </tr>
+                  </DataTableCell>
+                </DataTableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </DataTableBody>
+          </DataTableRoot>
+        </DataTable>
       )}
 
       {editing && (

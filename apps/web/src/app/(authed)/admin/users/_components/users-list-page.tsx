@@ -14,6 +14,15 @@ import {
 
 import { TextField } from '@acme/ui/text-field'
 
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHead,
+  DataTableHeader,
+  DataTableRoot,
+  DataTableRow,
+} from '~/components/ui/data-table'
 import { SystemRoleId } from '~/lib/rbac'
 import { useTRPC } from '~/trpc/react'
 import { ResetPasskeyModal } from '../../_components/reset-passkey-modal'
@@ -78,22 +87,22 @@ export const UsersListPage = () => {
       {data.items.length === 0 ? (
         <Infobox variant="info">No users match the search.</Infobox>
       ) : (
-        <div className="border-base-divide-medium overflow-x-auto rounded-md border">
-          <table className="w-full min-w-max text-left">
-            <thead className="prose-label-sm bg-base-canvas-alt text-base-content-medium">
+        <DataTable>
+          <DataTableRoot>
+            <DataTableHeader>
               <tr>
-                <th className="px-3 py-2">Name</th>
-                <th className="px-3 py-2">Email</th>
-                <th className="px-3 py-2">Role</th>
-                <th className="px-3 py-2">Passkeys</th>
-                <th className="px-3 py-2">Last login</th>
-                <th className="px-3 py-2 text-right">Actions</th>
+                <DataTableHead>Name</DataTableHead>
+                <DataTableHead>Email</DataTableHead>
+                <DataTableHead>Role</DataTableHead>
+                <DataTableHead>Passkeys</DataTableHead>
+                <DataTableHead>Last login</DataTableHead>
+                <DataTableHead className="text-right">Actions</DataTableHead>
               </tr>
-            </thead>
-            <tbody className="prose-body-2">
+            </DataTableHeader>
+            <DataTableBody>
               {data.items.map((u) => (
-                <tr key={u.id} className="border-base-divide-subtle border-t">
-                  <td className="px-3 py-2">
+                <DataTableRow key={u.id}>
+                  <DataTableCell>
                     <div className="flex items-center gap-2">
                       <Avatar
                         size="xs"
@@ -104,11 +113,11 @@ export const UsersListPage = () => {
                       </Avatar>
                       {u.name ?? '(unnamed)'}
                     </div>
-                  </td>
-                  <td className="text-base-content-medium px-3 py-2">
+                  </DataTableCell>
+                  <DataTableCell className="text-base-content-medium">
                     {u.email ?? '—'}
-                  </td>
-                  <td className="px-3 py-2">
+                  </DataTableCell>
+                  <DataTableCell>
                     <div className="flex items-center gap-2">
                       <select
                         className="border-base-divide-medium bg-base-canvas-default rounded border px-2 py-1 text-sm"
@@ -131,17 +140,17 @@ export const UsersListPage = () => {
                           u.roleId}
                       </Badge>
                     </div>
-                  </td>
-                  <td className="px-3 py-2">{u._count.passkeys}</td>
-                  <td className="text-base-content-medium px-3 py-2">
+                  </DataTableCell>
+                  <DataTableCell>{u._count.passkeys}</DataTableCell>
+                  <DataTableCell className="text-base-content-medium">
                     {u.lastLogin
                       ? new Intl.DateTimeFormat('en-GB', {
                           dateStyle: 'short',
                           timeStyle: 'short',
                         }).format(u.lastLogin)
                       : '—'}
-                  </td>
-                  <td className="px-3 py-2">
+                  </DataTableCell>
+                  <DataTableCell>
                     <div className="flex justify-end gap-2">
                       <Button
                         size="sm"
@@ -183,12 +192,12 @@ export const UsersListPage = () => {
                         Delete
                       </Button>
                     </div>
-                  </td>
-                </tr>
+                  </DataTableCell>
+                </DataTableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </DataTableBody>
+          </DataTableRoot>
+        </DataTable>
       )}
 
       {resetTarget && (

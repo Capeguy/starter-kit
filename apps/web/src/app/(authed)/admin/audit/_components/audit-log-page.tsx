@@ -8,6 +8,15 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 
 import { TextField } from '@acme/ui/text-field'
 
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHead,
+  DataTableHeader,
+  DataTableRoot,
+  DataTableRow,
+} from '~/components/ui/data-table'
 import { useTRPC } from '~/trpc/react'
 import { formatAuditEvent } from '../../../_components/audit-action-labels'
 import { RelativeTime } from '../../../_components/relative-time'
@@ -72,23 +81,23 @@ export const AuditLogPage = () => {
       {data.items.length === 0 ? (
         <Infobox variant="info">No audit entries match the filter.</Infobox>
       ) : (
-        <div className="border-base-divide-medium overflow-x-auto rounded-md border">
-          <table className="w-full min-w-max text-left">
-            <thead className="prose-label-sm bg-base-canvas-alt text-base-content-medium">
+        <DataTable>
+          <DataTableRoot>
+            <DataTableHeader>
               <tr>
-                <th className="px-3 py-2">When</th>
-                <th className="px-3 py-2">Action</th>
-                <th className="px-3 py-2">User</th>
-                <th className="px-3 py-2">IP</th>
+                <DataTableHead>When</DataTableHead>
+                <DataTableHead>Action</DataTableHead>
+                <DataTableHead>User</DataTableHead>
+                <DataTableHead>IP</DataTableHead>
               </tr>
-            </thead>
-            <tbody className="prose-body-2">
+            </DataTableHeader>
+            <DataTableBody>
               {data.items.map((row) => (
-                <tr key={row.id} className="border-base-divide-subtle border-t">
-                  <td className="px-3 py-2 whitespace-nowrap">
+                <DataTableRow key={row.id}>
+                  <DataTableCell className="whitespace-nowrap">
                     <RelativeTime date={row.createdAt} />
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap">
+                  </DataTableCell>
+                  <DataTableCell className="whitespace-nowrap">
                     <div className="flex flex-col">
                       <span>
                         {formatAuditEvent(
@@ -104,8 +113,8 @@ export const AuditLogPage = () => {
                         {row.action}
                       </span>
                     </div>
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap">
+                  </DataTableCell>
+                  <DataTableCell className="whitespace-nowrap">
                     {row.user ? (
                       <div className="flex items-center gap-2">
                         <Avatar
@@ -125,15 +134,15 @@ export const AuditLogPage = () => {
                     ) : (
                       '(deleted)'
                     )}
-                  </td>
-                  <td className="text-base-content-medium px-3 py-2 font-mono whitespace-nowrap">
+                  </DataTableCell>
+                  <DataTableCell className="text-base-content-medium font-mono whitespace-nowrap">
                     {row.ip ?? '—'}
-                  </td>
-                </tr>
+                  </DataTableCell>
+                </DataTableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </DataTableBody>
+          </DataTableRoot>
+        </DataTable>
       )}
     </div>
   )

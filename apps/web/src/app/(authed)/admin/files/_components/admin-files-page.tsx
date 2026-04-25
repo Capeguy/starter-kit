@@ -12,6 +12,15 @@ import {
 
 import { TextField } from '@acme/ui/text-field'
 
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCell,
+  DataTableHead,
+  DataTableHeader,
+  DataTableRoot,
+  DataTableRow,
+} from '~/components/ui/data-table'
 import { useTRPC } from '~/trpc/react'
 
 const formatBytes = (n: number): string => {
@@ -61,41 +70,41 @@ export const AdminFilesPage = () => {
       {data.items.length === 0 ? (
         <Infobox variant="info">No files match.</Infobox>
       ) : (
-        <div className="border-base-divide-medium overflow-x-auto rounded-md border">
-          <table className="w-full min-w-max text-left">
-            <thead className="prose-label-sm bg-base-canvas-alt text-base-content-medium">
+        <DataTable>
+          <DataTableRoot>
+            <DataTableHeader>
               <tr>
-                <th className="px-3 py-2">Filename</th>
-                <th className="px-3 py-2">Owner</th>
-                <th className="px-3 py-2">Size</th>
-                <th className="px-3 py-2">Uploaded</th>
-                <th className="px-3 py-2 text-right">Actions</th>
+                <DataTableHead>Filename</DataTableHead>
+                <DataTableHead>Owner</DataTableHead>
+                <DataTableHead>Size</DataTableHead>
+                <DataTableHead>Uploaded</DataTableHead>
+                <DataTableHead className="text-right">Actions</DataTableHead>
               </tr>
-            </thead>
-            <tbody className="prose-body-2">
+            </DataTableHeader>
+            <DataTableBody>
               {data.items.map((f) => (
-                <tr key={f.id} className="border-base-divide-subtle border-t">
-                  <td className="px-3 py-2">
+                <DataTableRow key={f.id}>
+                  <DataTableCell>
                     <a
                       href={`/api/files/${f.id}/download`}
                       className="text-base-content-brand hover:underline"
                     >
                       {f.filename}
                     </a>
-                  </td>
-                  <td className="text-base-content-medium px-3 py-2">
+                  </DataTableCell>
+                  <DataTableCell className="text-base-content-medium">
                     {f.user.name ?? f.user.id}
-                  </td>
-                  <td className="text-base-content-medium px-3 py-2">
+                  </DataTableCell>
+                  <DataTableCell className="text-base-content-medium">
                     {formatBytes(f.size)}
-                  </td>
-                  <td className="text-base-content-medium px-3 py-2">
+                  </DataTableCell>
+                  <DataTableCell className="text-base-content-medium">
                     {new Intl.DateTimeFormat('en-GB', {
                       dateStyle: 'short',
                       timeStyle: 'short',
                     }).format(f.createdAt)}
-                  </td>
-                  <td className="px-3 py-2 text-right">
+                  </DataTableCell>
+                  <DataTableCell className="text-right">
                     <Button
                       size="sm"
                       variant="outline"
@@ -107,12 +116,12 @@ export const AdminFilesPage = () => {
                     >
                       Delete
                     </Button>
-                  </td>
-                </tr>
+                  </DataTableCell>
+                </DataTableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </DataTableBody>
+          </DataTableRoot>
+        </DataTable>
       )}
     </div>
   )
