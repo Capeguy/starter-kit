@@ -192,7 +192,7 @@ export const DashboardPage = () => {
                     {filesData.items.map((f) => (
                       <li
                         key={f.id}
-                        className="border-base-divide-subtle flex items-center justify-between border-b py-1 last:border-b-0"
+                        className="border-base-divider-subtle flex items-center justify-between border-b py-1 last:border-b-0"
                       >
                         <a
                           href={`/api/files/${f.id}/download`}
@@ -229,7 +229,7 @@ export const DashboardPage = () => {
                     {activityData.items.map((a) => (
                       <li
                         key={a.id}
-                        className="border-base-divide-subtle flex items-center justify-between gap-2 border-b py-1 last:border-b-0"
+                        className="border-base-divider-subtle flex items-center justify-between gap-2 border-b py-1 last:border-b-0"
                       >
                         <span className="text-base-content-default">
                           {formatAuditEvent(

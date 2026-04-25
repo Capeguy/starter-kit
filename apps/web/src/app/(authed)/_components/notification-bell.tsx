@@ -76,7 +76,7 @@ export const NotificationBell = () => {
               <ul className="flex flex-col gap-1">
                 {list.items.map((n) => {
                   const item = (
-                    <div className="border-base-divide-subtle flex flex-col gap-0.5 border-b py-2 last:border-b-0">
+                    <div className="border-base-divider-subtle flex flex-col gap-0.5 border-b py-2 last:border-b-0">
                       <div className="flex items-center gap-2">
                         {!n.readAt && (
                           <span className="bg-utility-feedback-info inline-block h-2 w-2 rounded-full" />

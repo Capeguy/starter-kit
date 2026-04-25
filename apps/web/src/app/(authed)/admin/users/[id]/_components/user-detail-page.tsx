@@ -74,7 +74,7 @@ export function UserDetailPage({ userId }: UserDetailPageProps) {
                   </div>
                 </div>
 
-                <div className="border-base-divide-subtle grid grid-cols-2 gap-x-8 gap-y-3 border-t pt-4">
+                <div className="border-base-divider-subtle grid grid-cols-2 gap-x-8 gap-y-3 border-t pt-4">
                   <div>
                     <p className="prose-caption-1 text-base-content-medium mb-0.5">
                       Role

@@ -12,12 +12,12 @@ export interface DataTableProps extends HTMLAttributes<HTMLDivElement> {
 /**
  * Scrollable, bordered container that wraps a <table>.
  * Mirrors the hand-rolled pattern:
- *   <div className="border-base-divide-medium overflow-x-auto rounded-md border">
+ *   <div className="border-base-divider-medium overflow-x-auto rounded-md border">
  */
 export const DataTable = ({ className, ...rest }: DataTableProps) => (
   <div
     className={cn(
-      'border-base-divide-medium overflow-x-auto rounded-md border',
+      'border-base-divider-medium overflow-x-auto rounded-md border',
       className,
     )}
     {...rest}
@@ -83,7 +83,7 @@ export interface DataTableRowProps extends HTMLAttributes<HTMLTableRowElement> {
 export const DataTableRow = ({ className, ...rest }: DataTableRowProps) => (
   <tr
     className={cn(
-      'border-base-divide-subtle hover:bg-base-canvas-alt border-t',
+      'border-base-divider-subtle hover:bg-base-canvas-alt border-t',
       className,
     )}
     {...rest}

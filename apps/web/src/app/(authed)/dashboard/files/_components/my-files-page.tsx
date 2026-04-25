@@ -84,7 +84,7 @@ export const MyFilesPage = () => {
       </header>
 
       {canUpload ? (
-        <div className="border-base-divide-medium flex flex-col items-start gap-3 rounded-md border p-4">
+        <div className="border-base-divider-medium flex flex-col items-start gap-3 rounded-md border p-4">
           <FilePickerButton
             label="Upload a file"
             isPending={uploading}

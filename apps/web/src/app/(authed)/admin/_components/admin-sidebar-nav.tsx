@@ -55,7 +55,7 @@ export function AdminSidebarNav() {
       {/* Mobile hamburger button — visible below md */}
       <button
         type="button"
-        className="border-base-divide-medium bg-base-canvas-default fixed top-20 left-4 z-40 flex items-center justify-center rounded-md border p-2 shadow-sm md:hidden"
+        className="border-base-divider-medium bg-base-canvas-default fixed top-20 left-4 z-40 flex items-center justify-center rounded-md border p-2 shadow-sm md:hidden"
         aria-label={mobileOpen ? 'Close admin menu' : 'Open admin menu'}
         onClick={() => setMobileOpen((prev) => !prev)}
       >

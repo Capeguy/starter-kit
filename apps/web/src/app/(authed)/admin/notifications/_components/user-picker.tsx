@@ -38,7 +38,7 @@ export const UserPicker = ({ value, onChange }: UserPickerProps) => {
 
   if (value) {
     return (
-      <div className="border-base-divide-medium flex items-center justify-between rounded-md border p-3">
+      <div className="border-base-divider-medium flex items-center justify-between rounded-md border p-3">
         <div className="flex flex-col">
           <span className="prose-label-md text-base-content-strong">
             {value.name ?? '(unnamed)'}
@@ -70,7 +70,7 @@ export const UserPicker = ({ value, onChange }: UserPickerProps) => {
         onChange={setQ}
       />
       {q.trim() && (
-        <ul className="border-base-divide-medium flex flex-col rounded-md border">
+        <ul className="border-base-divider-medium flex flex-col rounded-md border">
           {isFetching && !data ? (
             <li className="prose-caption-2 text-base-content-medium px-3 py-2">
               Searching…
@@ -85,7 +85,7 @@ export const UserPicker = ({ value, onChange }: UserPickerProps) => {
             data.items.map((u) => (
               <li
                 key={u.id}
-                className="border-base-divide-subtle border-b last:border-b-0"
+                className="border-base-divider-subtle border-b last:border-b-0"
               >
                 <button
                   type="button"

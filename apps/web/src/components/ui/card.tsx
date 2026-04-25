@@ -8,7 +8,7 @@ export interface CardProps extends HTMLAttributes<HTMLElement> {
 export const Card = ({ className, ...rest }: CardProps) => (
   <section
     className={cn(
-      'border-base-divide-medium bg-base-canvas-default rounded-md border',
+      'border-base-divider-medium bg-base-canvas-default rounded-md border',
       className,
     )}
     {...rest}
@@ -30,7 +30,7 @@ export const CardHeader = ({
 }: CardHeaderProps) => (
   <header
     className={cn(
-      'border-base-divide-subtle flex items-center justify-between gap-3 border-b px-4 py-3',
+      'border-base-divider-subtle flex items-center justify-between gap-3 border-b px-4 py-3',
       className,
     )}
     {...rest}
@@ -62,7 +62,7 @@ export interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
 
 export const CardFooter = ({ className, ...rest }: CardFooterProps) => (
   <div
-    className={cn('border-base-divide-subtle border-t px-4 py-3', className)}
+    className={cn('border-base-divider-subtle border-t px-4 py-3', className)}
     {...rest}
   />
 )

@@ -124,7 +124,7 @@ export const UsersListPage = () => {
                   <DataTableCell>
                     <div className="flex items-center gap-2">
                       <select
-                        className="border-base-divide-medium bg-base-canvas-default rounded border px-2 py-1 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+                        className="border-base-divider-medium bg-base-canvas-default rounded border px-2 py-1 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
                         value={u.roleId}
                         onChange={(e) =>
                           setRoleMutation.mutate({

@@ -9,7 +9,7 @@ const StatTile = ({
   label: string
   value: string | number
 }) => (
-  <div className="border-base-divide-medium flex flex-col gap-1 rounded-md border p-4">
+  <div className="border-base-divider-medium flex flex-col gap-1 rounded-md border p-4">
     <span className="prose-label-sm text-base-content-medium">{label}</span>
     <span className="prose-h3 text-base-content-strong">{value}</span>
   </div>

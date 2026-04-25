@@ -115,7 +115,7 @@ export const ResetPasskeyModal = ({
                     readOnly
                     value={issued.url}
                     rows={3}
-                    className="border-base-divide-medium prose-body-2 w-full rounded-md border p-2 font-mono dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+                    className="border-base-divider-medium prose-body-2 w-full rounded-md border p-2 font-mono dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
                     onClick={(e) => e.currentTarget.select()}
                   />
                   <p className="prose-caption-2 text-base-content-medium">

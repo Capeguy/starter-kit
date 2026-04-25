@@ -14,7 +14,7 @@ export const EmptyState = ({
   action,
 }: EmptyStateProps) => {
   return (
-    <div className="border-base-divide-subtle flex flex-col items-center gap-3 rounded-md border border-dashed px-6 py-10 text-center">
+    <div className="border-base-divider-subtle flex flex-col items-center gap-3 rounded-md border border-dashed px-6 py-10 text-center">
       {icon !== undefined && (
         <span className="text-base-content-medium text-4xl">{icon}</span>
       )}
