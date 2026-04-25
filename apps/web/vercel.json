@@ -1,4 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "turbo vercel-build"
+  "buildCommand": "turbo vercel-build",
+  "crons": [
+    {
+      "path": "/api/internal/queue/run",
+      "schedule": "0 3 * * *"
+    }
+  ]
 }
