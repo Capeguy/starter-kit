@@ -83,29 +83,22 @@ test.describe('Admin broadcast notifications', () => {
     const page = await ctx.newPage()
     await page.goto('/admin/notifications')
 
-    // Default audience is "All users"; just fill and submit.
-    await page.getByLabel('Title').fill('Heads up everyone')
+    // Use a tag-scoped title so this assertion is robust to other users that
+    // may exist in the test DB (Playwright's afterEach reset is unreliable
+    // across spec files in our fixture setup; see app-fixture.ts).
+    const title = `Heads up everyone ${tag}`
+    await page.getByLabel('Title').fill(title)
     await page.getByRole('button', { name: /Send broadcast/ }).click()
 
-    // Both regular users + the sending admin should receive it (= 3 rows).
-    await expect
-      .poll(
-        () => db.notification.count({ where: { title: 'Heads up everyone' } }),
-        { timeout: 5_000 },
-      )
-      .toBe(3)
-
-    // Each of u1 and u2 should have their own row.
-    expect(
-      await db.notification.count({
-        where: { userId: u1.id, title: 'Heads up everyone' },
-      }),
-    ).toBe(1)
-    expect(
-      await db.notification.count({
-        where: { userId: u2.id, title: 'Heads up everyone' },
-      }),
-    ).toBe(1)
+    // Each of admin, u1 and u2 must have received exactly one notification
+    // with this tag-scoped title.
+    for (const userId of [admin.id, u1.id, u2.id]) {
+      await expect
+        .poll(() => db.notification.count({ where: { userId, title } }), {
+          timeout: 5_000,
+        })
+        .toBe(1)
+    }
 
     await ctx.close()
   })

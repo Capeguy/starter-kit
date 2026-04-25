@@ -50,6 +50,25 @@ export const applyMigrations = async (container: DatabaseContainer) => {
     adapter: new PrismaPg({ connectionString }),
   })
 
+  // Idempotency: when the e2e container is reused across specs (reuse:true on
+  // the testcontainer), beforeAll re-invokes us with a DB that already has
+  // every migration applied. Migrations like the RBAC one are NOT idempotent
+  // (`ALTER TYPE ... RENAME` errors when the type is already gone), so a
+  // second pass would partially fail and leave the DB in a half-broken state.
+  // Detect prior runs by checking for the User table and short-circuit.
+  const existing = await client
+    .$queryRawUnsafe<{ exists: boolean }[]>(
+      `SELECT EXISTS (
+         SELECT 1 FROM information_schema.tables
+         WHERE table_schema = 'vibe_stack' AND table_name = 'User'
+       ) AS exists`,
+    )
+    .catch(() => [{ exists: false }])
+  if (existing[0]?.exists) {
+    console.log('Skipping applyMigrations: schema already migrated')
+    return
+  }
+
   const prismaMigrationDir = join(
     fileURLToPath(dirname(import.meta.url)),
     '..',
@@ -80,6 +99,29 @@ export const setupTestClient = (connectionString: string) => {
     adapter: new PrismaPg({ connectionString }),
   })
   return client
+}
+
+/**
+ * Clear all transactional rows so the snapshot taken next captures a known
+ * post-migration state — not whatever leftover rows the previous spec left
+ * behind via createTestUser() etc. We deliberately preserve Role: it was
+ * seeded by the RBAC migration and the FK on User.role_id needs it.
+ */
+export async function clearTransactionalData(container: DatabaseContainer) {
+  const result = await container.container.exec(
+    [
+      'sh',
+      '-c',
+      `psql -d ${getConnectionString(
+        container,
+        true,
+      )} -c 'TRUNCATE TABLE vibe_stack."Account", vibe_stack."AuditLog", vibe_stack."File", vibe_stack."Notification", vibe_stack."Passkey", vibe_stack."PasskeyChallenge", vibe_stack."PasskeyResetToken", vibe_stack."User", vibe_stack."VerificationToken" RESTART IDENTITY CASCADE;'`,
+    ],
+    { user: 'root' },
+  )
+  if (result.exitCode !== 0) {
+    console.error('Failed to clear transactional data', result)
+  }
 }
 
 export async function takeDbSnapshot(container: DatabaseContainer) {

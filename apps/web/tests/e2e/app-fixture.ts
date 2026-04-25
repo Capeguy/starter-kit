@@ -4,6 +4,7 @@ import { test as baseTest } from '@playwright/test'
 
 import {
   applyMigrations,
+  clearTransactionalData,
   resetDbToSnapshot,
   startDatabase,
   takeDbSnapshot,
@@ -48,16 +49,22 @@ const test = baseTest.extend<DatabaseFixture & RedisFixture>({
 
 test.beforeAll(async ({ databaseContainer }) => {
   await applyMigrations(databaseContainer)
-  // Add more seed data here as needed before taking the snapshot
+  // The container is reused across specs (`reuse: true`), so when we run
+  // the suite end-to-end the DB still has rows that previous specs created.
+  // Clear them here so the snapshot we take next captures only the seeded
+  // role rows and an otherwise-empty schema.
+  await clearTransactionalData(databaseContainer)
   await takeDbSnapshot(databaseContainer)
 })
 
-test.afterAll(async ({ databaseContainer, redisContainer }) => {
-  await Promise.all([
-    databaseContainer.container.stop(),
-    redisContainer.container.stop(),
-  ])
-})
+// Intentionally NOT stopping containers in afterAll. The container fixtures
+// use `reuse: true`; stopping between specs forces a fresh container per
+// spec, which means applyMigrations re-runs on each beforeAll. The RBAC
+// migration is non-idempotent, and a port clash also surfaces when two
+// specs race on host port 64321 during teardown/restart. Leaving the
+// containers up lets reuse actually reuse them — applyMigrations short-
+// circuits via its own idempotency check, and snapshot/reset semantics
+// remain correct.
 
 test.afterEach(async ({ resetDatabase, flushRedis }) => {
   await Promise.all([resetDatabase(), flushRedis()])
