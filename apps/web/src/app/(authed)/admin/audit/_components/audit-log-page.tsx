@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Avatar } from '@opengovsg/oui'
 import { Button } from '@opengovsg/oui/button'
 import { Infobox } from '@opengovsg/oui/infobox'
 import { useSuspenseQuery } from '@tanstack/react-query'
@@ -105,9 +106,25 @@ export const AuditLogPage = () => {
                     </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
-                    {row.user
-                      ? `${row.user.name ?? '(unnamed)'} · ${row.user.id}`
-                      : '(deleted)'}
+                    {row.user ? (
+                      <div className="flex items-center gap-2">
+                        <Avatar
+                          size="xs"
+                          name={row.user.name ?? 'Unknown'}
+                          getInitials={(name) => name.slice(0, 2).toUpperCase()}
+                        >
+                          <Avatar.Fallback />
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <span>{row.user.name ?? '(unnamed)'}</span>
+                          <span className="prose-caption-2 text-base-content-medium font-mono">
+                            {row.user.id}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      '(deleted)'
+                    )}
                   </td>
                   <td className="text-base-content-medium px-3 py-2 font-mono whitespace-nowrap">
                     {row.ip ?? '—'}

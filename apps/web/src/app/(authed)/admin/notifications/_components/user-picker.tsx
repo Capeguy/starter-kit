@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Avatar } from '@opengovsg/oui'
 import { Infobox } from '@opengovsg/oui/infobox'
 import { useQuery } from '@tanstack/react-query'
 
@@ -91,14 +92,23 @@ export const UserPicker = ({ value, onChange }: UserPickerProps) => {
                   onClick={() =>
                     onChange({ id: u.id, name: u.name, email: u.email })
                   }
-                  className="hover:bg-base-canvas-alt flex w-full flex-col items-start px-3 py-2 text-left"
+                  className="hover:bg-base-canvas-alt flex w-full items-center gap-2 px-3 py-2 text-left"
                 >
-                  <span className="prose-label-md text-base-content-strong">
-                    {u.name ?? '(unnamed)'}
-                  </span>
-                  <span className="prose-caption-2 text-base-content-medium">
-                    {u.email ?? u.id}
-                  </span>
+                  <Avatar
+                    size="xs"
+                    name={u.name ?? 'Unknown'}
+                    getInitials={(name) => name.slice(0, 2).toUpperCase()}
+                  >
+                    <Avatar.Fallback />
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="prose-label-md text-base-content-strong">
+                      {u.name ?? '(unnamed)'}
+                    </span>
+                    <span className="prose-caption-2 text-base-content-medium">
+                      {u.email ?? u.id}
+                    </span>
+                  </div>
                 </button>
               </li>
             ))

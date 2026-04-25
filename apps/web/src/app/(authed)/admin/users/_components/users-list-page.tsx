@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { Avatar } from '@opengovsg/oui'
+import { Badge } from '@opengovsg/oui/badge'
 import { Button } from '@opengovsg/oui/button'
 import { Infobox } from '@opengovsg/oui/infobox'
 import { toast } from '@opengovsg/oui/toast'
@@ -91,27 +93,44 @@ export const UsersListPage = () => {
             <tbody className="prose-body-2">
               {data.items.map((u) => (
                 <tr key={u.id} className="border-base-divide-subtle border-t">
-                  <td className="px-3 py-2">{u.name ?? '(unnamed)'}</td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <Avatar
+                        size="xs"
+                        name={u.name ?? 'Unknown'}
+                        getInitials={(name) => name.slice(0, 2).toUpperCase()}
+                      >
+                        <Avatar.Fallback />
+                      </Avatar>
+                      {u.name ?? '(unnamed)'}
+                    </div>
+                  </td>
                   <td className="text-base-content-medium px-3 py-2">
                     {u.email ?? '—'}
                   </td>
                   <td className="px-3 py-2">
-                    <select
-                      className="border-base-divide-medium bg-base-canvas-default rounded border px-2 py-1 text-sm"
-                      value={u.roleId}
-                      onChange={(e) =>
-                        setRoleMutation.mutate({
-                          userId: u.id,
-                          roleId: e.target.value,
-                        })
-                      }
-                    >
-                      {rolesData.items.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="flex items-center gap-2">
+                      <select
+                        className="border-base-divide-medium bg-base-canvas-default rounded border px-2 py-1 text-sm"
+                        value={u.roleId}
+                        onChange={(e) =>
+                          setRoleMutation.mutate({
+                            userId: u.id,
+                            roleId: e.target.value,
+                          })
+                        }
+                      >
+                        {rolesData.items.map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.name}
+                          </option>
+                        ))}
+                      </select>
+                      <Badge variant="subtle" size="sm">
+                        {rolesData.items.find((r) => r.id === u.roleId)?.name ??
+                          u.roleId}
+                      </Badge>
+                    </div>
                   </td>
                   <td className="px-3 py-2">{u._count.passkeys}</td>
                   <td className="text-base-content-medium px-3 py-2">
