@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import NextLink from 'next/link'
 import { Avatar } from '@opengovsg/oui/avatar'
+import { Tab, TabList, TabPanel, Tabs } from '@opengovsg/oui/tabs'
 import { toast } from '@opengovsg/oui/toast'
 import {
   useQuery,
@@ -12,6 +13,7 @@ import {
 
 import { LinkButton } from '@acme/ui/link-button'
 
+import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { EmptyState } from '~/components/ui/empty-state'
 import { useTRPC } from '~/trpc/react'
 import { formatAuditEvent } from '../../_components/audit-action-labels'
@@ -60,6 +62,8 @@ export const DashboardPage = () => {
     }
   }
 
+  const fileCount = filesData?.items.length ?? 0
+
   return (
     <div className="flex flex-1 flex-col gap-6">
       <header className="flex flex-col gap-1">
@@ -71,112 +75,185 @@ export const DashboardPage = () => {
         </p>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Profile card */}
-        <section className="border-base-divide-medium flex flex-col gap-3 rounded-md border p-4">
-          <h2 className="prose-h4 text-base-content-strong">Profile</h2>
-          <div className="flex items-center gap-3">
-            <Avatar size="md" name={me.name ?? 'You'}>
-              {me.avatarUrl && <Avatar.Image src={me.avatarUrl} alt="" />}
-              <Avatar.Fallback />
-            </Avatar>
-            <div className="flex flex-col">
-              <span className="prose-label-md text-base-content-strong">
-                {me.name ?? '(unnamed)'}
-              </span>
-              <span className="prose-label-xs bg-base-canvas-alt mt-1 w-fit rounded px-2 py-0.5">
-                {me.role.name}
-              </span>
-            </div>
-          </div>
-          <FilePickerButton
-            label="Change avatar"
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            isPending={uploadingAvatar}
-            onFileSelected={(f) => void handleAvatarUpload(f)}
-          />
-        </section>
+      <Tabs>
+        <TabList aria-label="Dashboard sections">
+          <Tab id="overview">Overview</Tab>
+          <Tab id="files">Files</Tab>
+          <Tab id="activity">Activity</Tab>
+          <Tab id="settings">Settings</Tab>
+        </TabList>
 
-        {/* Files preview */}
-        <section className="border-base-divide-medium flex flex-col gap-3 rounded-md border p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="prose-h4 text-base-content-strong">Recent files</h2>
-            <NextLink
-              href="/dashboard/files"
-              className="prose-label-md text-base-content-brand hover:underline"
-            >
-              View all →
-            </NextLink>
-          </div>
-          {!filesData || filesData.items.length === 0 ? (
-            <EmptyState
-              title="No files yet"
-              description="Upload a file to get started."
-              action={
-                <LinkButton href="/dashboard/files" variant="outline" size="sm">
-                  Go to Files
-                </LinkButton>
-              }
-            />
-          ) : (
-            <ul className="prose-body-2 flex flex-col gap-1">
-              {filesData.items.map((f) => (
-                <li
-                  key={f.id}
-                  className="border-base-divide-subtle flex items-center justify-between border-b py-1 last:border-b-0"
-                >
-                  <a
-                    href={`/api/files/${f.id}/download`}
-                    className="text-base-content-brand truncate hover:underline"
-                  >
-                    {f.filename}
-                  </a>
-                  <RelativeTime
-                    date={f.createdAt}
-                    className="text-base-content-medium ml-2 shrink-0"
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
-
-      {/* Recent activity */}
-      <section className="border-base-divide-medium flex flex-col gap-3 rounded-md border p-4">
-        <h2 className="prose-h4 text-base-content-strong">Recent activity</h2>
-        {!activityData || activityData.items.length === 0 ? (
-          <EmptyState
-            title="No activity yet"
-            description="Your recent actions will appear here."
-          />
-        ) : (
-          <ul className="prose-body-2 flex flex-col gap-1">
-            {activityData.items.map((a) => (
-              <li
-                key={a.id}
-                className="border-base-divide-subtle flex items-center justify-between gap-2 border-b py-1 last:border-b-0"
-              >
-                <span className="text-base-content-default">
-                  {formatAuditEvent(
-                    { action: a.action, metadata: a.metadata },
-                    'self',
-                  )}
-                </span>
-                <RelativeTime
-                  date={a.createdAt}
-                  className="text-base-content-medium shrink-0"
+        {/* Overview tab */}
+        <TabPanel id="overview">
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            {/* Profile card */}
+            <Card>
+              <CardHeader title="Profile" />
+              <CardBody className="flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <Avatar size="md" name={me.name ?? 'You'}>
+                    {me.avatarUrl && <Avatar.Image src={me.avatarUrl} alt="" />}
+                    <Avatar.Fallback />
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="prose-label-md text-base-content-strong">
+                      {me.name ?? '(unnamed)'}
+                    </span>
+                    <span className="prose-label-xs bg-base-canvas-alt mt-1 w-fit rounded px-2 py-0.5">
+                      {me.role.name}
+                    </span>
+                  </div>
+                </div>
+                <FilePickerButton
+                  label="Change avatar"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  isPending={uploadingAvatar}
+                  onFileSelected={(f) => void handleAvatarUpload(f)}
                 />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+              </CardBody>
+            </Card>
 
-      <p className="prose-caption-2 text-base-content-medium">
-        Notifications appear in the bell icon top-right and refresh every 15
-        seconds.
-      </p>
+            {/* Summary stats card */}
+            <Card>
+              <CardHeader title="Summary" />
+              <CardBody className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="prose-body-2 text-base-content-medium">
+                    Files uploaded
+                  </span>
+                  <span className="prose-label-md text-base-content-strong">
+                    {fileCount}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="prose-body-2 text-base-content-medium">
+                    Role
+                  </span>
+                  <span className="prose-label-md text-base-content-strong">
+                    {me.role.name}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="prose-body-2 text-base-content-medium">
+                    Member since
+                  </span>
+                  <span className="prose-label-md text-base-content-strong">
+                    {formatDate(me.createdAt)}
+                  </span>
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+
+          <p className="prose-caption-2 text-base-content-medium mt-4">
+            Notifications appear in the bell icon top-right and refresh every 15
+            seconds.
+          </p>
+        </TabPanel>
+
+        {/* Files tab */}
+        <TabPanel id="files">
+          <div className="mt-4">
+            <Card>
+              <CardHeader
+                title="Recent files"
+                actions={
+                  <NextLink
+                    href="/dashboard/files"
+                    className="prose-label-md text-base-content-brand hover:underline"
+                  >
+                    See all in Files →
+                  </NextLink>
+                }
+              />
+              <CardBody>
+                {!filesData || filesData.items.length === 0 ? (
+                  <EmptyState
+                    title="No files yet"
+                    description="Upload a file to get started."
+                    action={
+                      <LinkButton
+                        href="/dashboard/files"
+                        variant="outline"
+                        size="sm"
+                      >
+                        Go to Files
+                      </LinkButton>
+                    }
+                  />
+                ) : (
+                  <ul className="prose-body-2 flex flex-col gap-1">
+                    {filesData.items.map((f) => (
+                      <li
+                        key={f.id}
+                        className="border-base-divide-subtle flex items-center justify-between border-b py-1 last:border-b-0"
+                      >
+                        <a
+                          href={`/api/files/${f.id}/download`}
+                          className="text-base-content-brand truncate hover:underline"
+                        >
+                          {f.filename}
+                        </a>
+                        <RelativeTime
+                          date={f.createdAt}
+                          className="text-base-content-medium ml-2 shrink-0"
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardBody>
+            </Card>
+          </div>
+        </TabPanel>
+
+        {/* Activity tab */}
+        <TabPanel id="activity">
+          <div className="mt-4">
+            <Card>
+              <CardHeader title="Recent activity" />
+              <CardBody>
+                {!activityData || activityData.items.length === 0 ? (
+                  <EmptyState
+                    title="No activity yet"
+                    description="Your recent actions will appear here."
+                  />
+                ) : (
+                  <ul className="prose-body-2 flex flex-col gap-1">
+                    {activityData.items.map((a) => (
+                      <li
+                        key={a.id}
+                        className="border-base-divide-subtle flex items-center justify-between gap-2 border-b py-1 last:border-b-0"
+                      >
+                        <span className="text-base-content-default">
+                          {formatAuditEvent(
+                            { action: a.action, metadata: a.metadata },
+                            'self',
+                          )}
+                        </span>
+                        <RelativeTime
+                          date={a.createdAt}
+                          className="text-base-content-medium shrink-0"
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardBody>
+            </Card>
+          </div>
+        </TabPanel>
+
+        {/* Settings tab */}
+        <TabPanel id="settings">
+          <div className="mt-4">
+            <EmptyState
+              title="Settings coming soon"
+              description="Account settings will live here."
+            />
+          </div>
+        </TabPanel>
+      </Tabs>
     </div>
   )
 }
