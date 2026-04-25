@@ -167,6 +167,10 @@ model File {
   size      Int
   createdAt DateTime @default(now()) @db.Timestamptz(3)
 
+  // Generated tsvector column populated by Postgres from filename; queried
+  // via Kysely + raw `tsquery`. Prisma doesn't manage it (Unsupported type).
+  searchable Unsupported("tsvector")?
+
   @@index([userId, createdAt])
   @@schema("vibe_stack")
 }

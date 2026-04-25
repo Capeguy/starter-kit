@@ -16,6 +16,10 @@ import { del, put } from '@vercel/blob'
 
 import { db } from '@acme/db'
 import { Role } from '@acme/db/enums'
+// kysely is hoisted via @acme/db's deps; the explicit import path is the
+// generated client's bundled kysely (avoids needing to add kysely as an
+// app-level dep).
+import { sql } from '@acme/db/kysely'
 
 const MAX_BYTES_PER_FILE = 25 * 1024 * 1024 // 25 MB
 const ALLOWED_AVATAR_MIME = new Set([
@@ -160,6 +164,76 @@ export const listAllFiles = async ({
     items: trimmed,
     nextCursor: hasNext ? trimmed[trimmed.length - 1]?.id : null,
   }
+}
+
+/**
+ * Full-text search over the user's own files using the generated
+ * tsvector column populated by Postgres. Falls back to substring
+ * filter if the query is short or wouldn't generate any tsquery tokens.
+ */
+export const searchMyFiles = async ({
+  userId,
+  query,
+  limit,
+}: {
+  userId: string
+  query: string
+  limit: number
+}) => {
+  const trimmed = query.trim()
+  if (!trimmed) return { items: [] }
+
+  const items = await db.$kysely
+    .selectFrom('vibe_stack.File')
+    .selectAll()
+    .where('user_id', '=', userId)
+    .where(sql<boolean>`searchable @@ plainto_tsquery('english', ${trimmed})`)
+    .orderBy(
+      sql`ts_rank(searchable, plainto_tsquery('english', ${trimmed}))`,
+      'desc',
+    )
+    .limit(limit)
+    .execute()
+
+  return { items }
+}
+
+export const searchAllFiles = async ({
+  query,
+  limit,
+}: {
+  query: string
+  limit: number
+}) => {
+  const trimmed = query.trim()
+  if (!trimmed) return { items: [] }
+
+  const items = await db.$kysely
+    .selectFrom('vibe_stack.File')
+    .innerJoin(
+      'vibe_stack.User',
+      'vibe_stack.User.id',
+      'vibe_stack.File.user_id',
+    )
+    .select([
+      'vibe_stack.File.id as id',
+      'vibe_stack.File.url as url',
+      'vibe_stack.File.filename as filename',
+      'vibe_stack.File.size as size',
+      'vibe_stack.File.mime_type as mimeType',
+      'vibe_stack.File.createdAt as createdAt',
+      'vibe_stack.User.id as userId',
+      'vibe_stack.User.name as userName',
+    ])
+    .where(sql<boolean>`searchable @@ plainto_tsquery('english', ${trimmed})`)
+    .orderBy(
+      sql`ts_rank(searchable, plainto_tsquery('english', ${trimmed}))`,
+      'desc',
+    )
+    .limit(limit)
+    .execute()
+
+  return { items }
 }
 
 export const deleteFile = async ({
