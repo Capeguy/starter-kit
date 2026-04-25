@@ -20,11 +20,15 @@ test.describe('/admin/roles CRUD', () => {
     const page = await ctx.newPage()
     await page.goto('/admin/roles')
 
-    // Both seeded system roles are present and labelled "System role".
+    // Both seeded system roles are present and labelled "System role"
+    // inside the table (not in the page header copy that also mentions
+    // "System roles…").
     await expect(page.getByRole('cell', { name: /^Admin/ })).toBeVisible()
     await expect(page.getByRole('cell', { name: /^User/ })).toBeVisible()
-    const systemTags = page.getByText('System role')
-    await expect(systemTags).toHaveCount(2)
+    const systemTagsInTable = page
+      .getByRole('table')
+      .getByText('System role', { exact: true })
+    await expect(systemTagsInTable).toHaveCount(2)
 
     await ctx.close()
   })

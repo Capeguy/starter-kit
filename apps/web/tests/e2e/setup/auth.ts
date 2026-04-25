@@ -22,6 +22,49 @@ const COOKIE_NAME = 'auth.session-token'
 const ROLE_ADMIN = 'role_admin'
 const ROLE_USER = 'role_user'
 
+// Defensive: when the e2e DB is built by applyMigrations() in `db-setup.ts`,
+// some Prisma adapter setups silently swallow multi-statement INSERTs in
+// migration files. Upsert the seeded system roles before any test-user
+// creation so we don't FK-violate on `roleId`. Don't cache — each test's
+// afterEach resets the DB to the post-migration snapshot, which may not
+// include these rows.
+const ensureSystemRoles = async () => {
+  await db.role.upsert({
+    where: { id: ROLE_ADMIN },
+    update: {},
+    create: {
+      id: ROLE_ADMIN,
+      name: 'Admin',
+      isSystem: true,
+      capabilities: [
+        'admin.access',
+        'user.list',
+        'user.update',
+        'user.delete',
+        'user.role.assign',
+        'rbac.role.create',
+        'rbac.role.update',
+        'rbac.role.delete',
+        'audit.read',
+        'notification.broadcast',
+        'file.upload',
+        'file.read.any',
+        'file.delete.any',
+      ],
+    },
+  })
+  await db.role.upsert({
+    where: { id: ROLE_USER },
+    update: {},
+    create: {
+      id: ROLE_USER,
+      name: 'User',
+      isSystem: true,
+      capabilities: [],
+    },
+  })
+}
+
 interface CreateUserInput {
   name: string
   /** Convenience: 'ADMIN' or 'USER' map to seeded role IDs. */
@@ -35,6 +78,7 @@ export const createTestUser = async ({
   role = 'USER',
   roleId,
 }: CreateUserInput) => {
+  await ensureSystemRoles()
   const finalRoleId = roleId ?? (role === 'ADMIN' ? ROLE_ADMIN : ROLE_USER)
   return db.user.create({
     data: { name, roleId: finalRoleId },

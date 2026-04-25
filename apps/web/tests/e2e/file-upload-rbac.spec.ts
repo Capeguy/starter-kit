@@ -65,6 +65,9 @@ test.describe('file.upload capability gating', () => {
     const ctx = await browser.newContext()
     await signInAs(ctx, u.id)
     const page = await ctx.newPage()
+    // Navigate so subsequent fetch() in page.evaluate has a base URL to
+    // resolve the relative path against.
+    await page.goto('/dashboard')
 
     // Build a tiny multipart request from inside the page (carries the cookie).
     const result = await page.evaluate(async () => {
