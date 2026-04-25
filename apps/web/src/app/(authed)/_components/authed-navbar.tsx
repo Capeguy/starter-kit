@@ -36,7 +36,10 @@ export const AuthedNavbar = () => {
     <Navbar>
       <NavbarContent justify="start">
         <NavbarBrand>
-          <NextLink href={AUTHED_ROOT_ROUTE} className="font-bold text-inherit">
+          <NextLink
+            href={AUTHED_ROOT_ROUTE}
+            className="font-bold whitespace-nowrap text-inherit"
+          >
             {env.NEXT_PUBLIC_APP_NAME}
           </NextLink>
         </NavbarBrand>

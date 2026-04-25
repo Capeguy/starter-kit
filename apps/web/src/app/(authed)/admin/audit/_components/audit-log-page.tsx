@@ -76,7 +76,7 @@ export const AuditLogPage = () => {
         <Infobox variant="info">No audit entries match the filter.</Infobox>
       ) : (
         <div className="border-base-divide-medium overflow-x-auto rounded-md border">
-          <table className="w-full text-left">
+          <table className="w-full min-w-max text-left">
             <thead className="prose-label-sm bg-base-canvas-alt text-base-content-medium">
               <tr>
                 <th className="px-3 py-2">When</th>
@@ -91,13 +91,15 @@ export const AuditLogPage = () => {
                   <td className="px-3 py-2 whitespace-nowrap">
                     {formatTimestamp(row.createdAt)}
                   </td>
-                  <td className="px-3 py-2 font-mono">{row.action}</td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2 font-mono whitespace-nowrap">
+                    {row.action}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
                     {row.user
                       ? `${row.user.name ?? '(unnamed)'} · ${row.user.id}`
                       : '(deleted)'}
                   </td>
-                  <td className="text-base-content-medium px-3 py-2 font-mono">
+                  <td className="text-base-content-medium px-3 py-2 font-mono whitespace-nowrap">
                     {row.ip ?? '—'}
                   </td>
                 </tr>

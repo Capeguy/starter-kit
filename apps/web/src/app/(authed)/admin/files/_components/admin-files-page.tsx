@@ -62,7 +62,7 @@ export const AdminFilesPage = () => {
         <Infobox variant="info">No files match.</Infobox>
       ) : (
         <div className="border-base-divide-medium overflow-x-auto rounded-md border">
-          <table className="w-full text-left">
+          <table className="w-full min-w-max text-left">
             <thead className="prose-label-sm bg-base-canvas-alt text-base-content-medium">
               <tr>
                 <th className="px-3 py-2">Filename</th>

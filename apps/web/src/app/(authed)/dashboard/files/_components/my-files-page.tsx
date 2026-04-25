@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { Button } from '@opengovsg/oui/button'
 import { Infobox } from '@opengovsg/oui/infobox'
 import { toast } from '@opengovsg/oui/toast'
@@ -11,6 +11,7 @@ import {
 } from '@tanstack/react-query'
 
 import { useTRPC } from '~/trpc/react'
+import { FilePickerButton } from '../../../_components/file-picker-button'
 
 const formatBytes = (n: number): string => {
   if (n < 1024) return `${n} B`
@@ -21,7 +22,6 @@ const formatBytes = (n: number): string => {
 export const MyFilesPage = () => {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
-  const inputRef = useRef<HTMLInputElement | null>(null)
   const [uploading, setUploading] = useState(false)
 
   const { data } = useSuspenseQuery(
@@ -58,7 +58,6 @@ export const MyFilesPage = () => {
       toast.error(err instanceof Error ? err.message : 'Upload failed')
     } finally {
       setUploading(false)
-      if (inputRef.current) inputRef.current.value = ''
     }
   }
 
@@ -73,22 +72,18 @@ export const MyFilesPage = () => {
       </header>
 
       <div className="border-base-divide-medium flex flex-col items-start gap-3 rounded-md border p-4">
-        <input
-          ref={inputRef}
-          type="file"
-          onChange={(e) => {
-            const f = e.target.files?.[0]
-            if (f) void handleUpload(f)
-          }}
+        <FilePickerButton
+          label="Upload a file"
+          isPending={uploading}
+          onFileSelected={(f) => void handleUpload(f)}
         />
-        {uploading && <Infobox variant="info">Uploading…</Infobox>}
       </div>
 
       {data.items.length === 0 ? (
         <Infobox variant="info">No files yet. Upload one above.</Infobox>
       ) : (
         <div className="border-base-divide-medium overflow-x-auto rounded-md border">
-          <table className="w-full text-left">
+          <table className="w-full min-w-max text-left">
             <thead className="prose-label-sm bg-base-canvas-alt text-base-content-medium">
               <tr>
                 <th className="px-3 py-2">Filename</th>

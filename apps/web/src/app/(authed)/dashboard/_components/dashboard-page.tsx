@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import NextLink from 'next/link'
 import { Avatar } from '@opengovsg/oui/avatar'
 import { Infobox } from '@opengovsg/oui/infobox'
@@ -14,6 +14,7 @@ import {
 import { Role } from '@acme/db/enums'
 
 import { useTRPC } from '~/trpc/react'
+import { FilePickerButton } from '../../_components/file-picker-button'
 
 const formatDate = (date: Date): string =>
   new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' }).format(date)
@@ -27,7 +28,6 @@ const formatTimestamp = (date: Date): string =>
 export const DashboardPage = () => {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
-  const inputRef = useRef<HTMLInputElement | null>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
   const { data: me } = useSuspenseQuery(trpc.me.get.queryOptions())
@@ -61,7 +61,6 @@ export const DashboardPage = () => {
       toast.error(err instanceof Error ? err.message : 'Upload failed')
     } finally {
       setUploadingAvatar(false)
-      if (inputRef.current) inputRef.current.value = ''
     }
   }
 
@@ -94,16 +93,12 @@ export const DashboardPage = () => {
               </span>
             </div>
           </div>
-          <input
-            ref={inputRef}
-            type="file"
+          <FilePickerButton
+            label="Change avatar"
             accept="image/png,image/jpeg,image/webp,image/gif"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) void handleAvatarUpload(f)
-            }}
+            isPending={uploadingAvatar}
+            onFileSelected={(f) => void handleAvatarUpload(f)}
           />
-          {uploadingAvatar && <Infobox variant="info">Uploading…</Infobox>}
         </section>
 
         {/* Files preview */}

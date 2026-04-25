@@ -74,7 +74,7 @@ export const UsersListPage = () => {
         <Infobox variant="info">No users match the search.</Infobox>
       ) : (
         <div className="border-base-divide-medium overflow-x-auto rounded-md border">
-          <table className="w-full text-left">
+          <table className="w-full min-w-max text-left">
             <thead className="prose-label-sm bg-base-canvas-alt text-base-content-medium">
               <tr>
                 <th className="px-3 py-2">Name</th>

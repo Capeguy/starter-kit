@@ -10,13 +10,20 @@ import { Role } from '@acme/db/enums'
 import { TextField } from '@acme/ui/text-field'
 
 import { useTRPC } from '~/trpc/react'
+import { UserPicker } from './user-picker'
 
 type AudienceKind = 'all' | 'role:admin' | 'role:user' | 'user'
+
+interface PickedUser {
+  id: string
+  name: string | null
+  email: string | null
+}
 
 export const BroadcastForm = () => {
   const trpc = useTRPC()
   const [audienceKind, setAudienceKind] = useState<AudienceKind>('all')
-  const [userId, setUserId] = useState('')
+  const [pickedUser, setPickedUser] = useState<PickedUser | null>(null)
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [href, setHref] = useState('')
@@ -40,7 +47,7 @@ export const BroadcastForm = () => {
         ? { kind: 'role' as const, role: Role.ADMIN }
         : audienceKind === 'role:user'
           ? { kind: 'role' as const, role: Role.USER }
-          : { kind: 'user' as const, userId }
+          : { kind: 'user' as const, userId: pickedUser?.id ?? '' }
 
   return (
     <form
@@ -51,8 +58,8 @@ export const BroadcastForm = () => {
           toast.error('Title is required')
           return
         }
-        if (audienceKind === 'user' && !userId.trim()) {
-          toast.error('User ID is required')
+        if (audienceKind === 'user' && !pickedUser) {
+          toast.error('Pick a recipient')
           return
         }
         broadcast.mutate({
@@ -70,7 +77,7 @@ export const BroadcastForm = () => {
             { value: 'all', label: 'All users' },
             { value: 'role:admin', label: 'Admins only' },
             { value: 'role:user', label: 'Regular users only' },
-            { value: 'user', label: 'Single user (by ID)' },
+            { value: 'user', label: 'Single user' },
           ] as { value: AudienceKind; label: string }[]
         ).map((opt) => (
           <label key={opt.value} className="flex items-center gap-2">
@@ -86,12 +93,7 @@ export const BroadcastForm = () => {
       </fieldset>
 
       {audienceKind === 'user' && (
-        <TextField
-          label="User ID"
-          inputProps={{ placeholder: 'cuid…', name: 'userId' }}
-          value={userId}
-          onChange={setUserId}
-        />
+        <UserPicker value={pickedUser} onChange={setPickedUser} />
       )}
 
       <TextField
