@@ -1,5 +1,0 @@
--- AlterTable
-ALTER TABLE "User" ALTER COLUMN "lastLogin" SET DATA TYPE TIMESTAMPTZ(3);
-
--- AlterTable
-ALTER TABLE "VerificationToken" ALTER COLUMN "issuedAt" SET DATA TYPE TIMESTAMPTZ(3);

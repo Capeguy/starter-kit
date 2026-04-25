@@ -4,6 +4,8 @@ import { db } from '@acme/db'
 export const resetTables = async (tableNames: Prisma.ModelName[]) => {
   for (const tableName of tableNames) {
     // TRUNCATE is faster than DELETE and resets auto-increment counters
-    await db.$executeRawUnsafe(`TRUNCATE TABLE "${tableName}" CASCADE;`)
+    await db.$executeRawUnsafe(
+      `TRUNCATE TABLE "vibe_stack"."${tableName}" CASCADE;`,
+    )
   }
 }

@@ -3,12 +3,13 @@
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["vibe_stack"]
 }
 
 generator client {
   provider        = "prisma-client"
   output          = "../src/generated/prisma"
-  previewFeatures = ["fullTextSearchPostgres"]
+  previewFeatures = ["fullTextSearchPostgres", "multiSchema"]
   engineType      = "client"
 }
 
@@ -34,6 +35,8 @@ model VerificationToken {
   token      String
   attempts   Int      @default(0)
   issuedAt   DateTime @default(now()) @db.Timestamptz(3)
+
+  @@schema("vibe_stack")
 }
 
 model User {
@@ -45,6 +48,8 @@ model User {
   passkeys Passkey[]
 
   lastLogin DateTime? @db.Timestamptz(3)
+
+  @@schema("vibe_stack")
 }
 
 model Account {
@@ -57,6 +62,7 @@ model Account {
 
   @@unique([provider, providerAccountId])
   @@index([userId])
+  @@schema("vibe_stack")
 }
 
 model Passkey {
@@ -74,6 +80,7 @@ model Passkey {
   lastUsedAt           DateTime @default(now()) @db.Timestamptz(3)
 
   @@index([userId])
+  @@schema("vibe_stack")
 }
 
 model PasskeyChallenge {
@@ -84,4 +91,5 @@ model PasskeyChallenge {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
 
   @@index([userId])
+  @@schema("vibe_stack")
 }
