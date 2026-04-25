@@ -10,6 +10,7 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 
+import { Capability, hasCapability } from '~/lib/rbac'
 import { useTRPC } from '~/trpc/react'
 import { FilePickerButton } from '../../../_components/file-picker-button'
 
@@ -27,6 +28,8 @@ export const MyFilesPage = () => {
   const { data } = useSuspenseQuery(
     trpc.file.listMine.queryOptions({ limit: 50 }),
   )
+  const { data: me } = useSuspenseQuery(trpc.me.get.queryOptions())
+  const canUpload = hasCapability(me?.role.capabilities, Capability.FileUpload)
 
   const deleteFile = useMutation(
     trpc.file.delete.mutationOptions({
@@ -71,16 +74,26 @@ export const MyFilesPage = () => {
         </p>
       </header>
 
-      <div className="border-base-divide-medium flex flex-col items-start gap-3 rounded-md border p-4">
-        <FilePickerButton
-          label="Upload a file"
-          isPending={uploading}
-          onFileSelected={(f) => void handleUpload(f)}
-        />
-      </div>
+      {canUpload ? (
+        <div className="border-base-divide-medium flex flex-col items-start gap-3 rounded-md border p-4">
+          <FilePickerButton
+            label="Upload a file"
+            isPending={uploading}
+            onFileSelected={(f) => void handleUpload(f)}
+          />
+        </div>
+      ) : (
+        <Infobox variant="info">
+          File uploads are restricted to roles with the <code>file.upload</code>{' '}
+          capability. Ask an admin to grant it if you need to upload.
+        </Infobox>
+      )}
 
       {data.items.length === 0 ? (
-        <Infobox variant="info">No files yet. Upload one above.</Infobox>
+        <Infobox variant="info">
+          No files yet.
+          {canUpload ? ' Upload one above.' : ''}
+        </Infobox>
       ) : (
         <div className="border-base-divide-medium overflow-x-auto rounded-md border">
           <table className="w-full min-w-max text-left">

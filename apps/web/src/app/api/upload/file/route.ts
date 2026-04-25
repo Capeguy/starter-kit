@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 
+import { db } from '@acme/db'
+
+import { Capability, hasCapability } from '~/lib/rbac'
 import { uploadFile } from '~/server/modules/file/file.service'
 import { getSession } from '~/server/session'
 
@@ -7,6 +10,19 @@ export async function POST(req: Request) {
   const session = await getSession()
   if (!session.userId) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  }
+
+  // Gate generic file uploads on the file.upload capability. Avatar uploads
+  // remain open (handled by /api/upload/avatar — personal data).
+  const me = await db.user.findUnique({
+    where: { id: session.userId },
+    select: { role: { select: { capabilities: true } } },
+  })
+  if (!hasCapability(me?.role.capabilities, Capability.FileUpload)) {
+    return NextResponse.json(
+      { error: 'forbidden: missing file.upload capability' },
+      { status: 403 },
+    )
   }
 
   const form = await req.formData()

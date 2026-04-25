@@ -81,6 +81,12 @@ export default async function AdminLandingPage() {
         >
           → All files
         </NextLink>
+        <NextLink
+          href="/admin/roles"
+          className="prose-body-1 text-base-content-brand hover:underline"
+        >
+          → Roles &amp; capabilities
+        </NextLink>
       </nav>
     </div>
   )
