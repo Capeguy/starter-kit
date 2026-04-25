@@ -44,6 +44,22 @@ export const generatePasskeyRegistrationOptions = async ({
 }) => {
   const { rpId } = getRequestOrigin(headers)
 
+  // Check name availability up-front so the user doesn't go through the
+  // device's passkey UI (biometric prompt) only to be told the name is
+  // taken afterwards. The DB unique constraint is still the final guard
+  // for the rare race between this check and the user's create.
+  // User.name is @db.Citext, so this comparison is case-insensitive.
+  const existing = await db.user.findFirst({
+    where: { name },
+    select: { id: true },
+  })
+  if (existing) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'That name is already taken. Pick a different one.',
+    })
+  }
+
   const options = await generateRegistrationOptions({
     rpName: RP_NAME,
     rpID: rpId,

@@ -311,14 +311,28 @@ describe('passkey.service', () => {
   })
 
   describe('name uniqueness', () => {
-    it('rejects a second registration with a name that is already taken (case-insensitive)', async () => {
-      // Seed a user occupying the name "Jane Doe"
+    it('rejects up-front in generateRegistrationOptions when the name is already taken (so the device passkey UI is never triggered)', async () => {
       await db.user.create({ data: { name: 'Jane Doe' } })
 
+      await expect(
+        generatePasskeyRegistrationOptions({
+          name: 'jane doe',
+          headers: mockHeaders,
+        }),
+      ).rejects.toThrow(/already taken/i)
+    })
+
+    it('rejects in verifyRegistration as a fallback when the name is taken between check and create (case-insensitive race)', async () => {
+      // Get options first (name is available at this moment)
       const options = await generatePasskeyRegistrationOptions({
-        name: 'jane doe', // different case → must still collide via citext
+        name: 'jane doe',
         headers: mockHeaders,
       })
+
+      // Simulate another user grabbing the name in the gap between
+      // generateRegistrationOptions and verifyRegistration. citext makes
+      // "Jane Doe" and "jane doe" collide.
+      await db.user.create({ data: { name: 'Jane Doe' } })
 
       const mockResponse = {
         id: 'mock-credential-id',
