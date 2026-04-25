@@ -14,6 +14,7 @@ import {
   AuditAction,
   recordAuditEvent,
 } from '~/server/modules/audit/audit.service'
+import { broadcast } from '~/server/modules/notification/notification.service'
 import { adminProcedure, createTRPCRouter } from '../trpc'
 
 const roleEnum = z.enum([Role.USER, Role.ADMIN])
@@ -115,5 +116,29 @@ export const adminRouter = createTRPCRouter({
 
         return result
       }),
+  }),
+
+  notifications: createTRPCRouter({
+    broadcast: adminProcedure
+      .input(
+        z.object({
+          audience: z.discriminatedUnion('kind', [
+            z.object({ kind: z.literal('all') }),
+            z.object({ kind: z.literal('role'), role: roleEnum }),
+            z.object({ kind: z.literal('user'), userId: z.string() }),
+          ]),
+          title: z.string().min(1).max(120),
+          body: z.string().max(2000).nullish(),
+          href: z.string().max(500).nullish(),
+        }),
+      )
+      .mutation(({ input }) =>
+        broadcast({
+          audience: input.audience,
+          title: input.title,
+          body: input.body ?? null,
+          href: input.href ?? null,
+        }),
+      ),
   }),
 })

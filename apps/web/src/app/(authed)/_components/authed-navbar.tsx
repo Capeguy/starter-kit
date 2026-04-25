@@ -20,6 +20,7 @@ import { Role } from '@acme/db/enums'
 import { ADMIN_ROOT_ROUTE, AUTHED_ROOT_ROUTE } from '~/constants'
 import { env } from '~/env'
 import { useAuth } from '~/lib/auth'
+import { NotificationBell } from './notification-bell'
 
 export const AuthedNavbar = () => {
   const { user, logout } = useAuth()
@@ -52,6 +53,9 @@ export const AuthedNavbar = () => {
             </NextLink>
           </NavbarItem>
         )}
+        <NavbarItem>
+          <NotificationBell />
+        </NavbarItem>
         <NavbarItem>
           <MenuTrigger>
             <Button

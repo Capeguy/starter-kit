@@ -1,6 +1,7 @@
 import { adminRouter } from '~/server/api/routers/admin.router'
 import { auditRouter } from '~/server/api/routers/audit.router'
 import { meRouter } from '~/server/api/routers/me.router'
+import { notificationRouter } from '~/server/api/routers/notification.router'
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc'
 import { healthcheck } from '../modules/healthcheck/healthcheck.service'
 import { authRouter } from './routers/auth/auth.router'
@@ -24,6 +25,7 @@ export const appRouter = createTRPCRouter({
   auth: authRouter,
   audit: auditRouter,
   admin: adminRouter,
+  notification: notificationRouter,
 })
 
 // export type definition of API
