@@ -4,10 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@opengovsg/oui/button'
 import { Infobox } from '@opengovsg/oui/infobox'
-import {
-  startAuthentication,
-  startRegistration,
-} from '@simplewebauthn/browser'
+import { startAuthentication, startRegistration } from '@simplewebauthn/browser'
 import { useMutation } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
 
@@ -41,7 +38,11 @@ export const PasskeyFlow = () => {
   const [reason, setReason] = useState<NeedsNameReason | null>(null)
   const [error, setError] = useState<string>()
 
-  const { control, handleSubmit, reset: resetForm } = useForm<{ name: string }>({
+  const {
+    control,
+    handleSubmit,
+    reset: resetForm,
+  } = useForm<{ name: string }>({
     defaultValues: { name: '' },
   })
 

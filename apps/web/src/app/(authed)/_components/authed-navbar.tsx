@@ -17,10 +17,7 @@ import { BiChevronDown, BiLogOut } from 'react-icons/bi'
 
 import { Role } from '@acme/db/enums'
 
-import {
-  ADMIN_ROOT_ROUTE,
-  AUTHED_ROOT_ROUTE,
-} from '~/constants'
+import { ADMIN_ROOT_ROUTE, AUTHED_ROOT_ROUTE } from '~/constants'
 import { env } from '~/env'
 import { useAuth } from '~/lib/auth'
 

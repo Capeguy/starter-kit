@@ -13,7 +13,6 @@ import superjson from 'superjson'
 import z, { ZodError } from 'zod'
 
 import type { Logger, ScopedLogger } from '@acme/logging'
-
 import { db } from '@acme/db'
 import { Role } from '@acme/db/enums'
 
