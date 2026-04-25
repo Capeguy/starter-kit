@@ -1,6 +1,6 @@
-import NextLink from 'next/link'
-
 import { db } from '@acme/db'
+
+import { Breadcrumbs } from '~/components/ui/breadcrumbs'
 
 const StatTile = ({
   label,
@@ -42,6 +42,8 @@ export default async function AdminLandingPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-6">
+      <Breadcrumbs items={[{ label: 'Admin' }]} />
+
       <header className="flex flex-col gap-1">
         <h1 className="prose-h2 text-base-content-strong">Admin</h1>
         <p className="prose-body-2 text-base-content-medium">
@@ -55,39 +57,6 @@ export default async function AdminLandingPage() {
         <StatTile label="Audit events (24h)" value={stats.audit24h} />
         <StatTile label="Files stored" value={stats.fileCount} />
       </div>
-
-      <nav aria-label="Admin sections" className="flex flex-col gap-2">
-        <NextLink
-          href="/admin/users"
-          className="prose-body-1 text-base-content-brand hover:underline"
-        >
-          → User management
-        </NextLink>
-        <NextLink
-          href="/admin/audit"
-          className="prose-body-1 text-base-content-brand hover:underline"
-        >
-          → Audit log
-        </NextLink>
-        <NextLink
-          href="/admin/notifications"
-          className="prose-body-1 text-base-content-brand hover:underline"
-        >
-          → Send notification
-        </NextLink>
-        <NextLink
-          href="/admin/files"
-          className="prose-body-1 text-base-content-brand hover:underline"
-        >
-          → All files
-        </NextLink>
-        <NextLink
-          href="/admin/roles"
-          className="prose-body-1 text-base-content-brand hover:underline"
-        >
-          → Roles &amp; capabilities
-        </NextLink>
-      </nav>
     </div>
   )
 }

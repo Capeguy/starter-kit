@@ -14,6 +14,7 @@ import {
 
 import { TextField } from '@acme/ui/text-field'
 
+import { Breadcrumbs } from '~/components/ui/breadcrumbs'
 import {
   DataTable,
   DataTableBody,
@@ -69,6 +70,9 @@ export const UsersListPage = () => {
 
   return (
     <div className="flex flex-1 flex-col gap-6">
+      <Breadcrumbs
+        items={[{ label: 'Admin', href: '/admin' }, { label: 'Users' }]}
+      />
       <header className="flex flex-col gap-1">
         <h1 className="prose-h2 text-base-content-strong">Users</h1>
         <p className="prose-body-2 text-base-content-medium">

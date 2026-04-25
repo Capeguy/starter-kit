@@ -6,7 +6,7 @@ import { createTestUser, signInAs } from './setup/auth'
 const uniq = () => `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
 
 test.describe('Admin navigation + role gating', () => {
-  test('admin landing surfaces all five sub-page links', async ({
+  test('admin sidebar surfaces all five sub-page links', async ({
     browser,
   }) => {
     const admin = await createTestUser({
@@ -19,10 +19,9 @@ test.describe('Admin navigation + role gating', () => {
 
     await page.goto('/admin')
 
-    const nav = page.getByRole('navigation', { name: 'Admin sections' })
-    await expect(
-      nav.getByRole('link', { name: /User management/ }),
-    ).toBeVisible()
+    // The sidebar wrapper div has role="navigation" aria-label="Admin navigation".
+    const nav = page.getByRole('navigation', { name: 'Admin navigation' })
+    await expect(nav.getByRole('link', { name: /Users/ })).toBeVisible()
     await expect(nav.getByRole('link', { name: /Audit log/ })).toBeVisible()
     await expect(
       nav.getByRole('link', { name: /Send notification/ }),

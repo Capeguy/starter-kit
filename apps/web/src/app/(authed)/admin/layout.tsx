@@ -6,6 +6,7 @@ import type { DynamicLayoutProps } from '~/types/nextjs'
 import { AUTHED_ROOT_ROUTE, LOGIN_ROUTE } from '~/constants'
 import { Capability, hasCapability } from '~/lib/rbac'
 import { getSession } from '~/server/session'
+import { AdminSidebarNav } from './_components/admin-sidebar-nav'
 
 export default async function AdminLayout({ children }: DynamicLayoutProps) {
   // Defense in depth: (authed)/layout already gated session, but admin pages
@@ -23,5 +24,10 @@ export default async function AdminLayout({ children }: DynamicLayoutProps) {
     redirect(AUTHED_ROOT_ROUTE)
   }
 
-  return <>{children}</>
+  return (
+    <div className="flex flex-1 gap-0">
+      <AdminSidebarNav />
+      <div className="min-w-0 flex-1 pl-0 md:pl-4">{children}</div>
+    </div>
+  )
 }
