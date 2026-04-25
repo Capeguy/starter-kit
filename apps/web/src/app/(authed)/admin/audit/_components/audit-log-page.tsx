@@ -8,7 +8,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { TextField } from '@acme/ui/text-field'
 
 import { useTRPC } from '~/trpc/react'
-import { formatAuditAction } from '../../../_components/audit-action-labels'
+import { formatAuditEvent } from '../../../_components/audit-action-labels'
 import { RelativeTime } from '../../../_components/relative-time'
 
 export const AuditLogPage = () => {
@@ -89,7 +89,16 @@ export const AuditLogPage = () => {
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
                     <div className="flex flex-col">
-                      <span>{formatAuditAction(row.action)}</span>
+                      <span>
+                        {formatAuditEvent(
+                          {
+                            action: row.action,
+                            metadata: row.metadata,
+                            user: row.user,
+                          },
+                          'admin',
+                        )}
+                      </span>
                       <span className="prose-caption-2 text-base-content-medium font-mono">
                         {row.action}
                       </span>

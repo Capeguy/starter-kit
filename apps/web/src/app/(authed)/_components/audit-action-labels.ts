@@ -6,16 +6,94 @@
  * If/when an i18n framework lands, migrate these into the message catalogue
  * keyed by the same action codes.
  */
-export const AUDIT_ACTION_LABEL: Record<string, string> = {
-  'auth.passkey.register': 'Registered a passkey',
-  'auth.passkey.authenticate': 'Signed in',
-  'auth.passkey.reset.issue': 'Issued a passkey reset link',
-  'auth.passkey.reset.claim': 'Reset their passkey',
-  'auth.logout': 'Signed out',
-  'user.role.change': 'Role changed',
-  'user.delete': 'Account deleted',
-  'user.profile.update': 'Updated profile',
+
+export type AuditPerspective = 'self' | 'admin'
+
+export interface AuditSubject {
+  id: string
+  name: string | null
+  email?: string | null
 }
 
-export const formatAuditAction = (action: string): string =>
-  AUDIT_ACTION_LABEL[action] ?? action
+export interface AuditEventRow {
+  action: string
+  metadata: unknown
+  /** The user the row is "about" (the audit log row's `userId`). */
+  user?: AuditSubject | null
+}
+
+const subjectLabel = (user: AuditSubject | null | undefined): string =>
+  user?.name ?? user?.email ?? '(deleted user)'
+
+const getMetaString = (meta: unknown, key: string): string | undefined => {
+  if (typeof meta !== 'object' || meta === null) return undefined
+  const v = (meta as Record<string, unknown>)[key]
+  return typeof v === 'string' ? v : undefined
+}
+
+/**
+ * Renders an audit event as an explicit human sentence. Two perspectives:
+ * - `self`: viewer is the subject (e.g. dashboard's "Recent activity").
+ * - `admin`: third-person with subject names (e.g. /admin/audit).
+ *
+ * For actions where the actor differs from the subject (passkey reset,
+ * role change), we surface that distinction explicitly.
+ */
+export const formatAuditEvent = (
+  row: AuditEventRow,
+  perspective: AuditPerspective = 'admin',
+): string => {
+  const isSelf = perspective === 'self'
+  const subject = subjectLabel(row.user)
+  const actorId = getMetaString(row.metadata, 'actingUserId')
+  const issuerId = getMetaString(row.metadata, 'issuedById')
+  const newRole = getMetaString(row.metadata, 'newRole')
+  const deletedUserId = getMetaString(row.metadata, 'deletedUserId')
+
+  switch (row.action) {
+    case 'auth.passkey.register':
+      return isSelf
+        ? 'You registered a passkey'
+        : `${subject} registered a passkey`
+
+    case 'auth.passkey.authenticate':
+      return isSelf ? 'You signed in' : `${subject} signed in`
+
+    case 'auth.logout':
+      return isSelf ? 'You signed out' : `${subject} signed out`
+
+    case 'auth.passkey.reset.issue':
+      return isSelf
+        ? `An admin issued a passkey reset link for you${
+            issuerId ? ` (admin ${issuerId})` : ''
+          }`
+        : `Admin${issuerId ? ` ${issuerId}` : ''} issued a passkey reset link for ${subject}`
+
+    case 'auth.passkey.reset.claim':
+      return isSelf
+        ? 'You reset your passkey using a reset link'
+        : `${subject} reset their own passkey using a reset link`
+
+    case 'user.role.change':
+      return isSelf
+        ? `An admin changed your role to ${newRole ?? 'a new role'}${
+            actorId ? ` (admin ${actorId})` : ''
+          }`
+        : `Admin${actorId ? ` ${actorId}` : ''} changed ${subject}'s role to ${newRole ?? '?'}`
+
+    case 'user.delete':
+      // The row's user is the admin who performed the deletion; the deleted
+      // user is in metadata. Self-perspective only happens for the acting admin.
+      return isSelf
+        ? `You deleted an account${deletedUserId ? ` (user ${deletedUserId})` : ''}`
+        : `${subject} deleted an account${deletedUserId ? ` (user ${deletedUserId})` : ''}`
+
+    case 'user.profile.update':
+      return isSelf
+        ? 'You updated your profile'
+        : `${subject} updated their profile`
+
+    default:
+      return row.action
+  }
+}

@@ -14,7 +14,7 @@ import {
 import { Role } from '@acme/db/enums'
 
 import { useTRPC } from '~/trpc/react'
-import { formatAuditAction } from '../../_components/audit-action-labels'
+import { formatAuditEvent } from '../../_components/audit-action-labels'
 import { FilePickerButton } from '../../_components/file-picker-button'
 import { RelativeTime } from '../../_components/relative-time'
 
@@ -158,7 +158,10 @@ export const DashboardPage = () => {
                 className="border-base-divide-subtle flex items-center justify-between gap-2 border-b py-1 last:border-b-0"
               >
                 <span className="text-base-content-default">
-                  {formatAuditAction(a.action)}
+                  {formatAuditEvent(
+                    { action: a.action, metadata: a.metadata },
+                    'self',
+                  )}
                 </span>
                 <RelativeTime
                   date={a.createdAt}
