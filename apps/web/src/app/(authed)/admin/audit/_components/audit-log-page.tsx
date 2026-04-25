@@ -8,12 +8,8 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { TextField } from '@acme/ui/text-field'
 
 import { useTRPC } from '~/trpc/react'
-
-const formatTimestamp = (date: Date): string =>
-  new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'medium',
-    timeStyle: 'medium',
-  }).format(date)
+import { formatAuditAction } from '../../../_components/audit-action-labels'
+import { RelativeTime } from '../../../_components/relative-time'
 
 export const AuditLogPage = () => {
   const trpc = useTRPC()
@@ -89,10 +85,15 @@ export const AuditLogPage = () => {
               {data.items.map((row) => (
                 <tr key={row.id} className="border-base-divide-subtle border-t">
                   <td className="px-3 py-2 whitespace-nowrap">
-                    {formatTimestamp(row.createdAt)}
+                    <RelativeTime date={row.createdAt} />
                   </td>
-                  <td className="px-3 py-2 font-mono whitespace-nowrap">
-                    {row.action}
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <span>{formatAuditAction(row.action)}</span>
+                      <span className="prose-caption-2 text-base-content-medium font-mono">
+                        {row.action}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-3 py-2 whitespace-nowrap">
                     {row.user

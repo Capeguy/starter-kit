@@ -14,16 +14,12 @@ import {
 import { Role } from '@acme/db/enums'
 
 import { useTRPC } from '~/trpc/react'
+import { formatAuditAction } from '../../_components/audit-action-labels'
 import { FilePickerButton } from '../../_components/file-picker-button'
+import { RelativeTime } from '../../_components/relative-time'
 
 const formatDate = (date: Date): string =>
   new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' }).format(date)
-
-const formatTimestamp = (date: Date): string =>
-  new Intl.DateTimeFormat('en-GB', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  }).format(date)
 
 export const DashboardPage = () => {
   const trpc = useTRPC()
@@ -138,9 +134,10 @@ export const DashboardPage = () => {
                   >
                     {f.filename}
                   </a>
-                  <span className="text-base-content-medium ml-2 shrink-0">
-                    {formatTimestamp(f.createdAt)}
-                  </span>
+                  <RelativeTime
+                    date={f.createdAt}
+                    className="text-base-content-medium ml-2 shrink-0"
+                  />
                 </li>
               ))}
             </ul>
@@ -158,12 +155,15 @@ export const DashboardPage = () => {
             {activityData.items.map((a) => (
               <li
                 key={a.id}
-                className="border-base-divide-subtle flex items-center justify-between border-b py-1 last:border-b-0"
+                className="border-base-divide-subtle flex items-center justify-between gap-2 border-b py-1 last:border-b-0"
               >
-                <span className="font-mono">{a.action}</span>
-                <span className="text-base-content-medium">
-                  {formatTimestamp(a.createdAt)}
+                <span className="text-base-content-default">
+                  {formatAuditAction(a.action)}
                 </span>
+                <RelativeTime
+                  date={a.createdAt}
+                  className="text-base-content-medium shrink-0"
+                />
               </li>
             ))}
           </ul>
