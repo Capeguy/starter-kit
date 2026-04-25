@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import NextLink from 'next/link'
 import { Avatar } from '@opengovsg/oui/avatar'
-import { Infobox } from '@opengovsg/oui/infobox'
 import { toast } from '@opengovsg/oui/toast'
 import {
   useQuery,
@@ -11,6 +10,9 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 
+import { LinkButton } from '@acme/ui/link-button'
+
+import { EmptyState } from '~/components/ui/empty-state'
 import { useTRPC } from '~/trpc/react'
 import { formatAuditEvent } from '../../_components/audit-action-labels'
 import { FilePickerButton } from '../../_components/file-picker-button'
@@ -107,15 +109,15 @@ export const DashboardPage = () => {
             </NextLink>
           </div>
           {!filesData || filesData.items.length === 0 ? (
-            <Infobox variant="info">
-              No files yet.{' '}
-              <NextLink
-                href="/dashboard/files"
-                className="text-base-content-brand underline"
-              >
-                Upload one.
-              </NextLink>
-            </Infobox>
+            <EmptyState
+              title="No files yet"
+              description="Upload a file to get started."
+              action={
+                <LinkButton href="/dashboard/files" variant="outline" size="sm">
+                  Go to Files
+                </LinkButton>
+              }
+            />
           ) : (
             <ul className="prose-body-2 flex flex-col gap-1">
               {filesData.items.map((f) => (
@@ -144,7 +146,10 @@ export const DashboardPage = () => {
       <section className="border-base-divide-medium flex flex-col gap-3 rounded-md border p-4">
         <h2 className="prose-h4 text-base-content-strong">Recent activity</h2>
         {!activityData || activityData.items.length === 0 ? (
-          <Infobox variant="info">No activity yet.</Infobox>
+          <EmptyState
+            title="No activity yet"
+            description="Your recent actions will appear here."
+          />
         ) : (
           <ul className="prose-body-2 flex flex-col gap-1">
             {activityData.items.map((a) => (
