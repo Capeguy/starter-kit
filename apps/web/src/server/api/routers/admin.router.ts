@@ -14,6 +14,7 @@ import {
   AuditAction,
   recordAuditEvent,
 } from '~/server/modules/audit/audit.service'
+import { deleteFile, listAllFiles } from '~/server/modules/file/file.service'
 import { broadcast } from '~/server/modules/notification/notification.service'
 import { adminProcedure, createTRPCRouter } from '../trpc'
 
@@ -116,6 +117,28 @@ export const adminRouter = createTRPCRouter({
 
         return result
       }),
+  }),
+
+  files: createTRPCRouter({
+    list: adminProcedure
+      .input(
+        z.object({
+          q: z.string().nullish(),
+          cursor: z.string().nullish(),
+          limit: z.number().int().min(1).max(100).default(50),
+        }),
+      )
+      .query(({ input }) => listAllFiles(input)),
+
+    delete: adminProcedure
+      .input(z.object({ fileId: z.string() }))
+      .mutation(({ input, ctx }) =>
+        deleteFile({
+          fileId: input.fileId,
+          actingUserId: ctx.user.id,
+          actingUserRole: ctx.user.role,
+        }),
+      ),
   }),
 
   notifications: createTRPCRouter({

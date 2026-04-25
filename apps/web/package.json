@@ -40,6 +40,7 @@
     "@trpc/client": "catalog:trpc",
     "@trpc/server": "catalog:trpc",
     "@trpc/tanstack-react-query": "catalog:trpc",
+    "@vercel/blob": "^2.3.3",
     "babel-plugin-react-compiler": "^1.0.0",
     "date-fns": "^4.1.0",
     "email-addresses": "^5.0.0",

@@ -14,6 +14,7 @@ import { TRPCError } from '@trpc/server'
 import type { TransactionClient } from '@acme/db'
 import { db } from '@acme/db'
 import { Prisma } from '@acme/db/client'
+import { Role } from '@acme/db/enums'
 
 import { env } from '~/env'
 import { AccountProvider } from './auth.constants'
@@ -137,10 +138,17 @@ export const verifyPasskeyRegistration = async ({
       verification.registrationInfo
 
     const user = await db.$transaction(async (tx: TransactionClient) => {
+      // Bootstrap: the very first user in the environment is auto-promoted
+      // to ADMIN so a fresh deploy doesn't require out-of-band SQL surgery
+      // to grant access to the admin panel.
+      const existingUserCount = await tx.user.count()
+      const isFirstEverUser = existingUserCount === 0
+
       const newUser = await tx.user.create({
         data: {
           name,
           email: null,
+          ...(isFirstEverUser ? { role: Role.ADMIN } : {}),
         },
       })
 

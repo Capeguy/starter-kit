@@ -47,6 +47,7 @@
     "migrate:deploy": "pnpm with-env prisma migrate deploy",
     "reset": "pnpm with-env prisma migrate reset",
     "seed": "pnpm with-env prisma db seed",
+    "promote-admin": "pnpm with-env tsx prisma/promote-admin.ts",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "with-env": "dotenv -e ../../.env --"
   },
