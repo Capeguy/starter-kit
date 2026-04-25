@@ -33,6 +33,14 @@ export const env = createEnv({
       .enum(['uat', 'staging', 'vapt', 'development', 'production'])
       .default('development'),
     NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
+    // OGP-specific UI surfaces (Singapore Government banner header + 'Built
+    // by OGP' footer + landing-page references). Default true to keep
+    // current behaviour for OGP forks; set to 'false' for non-OGP forks
+    // that don't want this branding.
+    NEXT_PUBLIC_SHOW_OGP_BRANDING: z
+      .enum(['true', 'false'])
+      .default('true')
+      .transform((v) => v === 'true'),
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
   },
   /**
@@ -45,6 +53,7 @@ export const env = createEnv({
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    NEXT_PUBLIC_SHOW_OGP_BRANDING: process.env.NEXT_PUBLIC_SHOW_OGP_BRANDING,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   skipValidation:

@@ -8,6 +8,7 @@ import { LinkButton } from '@acme/ui/link-button'
 import { RestrictedFooter } from '@acme/ui/restricted-footer'
 
 import { AUTHED_ROOT_ROUTE, LOGIN_ROUTE } from '~/constants'
+import { env } from '~/env'
 import { FeatureItem } from './feature-item'
 import { LandingPageHeader } from './header'
 import { LandingSection, SectionBody, SectionHeader } from './section'
@@ -137,19 +138,21 @@ export const LandingPageComponent = ({
         </SectionHeader>
         <LinkButton href={ctaLink}>Get started</LinkButton>
       </LandingSection>
-      <RestrictedFooter
-        appName={appName}
-        navLinks={[
-          // Add more nav links as application requires, e.g.
-          // { href: 'https://example.com', label: 'Guide' },
-          // { href: '/privacy', label: 'Privacy' },
-          // { href: '/terms-of-use', label: 'Terms of use' },
-          {
-            href: 'https://go.gov.sg/report-vulnerability',
-            label: 'Report vulnerability',
-          },
-        ]}
-      />
+      {env.NEXT_PUBLIC_SHOW_OGP_BRANDING && (
+        <RestrictedFooter
+          appName={appName}
+          navLinks={[
+            // Add more nav links as application requires, e.g.
+            // { href: 'https://example.com', label: 'Guide' },
+            // { href: '/privacy', label: 'Privacy' },
+            // { href: '/terms-of-use', label: 'Terms of use' },
+            {
+              href: 'https://go.gov.sg/report-vulnerability',
+              label: 'Report vulnerability',
+            },
+          ]}
+        />
+      )}
     </div>
   )
 }

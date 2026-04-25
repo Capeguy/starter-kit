@@ -23,22 +23,24 @@ export const SignInPageComponent = () => {
               {env.NEXT_PUBLIC_APP_NAME}
             </h2>
             <SignInWizard />
-            <div className="prose-caption-3 my-12 flex items-center whitespace-pre">
-              Built by{' '}
-              <Link
-                href="https://www.open.gov.sg/"
-                target="_blank"
-                className="inline-flex"
-              >
-                <Image
-                  className="h-auto w-auto"
-                  src="/assets/restricted-ogp-text-logo.svg"
-                  height={12}
-                  width={232}
-                  alt="Open Government Products"
-                />
-              </Link>
-            </div>
+            {env.NEXT_PUBLIC_SHOW_OGP_BRANDING && (
+              <div className="prose-caption-3 my-12 flex items-center whitespace-pre">
+                Built by{' '}
+                <Link
+                  href="https://www.open.gov.sg/"
+                  target="_blank"
+                  className="inline-flex"
+                >
+                  <Image
+                    className="h-auto w-auto"
+                    src="/assets/restricted-ogp-text-logo.svg"
+                    height={12}
+                    width={232}
+                    alt="Open Government Products"
+                  />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

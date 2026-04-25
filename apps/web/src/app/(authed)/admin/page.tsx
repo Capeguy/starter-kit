@@ -56,7 +56,7 @@ export default async function AdminLandingPage() {
         <StatTile label="Files stored" value={stats.fileCount} />
       </div>
 
-      <nav className="flex flex-col gap-2">
+      <nav aria-label="Admin sections" className="flex flex-col gap-2">
         <NextLink
           href="/admin/users"
           className="prose-body-1 text-base-content-brand hover:underline"
@@ -68,6 +68,18 @@ export default async function AdminLandingPage() {
           className="prose-body-1 text-base-content-brand hover:underline"
         >
           → Audit log
+        </NextLink>
+        <NextLink
+          href="/admin/notifications"
+          className="prose-body-1 text-base-content-brand hover:underline"
+        >
+          → Send notification
+        </NextLink>
+        <NextLink
+          href="/admin/files"
+          className="prose-body-1 text-base-content-brand hover:underline"
+        >
+          → All files
         </NextLink>
       </nav>
     </div>
