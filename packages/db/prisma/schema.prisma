@@ -46,7 +46,8 @@ model User {
   email         String?             @unique
   image         String?
   avatarUrl     String?             @map("avatar_url")
-  role          Role                @default(USER)
+  roleId        String              @map("role_id")
+  role          Role                @relation(fields: [roleId], references: [id], onDelete: Restrict)
   accounts      Account[]
   passkeys      Passkey[]
   notifications Notification[]
@@ -58,12 +59,24 @@ model User {
   lastLogin DateTime? @db.Timestamptz(3)
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
 
+  @@index([roleId])
   @@schema("vibe_stack")
 }
 
-enum Role {
-  USER
-  ADMIN
+/// Application role. Capabilities are stored as a string array of dotted
+/// codes (e.g. "file.upload", "user.delete") and checked against the
+/// canonical catalogue in `apps/web/src/server/modules/rbac/capabilities.ts`.
+/// `isSystem` flags the seeded Admin/User roles so they can't be deleted
+/// (their capability sets are still editable).
+model Role {
+  id           String   @id
+  name         String   @unique @db.Citext
+  description  String?
+  isSystem     Boolean  @default(false) @map("is_system")
+  capabilities String[] @default([])
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+  users        User[]
 
   @@schema("vibe_stack")
 }

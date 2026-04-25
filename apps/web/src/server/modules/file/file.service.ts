@@ -15,11 +15,12 @@ import { TRPCError } from '@trpc/server'
 import { del, put } from '@vercel/blob'
 
 import { db } from '@acme/db'
-import { Role } from '@acme/db/enums'
 // kysely is hoisted via @acme/db's deps; the explicit import path is the
 // generated client's bundled kysely (avoids needing to add kysely as an
 // app-level dep).
 import { sql } from '@acme/db/kysely'
+
+import { Capability, hasCapability } from '~/lib/rbac'
 
 const MAX_BYTES_PER_FILE = 25 * 1024 * 1024 // 25 MB
 const ALLOWED_AVATAR_MIME = new Set([
@@ -247,11 +248,11 @@ export const searchAllFiles = async ({
 export const deleteFile = async ({
   fileId,
   actingUserId,
-  actingUserRole,
+  actingUserCapabilities,
 }: {
   fileId: string
   actingUserId: string
-  actingUserRole: typeof Role.USER | typeof Role.ADMIN
+  actingUserCapabilities: readonly string[]
 }) => {
   const file = await db.file.findUnique({
     where: { id: fileId },
@@ -260,7 +261,10 @@ export const deleteFile = async ({
   if (!file) {
     throw new TRPCError({ code: 'NOT_FOUND', message: 'File not found' })
   }
-  if (file.userId !== actingUserId && actingUserRole !== Role.ADMIN) {
+  if (
+    file.userId !== actingUserId &&
+    !hasCapability(actingUserCapabilities, Capability.FileDeleteAny)
+  ) {
     throw new TRPCError({ code: 'FORBIDDEN' })
   }
 

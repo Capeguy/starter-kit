@@ -1,4 +1,3 @@
-import type { Role } from '@acme/db/enums'
 import { db } from '@acme/db'
 
 export const listMine = async ({
@@ -48,7 +47,7 @@ export const markRead = async ({
 interface BroadcastInput {
   audience:
     | { kind: 'all' }
-    | { kind: 'role'; role: typeof Role.USER | typeof Role.ADMIN }
+    | { kind: 'role'; roleId: string }
     | { kind: 'user'; userId: string }
   title: string
   body: string | null
@@ -60,7 +59,7 @@ export const broadcast = async (input: BroadcastInput) => {
     input.audience.kind === 'all'
       ? {}
       : input.audience.kind === 'role'
-        ? { role: input.audience.role }
+        ? { roleId: input.audience.roleId }
         : { id: input.audience.userId }
 
   const userIds = await db.user.findMany({

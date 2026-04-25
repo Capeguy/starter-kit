@@ -15,11 +15,10 @@ import {
 } from '@opengovsg/oui'
 import { BiChevronDown, BiLogOut } from 'react-icons/bi'
 
-import { Role } from '@acme/db/enums'
-
 import { ADMIN_ROOT_ROUTE, AUTHED_ROOT_ROUTE } from '~/constants'
 import { env } from '~/env'
 import { useAuth } from '~/lib/auth'
+import { Capability, hasCapability } from '~/lib/rbac'
 import { NotificationBell } from './notification-bell'
 
 export const AuthedNavbar = () => {
@@ -30,7 +29,7 @@ export const AuthedNavbar = () => {
   }
 
   const displayName = user.name ?? user.email ?? 'User'
-  const isAdmin = user.role === Role.ADMIN
+  const isAdmin = hasCapability(user.role.capabilities, Capability.AdminAccess)
 
   return (
     <Navbar>

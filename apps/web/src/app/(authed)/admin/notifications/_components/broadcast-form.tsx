@@ -6,9 +6,9 @@ import { Infobox } from '@opengovsg/oui/infobox'
 import { toast } from '@opengovsg/oui/toast'
 import { useMutation } from '@tanstack/react-query'
 
-import { Role } from '@acme/db/enums'
 import { TextField } from '@acme/ui/text-field'
 
+import { SystemRoleId } from '~/lib/rbac'
 import { useTRPC } from '~/trpc/react'
 import { UserPicker } from './user-picker'
 
@@ -44,9 +44,9 @@ export const BroadcastForm = () => {
     audienceKind === 'all'
       ? { kind: 'all' as const }
       : audienceKind === 'role:admin'
-        ? { kind: 'role' as const, role: Role.ADMIN }
+        ? { kind: 'role' as const, roleId: SystemRoleId.Admin }
         : audienceKind === 'role:user'
-          ? { kind: 'role' as const, role: Role.USER }
+          ? { kind: 'role' as const, roleId: SystemRoleId.User }
           : { kind: 'user' as const, userId: pickedUser?.id ?? '' }
 
   return (

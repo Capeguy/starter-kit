@@ -14,11 +14,12 @@ import z, { ZodError } from 'zod'
 
 import type { Logger, ScopedLogger } from '@acme/logging'
 import { db } from '@acme/db'
-import { Role } from '@acme/db/enums'
 
 import type { RateLimiterConfig } from '../modules/rate-limit/types'
+import type { CapabilityCode } from '~/lib/rbac'
 import { env } from '~/env'
 import { createLogger } from '~/lib/logger'
+import { Capability, hasCapability } from '~/lib/rbac'
 import {
   checkRateLimit,
   createRateLimitFingerprint,
@@ -208,11 +209,16 @@ const authMiddleware = t.middleware(async ({ ctx, next }) => {
     throw new TRPCError({ code: 'UNAUTHORIZED' })
   }
 
-  // Always source role from the DB (not the session cookie). This way demoted
-  // admins lose their powers on the next request, not the next sign-in.
+  // Always source role + capabilities from the DB (not the session cookie).
+  // This way users lose powers within one request of an admin demoting them
+  // or editing the role's capabilities, not on the next sign-in.
   const user = await db.user.findUnique({
     where: { id: ctx.session.userId },
-    select: { id: true, role: true },
+    select: {
+      id: true,
+      roleId: true,
+      role: { select: { id: true, name: true, capabilities: true } },
+    },
   })
   if (!user) {
     // Session points at a deleted user — destroy and reject.
@@ -223,7 +229,12 @@ const authMiddleware = t.middleware(async ({ ctx, next }) => {
   return next({
     ctx: {
       session: { ...ctx.session, userId: ctx.session.userId },
-      user,
+      user: {
+        id: user.id,
+        roleId: user.roleId,
+        roleName: user.role.name,
+        capabilities: user.role.capabilities,
+      },
     },
   })
 })
@@ -251,14 +262,33 @@ export const publicProcedure = defaultProcedure
 export const protectedProcedure = defaultProcedure.use(authMiddleware)
 
 /**
- * Admin-only procedure
+ * Capability-gated procedure builder.
  *
- * Inherits everything from `protectedProcedure` and additionally requires the user's role
- * to be `Role.ADMIN`. Returns FORBIDDEN otherwise.
+ * Returns a procedure that requires the caller's role to grant the given
+ * capability code. The capability must exist in `Capability` (see
+ * `modules/rbac/capabilities.ts`); enforcement happens at runtime against the
+ * user's effective `role.capabilities` array as resolved by `authMiddleware`.
+ *
+ * Usage:
+ *   capabilityProcedure(Capability.UserList).query(...)
+ *
+ * Throws `FORBIDDEN` with `cause: { missingCapability }` when the check fails.
  */
-export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== Role.ADMIN) {
-    throw new TRPCError({ code: 'FORBIDDEN' })
-  }
-  return next({ ctx })
-})
+export const capabilityProcedure = (cap: CapabilityCode) =>
+  protectedProcedure.use(({ ctx, next }) => {
+    if (!hasCapability(ctx.user.capabilities, cap)) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: `Missing capability: ${cap}`,
+      })
+    }
+    return next({ ctx })
+  })
+
+/**
+ * @deprecated Prefer `capabilityProcedure(Capability.<specific>)` so each
+ * procedure declares its actual access requirement. Kept as a coarse "is this
+ * person an admin at all" gate for routes whose specific capability hasn't
+ * been audited yet.
+ */
+export const adminProcedure = capabilityProcedure(Capability.AdminAccess)

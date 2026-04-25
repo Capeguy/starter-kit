@@ -27,6 +27,7 @@ describe('meRouter', () => {
         data: {
           email: 'test@example.com',
           name: 'Test User',
+          roleId: 'role_user',
         },
       })
 
@@ -40,8 +41,9 @@ describe('meRouter', () => {
         name: 'Test User',
         image: null,
         avatarUrl: null,
-        role: 'USER',
+        roleId: 'role_user',
       })
+      expect(result?.role.name).toBe('User')
       expect(result?.createdAt).toBeInstanceOf(Date)
     })
 
@@ -64,10 +66,18 @@ describe('meRouter', () => {
 
     it('should return correct user when multiple users exist', async () => {
       const user1 = await db.user.create({
-        data: { email: 'user1@example.com', name: 'User One' },
+        data: {
+          email: 'user1@example.com',
+          name: 'User One',
+          roleId: 'role_user',
+        },
       })
       const user2 = await db.user.create({
-        data: { email: 'user2@example.com', name: 'User Two' },
+        data: {
+          email: 'user2@example.com',
+          name: 'User Two',
+          roleId: 'role_user',
+        },
       })
 
       const ctx = createTestContext({ session: { userId: user2.id } })
@@ -80,11 +90,13 @@ describe('meRouter', () => {
     })
 
     it('should default new user role to USER', async () => {
-      const u = await db.user.create({ data: { name: 'Defaulter' } })
+      const u = await db.user.create({
+        data: { name: 'Defaulter', roleId: 'role_user' },
+      })
       const ctx = createTestContext({ session: { userId: u.id } })
       const caller = createTestCaller(ctx)
       const result = await caller.me.get()
-      expect(result?.role).toBe('USER')
+      expect(result?.role.name).toBe('User')
     })
   })
 })

@@ -190,7 +190,9 @@ describe('passkey.service', () => {
 
   describe('generatePasskeyAuthenticationOptions', () => {
     it('includes existing passkeys as allowCredentials', async () => {
-      const user = await db.user.create({ data: { name: 'John Doe' } })
+      const user = await db.user.create({
+        data: { name: 'John Doe', roleId: 'role_user' },
+      })
       await db.passkey.create({
         data: {
           userId: user.id,
@@ -228,7 +230,9 @@ describe('passkey.service', () => {
 
   describe('verifyPasskeyAuthentication', () => {
     it('verifies known credential, bumps counter and lastUsedAt', async () => {
-      const user = await db.user.create({ data: { name: 'John Doe' } })
+      const user = await db.user.create({
+        data: { name: 'John Doe', roleId: 'role_user' },
+      })
       const passkey = await db.passkey.create({
         data: {
           userId: user.id,
@@ -312,7 +316,7 @@ describe('passkey.service', () => {
 
   describe('name uniqueness', () => {
     it('rejects up-front in generateRegistrationOptions when the name is already taken (so the device passkey UI is never triggered)', async () => {
-      await db.user.create({ data: { name: 'Jane Doe' } })
+      await db.user.create({ data: { name: 'Jane Doe', roleId: 'role_user' } })
 
       await expect(
         generatePasskeyRegistrationOptions({
@@ -332,7 +336,7 @@ describe('passkey.service', () => {
       // Simulate another user grabbing the name in the gap between
       // generateRegistrationOptions and verifyRegistration. citext makes
       // "Jane Doe" and "jane doe" collide.
-      await db.user.create({ data: { name: 'Jane Doe' } })
+      await db.user.create({ data: { name: 'Jane Doe', roleId: 'role_user' } })
 
       const mockResponse = {
         id: 'mock-credential-id',

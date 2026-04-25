@@ -14,9 +14,9 @@ import { TRPCError } from '@trpc/server'
 import type { TransactionClient } from '@acme/db'
 import { db } from '@acme/db'
 import { Prisma } from '@acme/db/client'
-import { Role } from '@acme/db/enums'
 
 import { env } from '~/env'
+import { SystemRoleId } from '~/lib/rbac'
 import { AccountProvider } from './auth.constants'
 
 const RP_NAME = env.NEXT_PUBLIC_APP_NAME
@@ -148,7 +148,7 @@ export const verifyPasskeyRegistration = async ({
         data: {
           name,
           email: null,
-          ...(isFirstEverUser ? { role: Role.ADMIN } : {}),
+          roleId: isFirstEverUser ? SystemRoleId.Admin : SystemRoleId.User,
         },
       })
 

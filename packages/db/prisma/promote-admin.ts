@@ -10,8 +10,10 @@
  */
 import process from 'node:process'
 
-import { Role } from '../src/generated/prisma/enums'
 import { db } from '../src/index'
+
+// Must match the RBAC migration's seeded admin role id.
+const ROLE_ADMIN = 'role_admin'
 
 async function main() {
   const name = process.argv[2]?.trim()
@@ -22,25 +24,34 @@ async function main() {
 
   const user = await db.user.findFirst({
     where: { name },
-    select: { id: true, name: true, role: true },
+    select: {
+      id: true,
+      name: true,
+      roleId: true,
+      role: { select: { name: true } },
+    },
   })
   if (!user) {
     console.error(`No user with name "${name}".`)
     process.exit(1)
   }
-  if (user.role === Role.ADMIN) {
-    console.log(`User "${user.name}" (${user.id}) is already ADMIN.`)
+  if (user.roleId === ROLE_ADMIN) {
+    console.log(`User "${user.name}" (${user.id}) is already Admin.`)
     return
   }
 
   const updated = await db.user.update({
     where: { id: user.id },
-    data: { role: Role.ADMIN },
-    select: { id: true, name: true, role: true },
+    data: { roleId: ROLE_ADMIN },
+    select: {
+      id: true,
+      name: true,
+      role: { select: { name: true } },
+    },
   })
 
   console.log(
-    `Promoted user "${updated.name}" (${updated.id}) → ${updated.role}.`,
+    `Promoted user "${updated.name}" (${updated.id}) → ${updated.role.name}.`,
   )
 }
 

@@ -11,8 +11,6 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 
-import { Role } from '@acme/db/enums'
-
 import { useTRPC } from '~/trpc/react'
 import { formatAuditEvent } from '../../_components/audit-action-labels'
 import { FilePickerButton } from '../../_components/file-picker-button'
@@ -84,8 +82,8 @@ export const DashboardPage = () => {
               <span className="prose-label-md text-base-content-strong">
                 {me.name ?? '(unnamed)'}
               </span>
-              <span className="prose-label-xs bg-base-canvas-alt mt-1 w-fit rounded px-2 py-0.5 font-mono">
-                {me.role === Role.ADMIN ? 'ADMIN' : 'USER'}
+              <span className="prose-label-xs bg-base-canvas-alt mt-1 w-fit rounded px-2 py-0.5">
+                {me.role.name}
               </span>
             </div>
           </div>

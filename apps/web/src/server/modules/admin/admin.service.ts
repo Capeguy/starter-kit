@@ -8,9 +8,10 @@ import { TRPCError } from '@trpc/server'
 
 import type { TransactionClient } from '@acme/db'
 import { db } from '@acme/db'
-import { Role } from '@acme/db/enums'
 
+import type { CapabilityCode } from '~/lib/rbac'
 import { env } from '~/env'
+import { Capability } from '~/lib/rbac'
 import { AccountProvider } from '../auth/auth.constants'
 
 const RP_NAME = env.NEXT_PUBLIC_APP_NAME
@@ -31,15 +32,35 @@ const expectedOrigins = (origin: string) => [
 
 interface ListUsersInput {
   q?: string | null
-  role?: typeof Role.USER | typeof Role.ADMIN | null
+  /** Filter to a single role by id. */
+  roleId?: string | null
   cursor?: string | null
   limit: number
 }
 
-export const listUsers = async ({ q, role, cursor, limit }: ListUsersInput) => {
+const userListSelect = {
+  id: true,
+  name: true,
+  email: true,
+  roleId: true,
+  role: {
+    select: { id: true, name: true, isSystem: true, capabilities: true },
+  },
+  avatarUrl: true,
+  createdAt: true,
+  lastLogin: true,
+  _count: { select: { passkeys: true } },
+} as const
+
+export const listUsers = async ({
+  q,
+  roleId,
+  cursor,
+  limit,
+}: ListUsersInput) => {
   const items = await db.user.findMany({
     where: {
-      ...(role ? { role } : {}),
+      ...(roleId ? { roleId } : {}),
       ...(q
         ? {
             OR: [
@@ -49,16 +70,7 @@ export const listUsers = async ({ q, role, cursor, limit }: ListUsersInput) => {
           }
         : {}),
     },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      avatarUrl: true,
-      createdAt: true,
-      lastLogin: true,
-      _count: { select: { passkeys: true } },
-    },
+    select: userListSelect,
     orderBy: { createdAt: 'desc' },
     take: limit + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -80,7 +92,10 @@ export const getUser = async ({ userId }: { userId: string }) => {
       id: true,
       name: true,
       email: true,
-      role: true,
+      roleId: true,
+      role: {
+        select: { id: true, name: true, isSystem: true, capabilities: true },
+      },
       avatarUrl: true,
       createdAt: true,
       lastLogin: true,
@@ -93,66 +108,91 @@ export const getUser = async ({ userId }: { userId: string }) => {
   return user
 }
 
-const assertNotLastAdmin = async (
+/**
+ * Anti-lockout guard: ensure at least one *other* user (excluding `excludingUserId`)
+ * still has a role granting `capability`. The classic case is `rbac.role.update` —
+ * if the only user who could grant or edit roles loses it, the system can no
+ * longer be administered without DB surgery.
+ */
+const assertNotLastWithCapability = async (
   tx: TransactionClient,
+  capability: CapabilityCode,
   excludingUserId: string,
 ) => {
-  const remainingAdmins = await tx.user.count({
-    where: { role: Role.ADMIN, id: { not: excludingUserId } },
+  const remaining = await tx.user.count({
+    where: {
+      id: { not: excludingUserId },
+      role: { capabilities: { has: capability } },
+    },
   })
-  if (remainingAdmins === 0) {
+  if (remaining === 0) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message:
-        'Cannot demote or delete the last admin. Promote another user first.',
+      message: `Cannot perform this change: it would leave no user with the "${capability}" capability.`,
     })
   }
 }
 
 interface SetUserRoleInput {
   userId: string
-  role: typeof Role.USER | typeof Role.ADMIN
+  roleId: string
   actingUserId: string
 }
 
 export const setUserRole = async ({
   userId,
-  role,
+  roleId,
   actingUserId,
 }: SetUserRoleInput) => {
   return db.$transaction(async (tx: TransactionClient) => {
     const target = await tx.user.findUnique({
       where: { id: userId },
-      select: { id: true, role: true, name: true },
+      select: {
+        id: true,
+        roleId: true,
+        name: true,
+        role: { select: { id: true, name: true, capabilities: true } },
+      },
     })
     if (!target) {
       throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
     }
-    if (target.role === role) {
-      return { id: target.id, role: target.role, changed: false }
+    if (target.roleId === roleId) {
+      return { id: target.id, roleId: target.roleId, changed: false }
     }
-    // Demoting an admin (or yourself) requires another admin to exist.
-    if (target.role === Role.ADMIN && role === Role.USER) {
-      await assertNotLastAdmin(tx, userId)
+    const newRole = await tx.role.findUnique({
+      where: { id: roleId },
+      select: { id: true, name: true, capabilities: true },
+    })
+    if (!newRole) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Role not found' })
     }
+
+    // If we're stripping the rbac.role.update capability from this user, make
+    // sure someone else still has it (otherwise nobody can ever fix RBAC again).
+    const had = target.role.capabilities.includes(Capability.RbacRoleUpdate)
+    const has = newRole.capabilities.includes(Capability.RbacRoleUpdate)
+    if (had && !has) {
+      await assertNotLastWithCapability(tx, Capability.RbacRoleUpdate, userId)
+    }
+
     const updated = await tx.user.update({
       where: { id: userId },
-      data: { role },
-      select: { id: true, role: true, name: true },
+      data: { roleId },
+      select: { id: true, roleId: true, name: true },
     })
 
-    // Notification to the affected user (silent if the change is for self).
     if (userId !== actingUserId) {
       await tx.notification.create({
         data: {
           userId,
-          title: `Your role was changed to ${role}`,
+          title: `Your role was changed to ${newRole.name}`,
           body: 'An administrator updated your account permissions.',
         },
       })
     }
 
-    return { id: updated.id, role: updated.role, changed: true }
+    return { id: updated.id, roleId: updated.roleId, changed: true }
   })
 }
 
@@ -172,13 +212,14 @@ export const deleteUser = async ({
   return db.$transaction(async (tx: TransactionClient) => {
     const target = await tx.user.findUnique({
       where: { id: userId },
-      select: { role: true },
+      select: { role: { select: { capabilities: true } } },
     })
     if (!target) {
       throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
     }
-    if (target.role === Role.ADMIN) {
-      await assertNotLastAdmin(tx, userId)
+    // Same lockout guard as `setUserRole`.
+    if (target.role.capabilities.includes(Capability.RbacRoleUpdate)) {
+      await assertNotLastWithCapability(tx, Capability.RbacRoleUpdate, userId)
     }
     await tx.user.delete({ where: { id: userId } })
     return { id: userId, deleted: true }
@@ -229,7 +270,16 @@ export const issuePasskeyReset = async ({
 const findValidResetToken = async (token: string) => {
   const record = await db.passkeyResetToken.findUnique({
     where: { token },
-    include: { user: { select: { id: true, name: true, role: true } } },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          roleId: true,
+          role: { select: { capabilities: true } },
+        },
+      },
+    },
   })
   if (!record || record.consumedAt) {
     throw new TRPCError({
@@ -375,7 +425,6 @@ export const finishResetWithToken = async ({
       data: { consumedAt: new Date() },
     })
 
-    // Notification: trust signal for the user that their account was reset.
     await tx.notification.create({
       data: {
         userId: record.userId,

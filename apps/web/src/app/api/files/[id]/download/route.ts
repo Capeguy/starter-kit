@@ -19,8 +19,8 @@
 import type { NextRequest } from 'next/server'
 
 import { db } from '@acme/db'
-import { Role } from '@acme/db/enums'
 
+import { Capability, hasCapability } from '~/lib/rbac'
 import { getSession } from '~/server/session'
 
 export async function GET(
@@ -47,14 +47,14 @@ export async function GET(
     return Response.json({ error: 'not found' }, { status: 404 })
   }
 
-  // Owner can always download. Anyone else needs to be an admin (matches
-  // the deletion-authz pattern in file.service.ts).
+  // Owner can always download. Anyone else needs the file.read.any capability
+  // (matches the deletion-authz pattern in file.service.ts).
   if (file.userId !== session.userId) {
     const me = await db.user.findUnique({
       where: { id: session.userId },
-      select: { role: true },
+      select: { role: { select: { capabilities: true } } },
     })
-    if (me?.role !== Role.ADMIN) {
+    if (!hasCapability(me?.role.capabilities, Capability.FileReadAny)) {
       return Response.json({ error: 'forbidden' }, { status: 403 })
     }
   }

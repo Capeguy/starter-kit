@@ -44,7 +44,7 @@ export const fileRouter = createTRPCRouter({
       deleteFile({
         fileId: input.fileId,
         actingUserId: ctx.user.id,
-        actingUserRole: ctx.user.role,
+        actingUserCapabilities: ctx.user.capabilities,
       }),
     ),
 })

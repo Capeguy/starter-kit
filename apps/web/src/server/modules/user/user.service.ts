@@ -2,6 +2,7 @@ import { parseOneAddress } from 'email-addresses'
 
 import { db } from '@acme/db'
 
+import { SystemRoleId } from '~/lib/rbac'
 import { AccountProvider } from '../auth/auth.constants'
 import { defaultUserSelect } from './user.select'
 
@@ -21,6 +22,7 @@ export const loginUserByEmail = async (email: string) => {
         email,
         name: parsedEmail.name,
         lastLogin: new Date(),
+        roleId: SystemRoleId.User,
       },
       select: defaultUserSelect,
     })

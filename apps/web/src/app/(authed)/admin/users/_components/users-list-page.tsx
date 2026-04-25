@@ -10,9 +10,9 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 
-import { Role } from '@acme/db/enums'
 import { TextField } from '@acme/ui/text-field'
 
+import { SystemRoleId } from '~/lib/rbac'
 import { useTRPC } from '~/trpc/react'
 import { ResetPasskeyModal } from '../../_components/reset-passkey-modal'
 
@@ -27,6 +27,9 @@ export const UsersListPage = () => {
 
   const { data } = useSuspenseQuery(
     trpc.admin.users.list.queryOptions({ q: q || null, limit: 50 }),
+  )
+  const { data: rolesData } = useSuspenseQuery(
+    trpc.admin.roles.list.queryOptions(),
   )
 
   const setRoleMutation = useMutation(
@@ -93,9 +96,22 @@ export const UsersListPage = () => {
                     {u.email ?? '—'}
                   </td>
                   <td className="px-3 py-2">
-                    <span className="prose-label-xs bg-base-canvas-alt rounded px-2 py-0.5 font-mono">
-                      {u.role}
-                    </span>
+                    <select
+                      className="border-base-divide-medium bg-base-canvas-default rounded border px-2 py-1 text-sm"
+                      value={u.roleId}
+                      onChange={(e) =>
+                        setRoleMutation.mutate({
+                          userId: u.id,
+                          roleId: e.target.value,
+                        })
+                      }
+                    >
+                      {rolesData.items.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.name}
+                        </option>
+                      ))}
+                    </select>
                   </td>
                   <td className="px-3 py-2">{u._count.passkeys}</td>
                   <td className="text-base-content-medium px-3 py-2">
@@ -123,12 +139,14 @@ export const UsersListPage = () => {
                         onPress={() =>
                           setRoleMutation.mutate({
                             userId: u.id,
-                            role:
-                              u.role === Role.ADMIN ? Role.USER : Role.ADMIN,
+                            roleId:
+                              u.roleId === SystemRoleId.Admin
+                                ? SystemRoleId.User
+                                : SystemRoleId.Admin,
                           })
                         }
                       >
-                        {u.role === Role.ADMIN ? 'Demote' : 'Promote'}
+                        {u.roleId === SystemRoleId.Admin ? 'Demote' : 'Promote'}
                       </Button>
                       <Button
                         size="sm"

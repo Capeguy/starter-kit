@@ -15,14 +15,17 @@
  *
  * @link https://www.prisma.io/docs/guides/database/seed-database
  */
-import { Role } from '../src/generated/prisma/enums'
 import { db } from '../src/index'
+
+// Seeded system role IDs — must match the RBAC migration's INSERTs.
+const ROLE_ADMIN = 'role_admin'
+const ROLE_USER = 'role_user'
 
 async function main() {
   const admin = await db.user.upsert({
     where: { name: 'Admin User' },
-    update: { role: Role.ADMIN },
-    create: { name: 'Admin User', role: Role.ADMIN },
+    update: { roleId: ROLE_ADMIN },
+    create: { name: 'Admin User', roleId: ROLE_ADMIN },
   })
 
   const userNames = ['Alice', 'Bob', 'Carol']
@@ -31,7 +34,7 @@ async function main() {
       db.user.upsert({
         where: { name },
         update: {},
-        create: { name, role: Role.USER },
+        create: { name, roleId: ROLE_USER },
       }),
     ),
   )

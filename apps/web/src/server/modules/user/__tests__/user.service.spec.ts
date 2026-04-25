@@ -224,7 +224,7 @@ describe('user.service', () => {
     it('should return user when user exists', async () => {
       const email = 'getuser@example.com'
       const createdUser = await db.user.create({
-        data: { email, name: 'Test user' },
+        data: { email, name: 'Test user', roleId: 'role_user' },
       })
 
       const user = await getUserById(createdUser.id)

@@ -13,23 +13,37 @@ import type { BrowserContext } from '@playwright/test'
 import { sealData } from 'iron-session'
 
 import { db } from '@acme/db'
-import { Role } from '@acme/db/enums'
 
 const SESSION_SECRET = 'this-is-a-very-secure-secret-for-e2e-tests'
 const COOKIE_NAME = 'auth.session-token'
 
+// Match the seeded role IDs from the RBAC migration. Tests that need a custom
+// role can pass `roleId` directly.
+const ROLE_ADMIN = 'role_admin'
+const ROLE_USER = 'role_user'
+
 interface CreateUserInput {
   name: string
-  role?: typeof Role.USER | typeof Role.ADMIN
+  /** Convenience: 'ADMIN' or 'USER' map to seeded role IDs. */
+  role?: 'ADMIN' | 'USER'
+  /** Override roleId directly (e.g. for custom-role tests). */
+  roleId?: string
 }
 
 export const createTestUser = async ({
   name,
-  role = Role.USER,
+  role = 'USER',
+  roleId,
 }: CreateUserInput) => {
+  const finalRoleId = roleId ?? (role === 'ADMIN' ? ROLE_ADMIN : ROLE_USER)
   return db.user.create({
-    data: { name, role },
-    select: { id: true, name: true, role: true },
+    data: { name, roleId: finalRoleId },
+    select: {
+      id: true,
+      name: true,
+      roleId: true,
+      role: { select: { name: true } },
+    },
   })
 }
 
