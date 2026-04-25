@@ -1,0 +1,165 @@
+/*
+ * Dark mode token overrides for OUI design system.
+ *
+ * OUI registers `@custom-variant dark (&:where(.dark, .dark *))` but ships
+ * zero dark-mode values of its own. next-themes sets `class="dark"` on
+ * <html> (ThemeProvider attribute="class"), which activates this block.
+ *
+ * Token names are sourced verbatim from:
+ *   node_modules/@opengovsg/oui-theme/src/variants/base.css
+ *
+ * Known limitations (OUI hardcodes bg-white in component variant definitions):
+ *   input / text-field, checkbox, radio, toggle/switch, file-dropzone
+ *   These stay white in dark mode and require an upstream OUI fix or
+ *   per-usage-site classNames overrides (tracked in docs/dark-mode-bg-white-fixes.md).
+ */
+
+.dark {
+  /* ── Canvas (surfaces) ────────────────────────────────────────────────── */
+  /* zinc-900 equivalent — deepest background */
+  --color-base-canvas-default: #18181b;
+  /* zinc-800 — slightly elevated surface */
+  --color-base-canvas-alt: #27272a;
+  /* zinc-700 — backdrop / hover tray */
+  --color-base-canvas-backdrop: #3f3f46;
+  /* brand-primary-900-tinted — very subtle brand wash */
+  --color-base-canvas-brand-subtle: #0c1a3a;
+  /* zinc-700 — inverse (used for dark chips on light) */
+  --color-base-canvas-inverse: #3f3f46;
+  /* semi-transparent dark overlay for modals */
+  --color-base-canvas-overlay: rgba(0, 0, 0, 0.7);
+
+  /* ── Content (text) ───────────────────────────────────────────────────── */
+  /* near-white — primary heading / strong copy */
+  --color-base-content-strong: #f4f4f5;
+  /* zinc-200 — body text */
+  --color-base-content-default: #d4d4d8;
+  /* zinc-400 — secondary / medium copy */
+  --color-base-content-medium: #a1a1aa;
+  /* brand-primary-300 — brand-coloured text, reduced saturation */
+  --color-base-content-brand: #82abf7;
+  /* zinc-900 — inverse text (light text reversed to dark) */
+  --color-base-content-inverse: #18181b;
+
+  /* ── Dividers (borders, rules) ────────────────────────────────────────── */
+  /* zinc-800 — hairline, barely visible */
+  --color-base-divider-subtle: #27272a;
+  /* zinc-700 — standard border between sections */
+  --color-base-divider-medium: #3f3f46;
+  /* zinc-600 — prominent separator */
+  --color-base-divider-strong: #52525b;
+  /* white — inverse divider (on dark surfaces) */
+  --color-base-divider-inverse: #f4f4f5;
+  /* brand-primary-400 — brand-coloured border */
+  --color-base-divider-brand: #568df4;
+
+  /* ── Interaction — main (primary brand blue) ──────────────────────────── */
+  /* brand-primary-400 — slightly desaturated for dark bg readability */
+  --color-interaction-main-default: #568df4;
+  --color-interaction-main-hover: #82abf7;
+  --color-interaction-main-active: #acc7fa;
+  /* subtle backgrounds for main-coloured elements */
+  --color-interaction-main-subtle-default: #0c1a3a;
+  --color-interaction-main-subtle-hover: #0d2a5a;
+  --color-interaction-main-subtle-active: #0d3a7a;
+
+  /* ── Interaction — sub (secondary slate) ─────────────────────────────── */
+  --color-interaction-sub-default: #9aa0b3;
+  --color-interaction-sub-hover: #babecb;
+  --color-interaction-sub-active: #d4d7e0;
+  --color-interaction-sub-subtle-default: #27272a;
+  --color-interaction-sub-subtle-hover: #3f3f46;
+  --color-interaction-sub-subtle-active: #52525b;
+
+  /* ── Interaction — critical (red/destructive) ─────────────────────────── */
+  --color-interaction-critical-default: #e74f4f;
+  --color-interaction-critical-hover: #ee8080;
+  --color-interaction-critical-active: #f4acac;
+  --color-interaction-critical-subtle-default: #2d1212;
+  --color-interaction-critical-subtle-hover: #3d1a1a;
+  --color-interaction-critical-subtle-active: #5a2020;
+
+  /* ── Interaction — warning (yellow/amber) ─────────────────────────────── */
+  --color-interaction-warning-default: #e2b73e;
+  --color-interaction-warning-hover: #ffda68;
+  --color-interaction-warning-active: #ffda68;
+  --color-interaction-warning-subtle-default: #2a1f00;
+  --color-interaction-warning-subtle-hover: #3d2d00;
+  --color-interaction-warning-subtle-active: #4d3900;
+
+  /* ── Interaction — success (green/teal) ──────────────────────────────── */
+  --color-interaction-success-default: #2d978c;
+  --color-interaction-success-hover: #63b1aa;
+  --color-interaction-success-active: #98ccc7;
+  --color-interaction-success-subtle-default: #071a18;
+  --color-interaction-success-subtle-hover: #0a2622;
+  --color-interaction-success-subtle-active: #0d332e;
+
+  /* ── Interaction — neutral (grey) ─────────────────────────────────────── */
+  --color-interaction-neutral-default: #a1a1aa;
+  --color-interaction-neutral-hover: #d4d4d8;
+  --color-interaction-neutral-active: #f4f4f5;
+  --color-interaction-neutral-subtle-default: #27272a;
+  --color-interaction-neutral-subtle-hover: #3f3f46;
+  --color-interaction-neutral-subtle-active: #52525b;
+
+  /* ── Interaction — muted hover/active (ghost states) ─────────────────── */
+  --color-interaction-muted-main-hover: #0c1a3a;
+  --color-interaction-muted-main-active: #0d2a5a;
+  --color-interaction-muted-sub-hover: #27272a;
+  --color-interaction-muted-sub-active: #3f3f46;
+  --color-interaction-muted-critical-hover: #2d1212;
+  --color-interaction-muted-critical-active: #3d1a1a;
+  --color-interaction-muted-neutral-hover: #27272a;
+  --color-interaction-muted-neutral-active: #3f3f46;
+
+  /* ── Interaction — tinted hover/active (rgba ghost states) ───────────── */
+  --color-interaction-tinted-main-hover: rgba(86, 141, 244, 0.08);
+  --color-interaction-tinted-main-active: rgba(86, 141, 244, 0.16);
+  --color-interaction-tinted-sub-hover: rgba(154, 160, 179, 0.08);
+  --color-interaction-tinted-sub-active: rgba(154, 160, 179, 0.16);
+  --color-interaction-tinted-critical-hover: rgba(231, 79, 79, 0.08);
+  --color-interaction-tinted-critical-active: rgba(231, 79, 79, 0.16);
+  --color-interaction-tinted-neutral-hover: rgba(255, 255, 255, 0.06);
+  --color-interaction-tinted-neutral-active: rgba(255, 255, 255, 0.12);
+  --color-interaction-tinted-inverse-hover: rgba(0, 0, 0, 0.1);
+  --color-interaction-tinted-inverse-active: rgba(0, 0, 0, 0.2);
+
+  /* ── Interaction — support (form controls) ───────────────────────────── */
+  --color-interaction-support-unselected: #71717a;
+  --color-interaction-support-selected: #a1a1aa;
+  --color-interaction-support-unselected-strong: #a1a1aa;
+  --color-interaction-support-disabled: #3f3f46;
+  --color-interaction-support-disabled-content: #71717a;
+  --color-interaction-support-placeholder: #71717a;
+
+  /* ── Interaction — links ─────────────────────────────────────────────── */
+  --color-interaction-links-default: #82abf7;
+  --color-interaction-links-hover: #acc7fa;
+  --color-interaction-links-neutral-default: #d4d4d8;
+  --color-interaction-links-neutral-hover: #f4f4f5;
+  --color-interaction-links-inverse-default: #18181b;
+  --color-interaction-links-inverse-hover: #27272a;
+
+  /* ── Utility — feedback (info / warning / success / critical) ─────────── */
+  --color-utility-feedback-info: #82abf7;
+  --color-utility-feedback-info-subtle: #0c1a3a;
+  --color-utility-feedback-warning-strong: #e2b73e;
+  --color-utility-feedback-warning: #c4992a;
+  --color-utility-feedback-warning-subtle: #2a1f00;
+  --color-utility-feedback-success: #2d978c;
+  --color-utility-feedback-success-subtle: #071a18;
+  --color-utility-feedback-critical: #e74f4f;
+  --color-utility-feedback-critical-subtle: #2d1212;
+
+  /* ── Utility — focus ring ────────────────────────────────────────────── */
+  --color-utility-focus-default: #82abf7;
+  --color-utility-focus-inverse: #18181b;
+
+  /* ── Utility — miscellaneous ─────────────────────────────────────────── */
+  /* input-prefilled: keep a recognizable yellow tint, darkened */
+  --color-utility-input-prefilled: #2a1f00;
+  /* utility-ui: used for Avatar ring borders — swap to a dark ring */
+  --color-utility-ui: #3f3f46;
+  --color-utility-ui-clear: rgba(63, 63, 70, 0);
+}

@@ -4,3 +4,4 @@
 @source '../../../../node_modules/@opengovsg/oui-theme';
 
 @import '@acme/tailwind-config/theme';
+@import '../styles/dark.css';
