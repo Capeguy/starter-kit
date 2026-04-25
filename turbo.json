@@ -68,7 +68,16 @@
     "SESSION_SECRET",
     "PORT",
     "POSTMAN_API_KEY",
-    "DD_SERVICE"
+    "DD_SERVICE",
+    "CACHE_HOSTNAME",
+    "CACHE_PORT",
+    "CACHE_USERNAME",
+    "CACHE_PASSWORD",
+    "NEXT_PUBLIC_SENTRY_DSN",
+    "SENTRY_ORG",
+    "SENTRY_PROJECT",
+    "SENTRY_AUTH_TOKEN",
+    "SENTRY_ENVIRONMENT"
   ],
   "globalPassThroughEnv": [
     "NODE_ENV",

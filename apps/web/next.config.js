@@ -1,3 +1,4 @@
+import { withSentryConfig } from '@sentry/nextjs'
 import { createJiti } from 'jiti'
 
 const jiti = createJiti(import.meta.url)
@@ -81,4 +82,24 @@ const config = {
   },
 }
 
-export default config
+// Sentry wraps the config to:
+// - upload source maps at build time (requires SENTRY_AUTH_TOKEN)
+// - tunnel /monitoring requests to bypass ad-blockers
+// - tag releases via NEXT_PUBLIC_APP_VERSION
+//
+// All Sentry-side env vars are optional — if SENTRY_AUTH_TOKEN isn't set
+// the build still succeeds (source maps just aren't uploaded). DSN-less
+// builds also still work; the SDK no-ops if NEXT_PUBLIC_SENTRY_DSN is absent.
+export default withSentryConfig(config, {
+  // eslint-disable-next-line no-restricted-properties
+  org: process.env.SENTRY_ORG,
+  // eslint-disable-next-line no-restricted-properties
+  project: process.env.SENTRY_PROJECT,
+  // eslint-disable-next-line no-restricted-properties
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  tunnelRoute: '/monitoring',
+  disableLogger: true,
+  automaticVercelMonitors: false,
+})
