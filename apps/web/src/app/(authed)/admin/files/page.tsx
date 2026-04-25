@@ -1,3 +1,6 @@
+import { Suspense } from 'react'
+
+import { LoadingState } from '~/components/ui/loading-state'
 import { HydrateClient, prefetch, trpc } from '~/trpc/server'
 import { AdminFilesPage } from './_components/admin-files-page'
 
@@ -6,7 +9,9 @@ export default async function AdminFilesRoute() {
 
   return (
     <HydrateClient>
-      <AdminFilesPage />
+      <Suspense fallback={<LoadingState />}>
+        <AdminFilesPage />
+      </Suspense>
     </HydrateClient>
   )
 }

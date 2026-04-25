@@ -29,7 +29,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          'text-base-content-default font-sans antialiased',
+          'bg-base-canvas-default text-base-content-default font-sans antialiased',
           inter.variable,
           ibmPlexMono.variable,
         )}

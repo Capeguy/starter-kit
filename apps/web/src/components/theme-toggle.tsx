@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@opengovsg/oui/button'
+import { Tooltip, TooltipTrigger } from '@opengovsg/oui/tooltip'
 import { useTheme } from 'next-themes'
 import { BiDesktop, BiMoon, BiSun } from 'react-icons/bi'
 
@@ -15,9 +16,9 @@ const THEME_ICONS: Record<Theme, React.ReactNode> = {
 }
 
 const THEME_LABELS: Record<Theme, string> = {
-  light: 'light',
-  dark: 'dark',
-  system: 'system',
+  light: 'Light mode',
+  dark: 'Dark mode',
+  system: 'System theme',
 }
 
 function isTheme(value: string | undefined): value is Theme {
@@ -37,13 +38,16 @@ export const ThemeToggle = () => {
   }
 
   return (
-    <Button
-      variant="clear"
-      size="md"
-      onPress={cycleTheme}
-      aria-label={`Theme: ${THEME_LABELS[currentTheme]}, click to cycle`}
-    >
-      {THEME_ICONS[currentTheme]}
-    </Button>
+    <TooltipTrigger delay={500}>
+      <Button
+        variant="clear"
+        size="md"
+        onPress={cycleTheme}
+        aria-label={`Theme: ${THEME_LABELS[currentTheme]}, click to cycle`}
+      >
+        {THEME_ICONS[currentTheme]}
+      </Button>
+      <Tooltip>{THEME_LABELS[currentTheme]}</Tooltip>
+    </TooltipTrigger>
   )
 }

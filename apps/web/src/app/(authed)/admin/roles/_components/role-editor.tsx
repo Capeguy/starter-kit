@@ -151,6 +151,7 @@ export const RoleEditor = ({
                         type="checkbox"
                         checked={capabilities.has(cap)}
                         onChange={() => toggleCap(cap)}
+                        className="accent-interaction-main-default dark:border-zinc-600 dark:bg-zinc-800"
                       />
                       <code className="prose-body-2">{cap}</code>
                     </label>

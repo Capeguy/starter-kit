@@ -93,6 +93,7 @@ export const ResetPasskeyModal = ({
                           name="ttl"
                           checked={ttlIdx === i}
                           onChange={() => setTtlIdx(i)}
+                          className="accent-interaction-main-default dark:border-zinc-600 dark:bg-zinc-800"
                         />
                         <span className="prose-body-2">{preset.label}</span>
                       </label>
@@ -114,7 +115,7 @@ export const ResetPasskeyModal = ({
                     readOnly
                     value={issued.url}
                     rows={3}
-                    className="border-base-divide-medium prose-body-2 w-full rounded-md border p-2 font-mono"
+                    className="border-base-divide-medium prose-body-2 w-full rounded-md border p-2 font-mono dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
                     onClick={(e) => e.currentTarget.select()}
                   />
                   <p className="prose-caption-2 text-base-content-medium">

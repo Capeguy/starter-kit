@@ -1,3 +1,6 @@
+import { Suspense } from 'react'
+
+import { LoadingState } from '~/components/ui/loading-state'
 import { HydrateClient, prefetch, trpc } from '~/trpc/server'
 import { UsersListPage } from './_components/users-list-page'
 
@@ -8,7 +11,9 @@ export default async function AdminUsersRoute() {
 
   return (
     <HydrateClient>
-      <UsersListPage />
+      <Suspense fallback={<LoadingState />}>
+        <UsersListPage />
+      </Suspense>
     </HydrateClient>
   )
 }

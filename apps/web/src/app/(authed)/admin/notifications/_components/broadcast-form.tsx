@@ -86,6 +86,7 @@ export const BroadcastForm = () => {
               name="audience"
               checked={audienceKind === opt.value}
               onChange={() => setAudienceKind(opt.value)}
+              className="accent-interaction-main-default dark:border-zinc-600 dark:bg-zinc-800"
             />
             <span className="prose-body-2">{opt.label}</span>
           </label>

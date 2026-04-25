@@ -1,3 +1,6 @@
+import { Suspense } from 'react'
+
+import { LoadingState } from '~/components/ui/loading-state'
 import { HydrateClient, prefetch, trpc } from '~/trpc/server'
 import { AuditLogPage } from './_components/audit-log-page'
 
@@ -12,7 +15,9 @@ export default async function AdminAuditRoute() {
 
   return (
     <HydrateClient>
-      <AuditLogPage />
+      <Suspense fallback={<LoadingState />}>
+        <AuditLogPage />
+      </Suspense>
     </HydrateClient>
   )
 }
