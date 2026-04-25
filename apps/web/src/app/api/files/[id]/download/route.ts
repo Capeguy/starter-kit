@@ -19,13 +19,9 @@
 import type { NextRequest } from 'next/server'
 
 import { db } from '@acme/db'
+import { Role } from '@acme/db/enums'
 
 import { getSession } from '~/server/session'
-
-// Seeded system role IDs (see `prisma/migrations/.../rbac_roles_table`).
-// Hardcoded here so this route survives the in-flight switch from the old
-// `Role` enum to the `Role` table without depending on enum re-exports.
-const ADMIN_ROLE_ID = 'role_admin'
 
 export async function GET(
   _req: NextRequest,
@@ -56,9 +52,9 @@ export async function GET(
   if (file.userId !== session.userId) {
     const me = await db.user.findUnique({
       where: { id: session.userId },
-      select: { roleId: true },
+      select: { role: true },
     })
-    if (me?.roleId !== ADMIN_ROLE_ID) {
+    if (me?.role !== Role.ADMIN) {
       return Response.json({ error: 'forbidden' }, { status: 403 })
     }
   }
