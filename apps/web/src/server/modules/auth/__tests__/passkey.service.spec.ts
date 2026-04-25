@@ -269,7 +269,6 @@ describe('passkey.service', () => {
       })
 
       expect(verification.userId).toBe(user.id)
-      expect(verification.isNewUser).toBe(false)
       expect(verification.verified).toBe(true)
 
       const updated = await db.passkey.findUnique({ where: { id: passkey.id } })
@@ -284,57 +283,67 @@ describe('passkey.service', () => {
       expect(challenge).toBeNull()
     })
 
-    it('auto-registers a new user when credential is unknown', async () => {
+    it('throws NOT_FOUND when credential is unknown (and preserves the challenge for recovery)', async () => {
       const options = await generatePasskeyAuthenticationOptions({
         headers: mockHeaders,
       })
 
       const mockResponse = {
-        id: 'new-credential-id',
-        rawId: 'new-credential-id',
+        id: 'unknown-credential-id',
+      } as unknown as AuthenticationResponseJSON
+
+      await expect(
+        verifyPasskeyAuthentication({
+          response: mockResponse,
+          expectedChallenge: options.challenge,
+          headers: mockHeaders,
+        }),
+      ).rejects.toMatchObject({
+        code: 'NOT_FOUND',
+      })
+
+      // Challenge must remain so the client can immediately reuse it for register-on-recovery.
+      const challenge = await db.passkeyChallenge.findUnique({
+        where: { challenge: options.challenge },
+      })
+      expect(challenge).not.toBeNull()
+    })
+  })
+
+  describe('name uniqueness', () => {
+    it('rejects a second registration with a name that is already taken (case-insensitive)', async () => {
+      // Seed a user occupying the name "Jane Doe"
+      await db.user.create({ data: { name: 'Jane Doe' } })
+
+      const options = await generatePasskeyRegistrationOptions({
+        name: 'jane doe', // different case → must still collide via citext
+        headers: mockHeaders,
+      })
+
+      const mockResponse = {
+        id: 'mock-credential-id',
+        rawId: 'mock-credential-id',
         response: {
           clientDataJSON: Buffer.from(
             JSON.stringify({
-              type: 'webauthn.get',
+              type: 'webauthn.create',
               challenge: options.challenge,
               origin: 'http://localhost:3000',
             }),
           ).toString('base64url'),
-          authenticatorData: 'mock-authenticator-data',
-          signature: 'mock-signature',
-          userHandle: Buffer.from('new-user-handle').toString('base64url'),
+          attestationObject: 'mock-attestation',
         },
         type: 'public-key',
-      } as unknown as AuthenticationResponseJSON
+      } as unknown as RegistrationResponseJSON
 
-      const verification = await verifyPasskeyAuthentication({
-        response: mockResponse,
-        expectedChallenge: options.challenge,
-        headers: mockHeaders,
-      })
-
-      expect(verification.verified).toBe(true)
-      expect(verification.isNewUser).toBe(true)
-
-      const user = await db.user.findUnique({
-        where: { id: verification.userId },
-      })
-      expect(user?.name).toBe('Passkey User')
-
-      const passkey = await db.passkey.findFirst({
-        where: { userId: verification.userId },
-      })
-      expect(passkey?.credentialId).toBe('new-credential-id')
-
-      const account = await db.account.findFirst({
-        where: { userId: verification.userId },
-      })
-      expect(account?.provider).toBe('passkey')
-
-      const challenge = await db.passkeyChallenge.findUnique({
-        where: { challenge: options.challenge },
-      })
-      expect(challenge).toBeNull()
+      await expect(
+        verifyPasskeyRegistration({
+          name: 'jane doe',
+          response: mockResponse,
+          expectedChallenge: options.challenge,
+          headers: mockHeaders,
+        }),
+      ).rejects.toThrow(/already taken/i)
     })
   })
 })

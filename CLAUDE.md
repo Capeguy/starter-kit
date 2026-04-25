@@ -105,7 +105,16 @@ Validated with `@t3-oss/env-nextjs` in `apps/web/src/env.ts` and `packages/db/sr
 
 ### Sessions / auth
 
-`iron-session` (`src/lib/auth.ts`, `src/server/session.ts`) backs the cookie. Auth is email OTP via Postman (`POSTMAN_API_KEY`); when unset, OTPs are logged to console. Session shape is `{ userId }`.
+`iron-session` (`src/lib/auth.ts`, `src/server/session.ts`) backs the cookie. Auth is **WebAuthn passkeys** (`@simplewebauthn/server` + `/browser`); see `src/server/modules/auth/passkey.service.ts`. Session shape is `{ userId }`.
+
+### UI components — use the OGP OUI design system
+
+All UI must be composed from the OGP design system rather than ad-hoc Tailwind divs. Reach for an existing primitive before building one.
+
+- **Package:** `@opengovsg/oui` (catalog: `oui`). Usually imported as `import { Button } from '@opengovsg/oui/button'` (subpath imports per component).
+- **Source / catalogue of components:** https://github.com/opengovsg/oui-design-system, components live under `packages/components/src/`. Currently exposed: `accordion`, `avatar`, `badge`, `banner`, `breadcrumbs`, `button`, `calendar`, `checkbox`, `combo-box`, `date-field`, `date-picker`, `date-range-picker`, `field`, `file-dropzone`, `govt-banner`, `infobox`, `input`, `link`, `menu`, `modal`, `navbar`, `number-field`, `pagination`, `phone-number-field`, `popover`, `radio-group`, `range-calendar`, `ripple`, `search-field`, `select`, `sidebar`, `skip-nav-link`, `spinner`, `system`, `tabs`, `tag-field`, `text-area`, `text-area-field`, `text-field`, `time-field`, `toast`, `toggle`, `tooltip`. **Check the live Storybook in that repo** for prop signatures and visual reference before composing your own version.
+- **What to avoid:** raw `<button className="...">`, `<div className="rounded-md bg-red-50…">` style alert boxes, hand-rolled headings/cards. Use OUI's `Button`, `Infobox`, `Banner`, etc. instead. Tailwind utility classes are still fine for layout (`flex`, `gap-*`, `grid`, spacing) and for one-off positioning, but not as a substitute for design-system components.
+- **Project's own UI package:** `packages/ui` wraps a few OUI primitives with project-specific defaults (e.g. `@acme/ui/text-field`). Prefer the `@acme/ui` wrapper when one exists; otherwise import directly from `@opengovsg/oui/*`.
 
 ## Conventions to be aware of
 

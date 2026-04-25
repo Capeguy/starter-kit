@@ -10,8 +10,8 @@ export const healthcheck = async () => {
     let cache: 'up' | 'disabled' | 'error' = 'disabled'
     if (redis) {
       try {
-        const pong = await redis.ping()
-        cache = pong === 'PONG' ? 'up' : 'error'
+        await redis.ping()
+        cache = 'up'
       } catch {
         cache = 'error'
       }

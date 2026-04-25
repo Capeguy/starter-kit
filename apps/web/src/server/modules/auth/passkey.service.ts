@@ -13,6 +13,7 @@ import { TRPCError } from '@trpc/server'
 
 import type { TransactionClient } from '@acme/db'
 import { db } from '@acme/db'
+import { Prisma } from '@acme/db/client'
 
 import { env } from '~/env'
 import { AccountProvider } from './auth.constants'
@@ -168,6 +169,16 @@ export const verifyPasskeyRegistration = async ({
       throw error
     }
 
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'That name is already taken. Pick a different one.',
+      })
+    }
+
     console.error('passkey.registration.error', error)
 
     throw new TRPCError({
@@ -212,69 +223,6 @@ export const generatePasskeyAuthenticationOptions = async ({
   return options
 }
 
-const autoRegisterNewUser = async ({
-  response,
-  expectedChallenge,
-}: {
-  response: AuthenticationResponseJSON
-  expectedChallenge: string
-}): Promise<{ userId: string; verified: boolean; isNewUser: boolean }> => {
-  try {
-    const user = await db.$transaction(async (tx: TransactionClient) => {
-      const newUser = await tx.user.create({
-        data: {
-          name: 'Passkey User',
-          email: null,
-        },
-      })
-
-      await tx.passkey.create({
-        data: {
-          userId: newUser.id,
-          credentialId: response.id,
-          credentialPublicKey: Buffer.from([]),
-          counter: 0n,
-          credentialDeviceType: 'singleDevice',
-          credentialBackedUp: false,
-          transports: [],
-        },
-      })
-
-      await tx.account.create({
-        data: {
-          userId: newUser.id,
-          provider: AccountProvider.Passkey,
-          providerAccountId: response.id,
-        },
-      })
-
-      return newUser
-    })
-
-    await db.passkeyChallenge.delete({
-      where: { challenge: expectedChallenge },
-    })
-
-    return { userId: user.id, verified: true, isNewUser: true }
-  } catch (error) {
-    await db.passkeyChallenge
-      .delete({ where: { challenge: expectedChallenge } })
-      .catch(() => undefined)
-
-    if (error instanceof TRPCError) {
-      throw error
-    }
-
-    console.error('passkey.auto_registration.error', error)
-
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'Failed to auto-register new user',
-      cause: error,
-    })
-  }
-}
-
 export const verifyPasskeyAuthentication = async ({
   response,
   expectedChallenge,
@@ -283,7 +231,7 @@ export const verifyPasskeyAuthentication = async ({
   response: AuthenticationResponseJSON
   expectedChallenge: string
   headers: Headers
-}): Promise<{ userId: string; verified: boolean; isNewUser: boolean }> => {
+}): Promise<{ userId: string; verified: boolean }> => {
   const challengeRecord = await db.passkeyChallenge.findUnique({
     where: { challenge: expectedChallenge },
   })
@@ -310,7 +258,13 @@ export const verifyPasskeyAuthentication = async ({
   })
 
   if (!passkey) {
-    return autoRegisterNewUser({ response, expectedChallenge })
+    // Don't delete the challenge — the client may immediately reuse this
+    // ceremony to register a new account (recovery flow).
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message:
+        "We don't recognise that passkey. Enter a name to create an account.",
+    })
   }
 
   const { origin, rpId } = getRequestOrigin(headers)
@@ -347,7 +301,7 @@ export const verifyPasskeyAuthentication = async ({
       where: { challenge: expectedChallenge },
     })
 
-    return { userId: passkey.userId, verified: true, isNewUser: false }
+    return { userId: passkey.userId, verified: true }
   } catch (error) {
     await db.passkeyChallenge
       .delete({ where: { challenge: expectedChallenge } })

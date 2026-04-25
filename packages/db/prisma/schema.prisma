@@ -2,14 +2,15 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "postgresql"
-  schemas  = ["vibe_stack"]
+  provider   = "postgresql"
+  schemas    = ["vibe_stack"]
+  extensions = [citext]
 }
 
 generator client {
   provider        = "prisma-client"
   output          = "../src/generated/prisma"
-  previewFeatures = ["fullTextSearchPostgres", "multiSchema"]
+  previewFeatures = ["fullTextSearchPostgres", "multiSchema", "postgresqlExtensions"]
   engineType      = "client"
 }
 
@@ -41,7 +42,7 @@ model VerificationToken {
 
 model User {
   id       String    @id @default(cuid(2))
-  name     String?
+  name     String?   @unique @db.Citext
   email    String?   @unique
   image    String?
   accounts Account[]

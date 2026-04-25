@@ -20,10 +20,14 @@ test.describe('Passkey Authentication', () => {
     })
 
     await page.goto('/sign-in')
-    await page.getByRole('button', { name: 'Create New Account' }).click()
+
+    // First click triggers the auth ceremony; with no passkey on the virtual
+    // authenticator the browser throws NotAllowedError and the UI falls
+    // through to the "needs name" step.
+    await page.getByRole('button', { name: 'Continue with Passkey' }).click()
 
     await page.getByLabel('Your name').fill('E2E Test User')
-    await page.getByRole('button', { name: 'Create Passkey' }).click()
+    await page.getByRole('button', { name: 'Create account' }).click()
 
     await expect(page).toHaveURL(/\/admin/, { timeout: 15_000 })
   })
