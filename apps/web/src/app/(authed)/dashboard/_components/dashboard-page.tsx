@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import NextLink from 'next/link'
 import { Avatar } from '@opengovsg/oui/avatar'
+import { Badge } from '@opengovsg/oui/badge'
 import { Tab, TabList, TabPanel, Tabs } from '@opengovsg/oui/tabs'
 import { toast } from '@opengovsg/oui/toast'
 import {
@@ -99,9 +100,9 @@ export const DashboardPage = () => {
                     <span className="prose-label-md text-base-content-strong">
                       {me.name ?? '(unnamed)'}
                     </span>
-                    <span className="prose-label-xs bg-base-canvas-alt mt-1 w-fit rounded px-2 py-0.5">
+                    <Badge variant="subtle" size="sm" className="mt-1 w-fit">
                       {me.role.name}
-                    </span>
+                    </Badge>
                   </div>
                 </div>
                 <FilePickerButton

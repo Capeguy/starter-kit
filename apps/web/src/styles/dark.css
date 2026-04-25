@@ -163,3 +163,22 @@
   --color-utility-ui: #3f3f46;
   --color-utility-ui-clear: rgba(63, 63, 70, 0);
 }
+
+/*
+ * Per-component dark-mode patches for OUI elements that ship hardcoded
+ * colours rather than reading from the semantic tokens above.
+ */
+
+/* OUI Tab text uses a hardcoded near-black for the selected/unselected
+ * states — invisible on dark backgrounds. Re-color via the data-rac
+ * Tab role selector that React Aria emits. */
+.dark [role='tab'] {
+  color: var(--color-base-content-medium);
+}
+.dark [role='tab'][data-selected='true'],
+.dark [role='tab'][aria-selected='true'] {
+  color: var(--color-base-content-strong);
+}
+.dark [role='tab']:hover {
+  color: var(--color-base-content-strong);
+}

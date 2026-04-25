@@ -47,7 +47,13 @@ export function TextField({
         <Input
           size={size}
           variant={variant}
-          className={classNames?.input}
+          // Default dark-mode overrides — OUI Input hardcodes bg-white in
+          // its compiled variants (see dark-mode-bg-white-fixes.md), so
+          // every consumer would otherwise need to pass these manually.
+          className={cn(
+            'dark:bg-base-canvas-alt dark:text-base-content-strong dark:border-base-divider-medium',
+            classNames?.input,
+          )}
           {...inputProps}
         />
         {endContent}
