@@ -1,4 +1,8 @@
 import {
+  AuditAction,
+  recordAuditEvent,
+} from '~/server/modules/audit/audit.service'
+import {
   generatePasskeyAuthenticationOptions,
   generatePasskeyRegistrationOptions,
   verifyPasskeyAuthentication,
@@ -34,6 +38,13 @@ export const passkeyAuthRouter = createTRPCRouter({
       ctx.session.userId = verification.userId
       await ctx.session.save()
 
+      await recordAuditEvent({
+        userId: verification.userId,
+        action: AuditAction.AuthPasskeyRegister,
+        metadata: { name: input.name },
+        headers: ctx.headers,
+      })
+
       return verification
     }),
 
@@ -52,6 +63,12 @@ export const passkeyAuthRouter = createTRPCRouter({
 
       ctx.session.userId = verification.userId
       await ctx.session.save()
+
+      await recordAuditEvent({
+        userId: verification.userId,
+        action: AuditAction.AuthPasskeyAuthenticate,
+        headers: ctx.headers,
+      })
 
       return verification
     }),

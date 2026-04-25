@@ -1,3 +1,4 @@
+import { auditRouter } from '~/server/api/routers/audit.router'
 import { meRouter } from '~/server/api/routers/me.router'
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc'
 import { healthcheck } from '../modules/healthcheck/healthcheck.service'
@@ -20,6 +21,7 @@ export const appRouter = createTRPCRouter({
     .query(() => healthcheck()),
   me: meRouter,
   auth: authRouter,
+  audit: auditRouter,
 })
 
 // export type definition of API
