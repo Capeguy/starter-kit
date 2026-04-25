@@ -58,7 +58,7 @@ export const NotificationBell = () => {
         <span className="relative inline-flex">
           <BiBell className="h-5 w-5" />
           {unread > 0 && (
-            <span className="bg-utility-feedback-critical text-base-canvas absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold">
+            <span className="bg-utility-feedback-critical absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-semibold text-white">
               {unread > 9 ? '9+' : unread}
             </span>
           )}

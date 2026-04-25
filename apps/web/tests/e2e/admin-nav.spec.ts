@@ -6,7 +6,7 @@ import { createTestUser, signInAs } from './setup/auth'
 const uniq = () => `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
 
 test.describe('Admin navigation + role gating', () => {
-  test('admin landing surfaces all four sub-page links', async ({
+  test('admin landing surfaces all five sub-page links', async ({
     browser,
   }) => {
     const admin = await createTestUser({
@@ -28,6 +28,9 @@ test.describe('Admin navigation + role gating', () => {
       nav.getByRole('link', { name: /Send notification/ }),
     ).toBeVisible()
     await expect(nav.getByRole('link', { name: /All files/ })).toBeVisible()
+    await expect(
+      nav.getByRole('link', { name: /Roles.*capabilities/ }),
+    ).toBeVisible()
 
     await ctx.close()
   })
@@ -47,6 +50,7 @@ test.describe('Admin navigation + role gating', () => {
       '/admin/audit',
       '/admin/notifications',
       '/admin/files',
+      '/admin/roles',
     ]) {
       const res = await page.goto(path)
       expect(res?.status(), `${path} status`).toBe(200)
