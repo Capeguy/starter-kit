@@ -100,7 +100,12 @@ export const DashboardPage = () => {
                     <span className="prose-label-md text-base-content-strong">
                       {me.name ?? '(unnamed)'}
                     </span>
-                    <Badge variant="subtle" size="sm" className="mt-1 w-fit">
+                    <Badge
+                      variant="subtle"
+                      color="main"
+                      size="sm"
+                      className="mt-1 w-fit"
+                    >
                       {me.role.name}
                     </Badge>
                   </div>
