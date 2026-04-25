@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { ThemeProvider } from 'next-themes'
 import NextTopLoader from 'nextjs-toploader'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
@@ -35,13 +34,14 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         )}
       >
         <NextTopLoader color="var(--color-interaction-main-default)" />
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <ClientProviders>
-            <NuqsAdapter>{props.children}</NuqsAdapter>
-            <ReactQueryDevtools initialIsOpen={false} />
-            <Toaster />
-          </ClientProviders>
-        </ThemeProvider>
+        {/* ThemeProvider is mounted only inside the (authed) layout — public
+            routes always render in light mode. See app/(authed)/layout.tsx
+            and app/(public)/layout.tsx. */}
+        <ClientProviders>
+          <NuqsAdapter>{props.children}</NuqsAdapter>
+          <ReactQueryDevtools initialIsOpen={false} />
+          <Toaster />
+        </ClientProviders>
       </body>
     </html>
   )

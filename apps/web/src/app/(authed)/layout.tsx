@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { ThemeProvider } from 'next-themes'
 
 import type { DynamicLayoutProps } from '~/types/nextjs'
 import { LOGIN_ROUTE } from '~/constants'
@@ -20,15 +21,17 @@ export default async function AuthedLayout({ children }: DynamicLayoutProps) {
   await prefetch(trpc.me.get.queryOptions())
 
   return (
-    <HydrateClient>
-      <main className="flex min-h-dvh flex-col">
-        <EnvBanner />
-        <VersionCheckWrapper />
-        <AuthedNavbar />
-        <div className="container mx-auto flex flex-col gap-4 p-4">
-          {children}
-        </div>
-      </main>
-    </HydrateClient>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <HydrateClient>
+        <main className="flex min-h-dvh flex-col">
+          <EnvBanner />
+          <VersionCheckWrapper />
+          <AuthedNavbar />
+          <div className="container mx-auto flex flex-col gap-4 p-4">
+            {children}
+          </div>
+        </main>
+      </HydrateClient>
+    </ThemeProvider>
   )
 }
