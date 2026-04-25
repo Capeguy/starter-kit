@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import NextLink from 'next/link'
 import { Button } from '@opengovsg/oui/button'
 import { Infobox } from '@opengovsg/oui/infobox'
@@ -15,6 +16,7 @@ const POLL_INTERVAL_MS = 15_000
 export const NotificationBell = () => {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
+  const [isOpen, setIsOpen] = useState(false)
 
   const { data: unread = 0 } = useQuery(
     trpc.notification.unreadCount.queryOptions(undefined, {
@@ -41,7 +43,7 @@ export const NotificationBell = () => {
   )
 
   return (
-    <DialogTrigger>
+    <DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
       <Button
         variant="clear"
         size="md"
@@ -93,7 +95,11 @@ export const NotificationBell = () => {
                   return (
                     <li key={n.id}>
                       {n.href ? (
-                        <NextLink href={n.href} className="block">
+                        <NextLink
+                          href={n.href}
+                          className="block"
+                          onClick={() => setIsOpen(false)}
+                        >
                           {item}
                         </NextLink>
                       ) : (
