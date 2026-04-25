@@ -35,11 +35,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         )}
       >
         <NextTopLoader color="var(--color-interaction-main-default)" />
-        <ThemeProvider
-          attribute="data-theme"
-          defaultTheme="system"
-          enableSystem
-        >
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ClientProviders>
             <NuqsAdapter>{props.children}</NuqsAdapter>
             <ReactQueryDevtools initialIsOpen={false} />
