@@ -47,6 +47,7 @@ test.describe('File upload flow', () => {
     })
     expect(uploadRes.status()).toBe(200)
     const uploadJson = (await uploadRes.json()) as {
+      id: string
       filename: string
       url: string
     }
@@ -55,9 +56,11 @@ test.describe('File upload flow', () => {
     await page.reload()
     await expect(page.getByRole('link', { name: filename })).toBeVisible()
 
-    // Stored URL is downloadUrl which carries Content-Disposition with the
-    // original filename — the actual fix shipped earlier.
-    const dlRes = await apiCtx.get(uploadJson.url)
+    // The raw blob URL carries a Content-Disposition built from the
+    // suffixed pathname (Vercel Blob does this automatically when
+    // addRandomSuffix: true). We route downloads through our own
+    // proxy route so the original filename is preserved.
+    const dlRes = await apiCtx.get(`/api/files/${uploadJson.id}/download`)
     expect(dlRes.status()).toBe(200)
     const cd = dlRes.headers()['content-disposition'] ?? ''
     expect(cd, `Content-Disposition: ${cd}`).toContain(filename)

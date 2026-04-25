@@ -126,10 +126,7 @@ export const DashboardPage = () => {
                   className="border-base-divide-subtle flex items-center justify-between border-b py-1 last:border-b-0"
                 >
                   <a
-                    href={f.url}
-                    download={f.filename}
-                    target="_blank"
-                    rel="noreferrer"
+                    href={`/api/files/${f.id}/download`}
                     className="text-base-content-brand truncate hover:underline"
                   >
                     {f.filename}

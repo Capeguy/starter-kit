@@ -104,11 +104,15 @@ export const uploadFile = async ({
   const record = await db.file.create({
     data: {
       userId,
-      // Vercel Blob exposes a `downloadUrl` (same content as `url` but the
-      // response carries Content-Disposition: attachment with the original
-      // filename, so the browser saves it as e.g. `resume.pdf` rather than
-      // the random-suffixed pathname `resume-XYZ123.pdf`).
-      url: blob.downloadUrl,
+      // Store the canonical `blob.url`. We do NOT store `blob.downloadUrl`
+      // because that's just `url` with `?download=1` appended — it does
+      // force the browser to save instead of inline-render, but the
+      // Content-Disposition that Vercel Blob serves is built from the
+      // suffixed pathname (`resume-NoOVGD…XYZ.pdf`), not the original
+      // filename. The original name is preserved by routing user
+      // downloads through `/api/files/[id]/download`, which streams the
+      // blob with our own Content-Disposition header.
+      url: blob.url,
       pathname: blob.pathname,
       filename,
       mimeType: contentType,

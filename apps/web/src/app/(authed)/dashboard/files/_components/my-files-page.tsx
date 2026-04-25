@@ -97,10 +97,7 @@ export const MyFilesPage = () => {
                 <tr key={f.id} className="border-base-divide-subtle border-t">
                   <td className="px-3 py-2">
                     <a
-                      href={f.url}
-                      download={f.filename}
-                      target="_blank"
-                      rel="noreferrer"
+                      href={`/api/files/${f.id}/download`}
                       className="text-base-content-brand hover:underline"
                     >
                       {f.filename}
