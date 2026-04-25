@@ -41,14 +41,29 @@ model VerificationToken {
 }
 
 model User {
-  id       String    @id @default(cuid(2))
-  name     String?   @unique @db.Citext
-  email    String?   @unique
-  image    String?
-  accounts Account[]
-  passkeys Passkey[]
+  id            String              @id @default(cuid(2))
+  name          String?             @unique @db.Citext
+  email         String?             @unique
+  image         String?
+  avatarUrl     String?             @map("avatar_url")
+  role          Role                @default(USER)
+  accounts      Account[]
+  passkeys      Passkey[]
+  notifications Notification[]
+  files         File[]
+  auditLogs     AuditLog[]
+  resetTokens   PasskeyResetToken[] @relation("ResetTokenSubject")
+  issuedResets  PasskeyResetToken[] @relation("ResetTokenIssuer")
 
   lastLogin DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@schema("vibe_stack")
+}
+
+enum Role {
+  USER
+  ADMIN
 
   @@schema("vibe_stack")
 }
@@ -92,5 +107,66 @@ model PasskeyChallenge {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
 
   @@index([userId])
+  @@schema("vibe_stack")
+}
+
+model PasskeyResetToken {
+  id         String    @id @default(cuid(2))
+  token      String    @unique
+  userId     String    @map("user_id")
+  user       User      @relation("ResetTokenSubject", fields: [userId], references: [id], onDelete: Cascade)
+  issuedById String    @map("issued_by_id")
+  issuedBy   User      @relation("ResetTokenIssuer", fields: [issuedById], references: [id])
+  expiresAt  DateTime? @map("expires_at") @db.Timestamptz(3)
+  consumedAt DateTime? @map("consumed_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([userId])
+  @@index([issuedById])
+  @@schema("vibe_stack")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid(2))
+  userId    String?  @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  metadata  Json?
+  ip        String?
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+  @@schema("vibe_stack")
+}
+
+model Notification {
+  id        String    @id @default(cuid(2))
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String?
+  href      String?
+  readAt    DateTime? @map("read_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@schema("vibe_stack")
+}
+
+model File {
+  id        String   @id @default(cuid(2))
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  url       String
+  pathname  String   @unique
+  filename  String
+  mimeType  String   @map("mime_type")
+  size      Int
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([userId, createdAt])
   @@schema("vibe_stack")
 }

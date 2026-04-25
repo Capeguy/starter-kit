@@ -3,7 +3,7 @@ import { expect } from '@playwright/test'
 import { test } from './app-fixture'
 
 test.describe('Passkey Authentication', () => {
-  test('registers a new account with a passkey and redirects to /admin', async ({
+  test('registers a new account with a passkey and redirects to /dashboard', async ({
     page,
   }) => {
     // Virtual authenticator via CDP: makes navigator.credentials.create/get work headlessly.
@@ -29,6 +29,6 @@ test.describe('Passkey Authentication', () => {
     await page.getByLabel('Your name').fill('E2E Test User')
     await page.getByRole('button', { name: 'Create account' }).click()
 
-    await expect(page).toHaveURL(/\/admin/, { timeout: 15_000 })
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 })
   })
 })

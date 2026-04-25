@@ -10,4 +10,7 @@ export const defaultUserSelect = {
   email: true,
   image: true,
   name: true,
+  avatarUrl: true,
+  role: true,
+  createdAt: true,
 } satisfies Prisma.UserSelect

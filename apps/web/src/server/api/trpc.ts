@@ -14,6 +14,9 @@ import z, { ZodError } from 'zod'
 
 import type { Logger, ScopedLogger } from '@acme/logging'
 
+import { db } from '@acme/db'
+import { Role } from '@acme/db/enums'
+
 import type { RateLimiterConfig } from '../modules/rate-limit/types'
 import { env } from '~/env'
 import { createLogger } from '~/lib/logger'
@@ -201,14 +204,27 @@ const rateLimitMiddleware = t.middleware(async ({ ctx, next, meta, path }) => {
   }
 })
 
-const authMiddleware = t.middleware(({ ctx, next }) => {
+const authMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!ctx.session.userId) {
     throw new TRPCError({ code: 'UNAUTHORIZED' })
   }
+
+  // Always source role from the DB (not the session cookie). This way demoted
+  // admins lose their powers on the next request, not the next sign-in.
+  const user = await db.user.findUnique({
+    where: { id: ctx.session.userId },
+    select: { id: true, role: true },
+  })
+  if (!user) {
+    // Session points at a deleted user — destroy and reject.
+    ctx.session.destroy()
+    throw new TRPCError({ code: 'UNAUTHORIZED' })
+  }
+
   return next({
     ctx: {
-      // infers the `session` as non-nullable
       session: { ...ctx.session, userId: ctx.session.userId },
+      user,
     },
   })
 })
@@ -230,8 +246,20 @@ export const publicProcedure = defaultProcedure
  * Protected (authenticated) procedure
  *
  * If you want a query or mutation to ONLY be accessible to logged in users, use this. It verifies
- * the session is valid and guarantees `ctx.session.user` is not null.
- *
- * @see https://trpc.io/docs/procedures
+ * the session is valid, loads the user (with role) from the database, and guarantees
+ * `ctx.session.userId` and `ctx.user` are non-null.
  */
 export const protectedProcedure = defaultProcedure.use(authMiddleware)
+
+/**
+ * Admin-only procedure
+ *
+ * Inherits everything from `protectedProcedure` and additionally requires the user's role
+ * to be `Role.ADMIN`. Returns FORBIDDEN otherwise.
+ */
+export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.user.role !== Role.ADMIN) {
+    throw new TRPCError({ code: 'FORBIDDEN' })
+  }
+  return next({ ctx })
+})

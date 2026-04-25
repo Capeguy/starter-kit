@@ -229,12 +229,15 @@ describe('user.service', () => {
 
       const user = await getUserById(createdUser.id)
 
-      expect(user).toStrictEqual({
+      expect(user).toMatchObject({
         id: createdUser.id,
         email,
         image: null,
         name: 'Test user',
+        avatarUrl: null,
+        role: 'USER',
       })
+      expect(user?.createdAt).toBeInstanceOf(Date)
     })
 
     it('should return null when user does not exist', async () => {
