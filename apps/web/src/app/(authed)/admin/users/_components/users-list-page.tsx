@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Avatar } from '@opengovsg/oui'
 import { Badge } from '@opengovsg/oui/badge'
 import { Button } from '@opengovsg/oui/button'
@@ -24,7 +25,7 @@ import {
   DataTableRoot,
   DataTableRow,
 } from '~/components/ui/data-table'
-import { SystemRoleId } from '~/lib/rbac'
+import { Capability, hasCapability, SystemRoleId } from '~/lib/rbac'
 import { useTRPC } from '~/trpc/react'
 import { ResetPasskeyModal } from '../../_components/reset-passkey-modal'
 
@@ -37,11 +38,29 @@ export const UsersListPage = () => {
     name: string | null
   } | null>(null)
 
+  const router = useRouter()
   const { data } = useSuspenseQuery(
     trpc.admin.users.list.queryOptions({ q: q || null, limit: 50 }),
   )
   const { data: rolesData } = useSuspenseQuery(
     trpc.admin.roles.list.queryOptions(),
+  )
+  const { data: me } = useSuspenseQuery(trpc.me.get.queryOptions())
+  const canImpersonate = hasCapability(
+    me?.role.capabilities,
+    Capability.UserImpersonate,
+  )
+
+  const impersonate = useMutation(
+    trpc.impersonation.start.mutationOptions({
+      onSuccess: async (result) => {
+        toast.success(`Impersonating ${result.targetName ?? 'user'}`)
+        await queryClient.invalidateQueries()
+        router.push('/dashboard')
+        router.refresh()
+      },
+      onError: (err) => toast.error(err.message),
+    }),
   )
 
   const setRoleMutation = useMutation(
@@ -180,6 +199,15 @@ export const UsersListPage = () => {
                       >
                         {u.roleId === SystemRoleId.Admin ? 'Demote' : 'Promote'}
                       </Button>
+                      {canImpersonate && u.id !== me?.id && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onPress={() => impersonate.mutate({ userId: u.id })}
+                        >
+                          Impersonate
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="outline"

@@ -17,6 +17,8 @@ export const AuditAction = {
   UserRoleChange: 'user.role.change',
   UserDelete: 'user.delete',
   UserProfileUpdate: 'user.profile.update',
+  UserImpersonateStart: 'user.impersonate.start',
+  UserImpersonateStop: 'user.impersonate.stop',
 } as const
 
 export type AuditActionValue = (typeof AuditAction)[keyof typeof AuditAction]

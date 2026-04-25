@@ -93,6 +93,20 @@ export const formatAuditEvent = (
         ? 'You updated your profile'
         : `${subject} updated their profile`
 
+    case 'user.impersonate.start': {
+      const targetId = getMetaString(row.metadata, 'targetUserId')
+      return isSelf
+        ? `You started impersonating ${targetId ? `user ${targetId}` : 'a user'}`
+        : `${subject} started impersonating ${targetId ? `user ${targetId}` : 'a user'}`
+    }
+
+    case 'user.impersonate.stop': {
+      const impId = getMetaString(row.metadata, 'impersonatedUserId')
+      return isSelf
+        ? `You stopped impersonating ${impId ? `user ${impId}` : 'a user'}`
+        : `${subject} stopped impersonating ${impId ? `user ${impId}` : 'a user'}`
+    }
+
     default:
       return row.action
   }

@@ -6,7 +6,14 @@ import { env } from '~/env'
 
 export interface SessionData {
   userId?: string
-  // Add other session data as needed
+  /**
+   * When set, the session is in impersonation mode: `userId` is the user being
+   * impersonated; `impersonatedById` is the original admin who started it. All
+   * tRPC ctx.user values reflect the IMPERSONATED user (so admin sees exactly
+   * what the user sees). The original admin id is held here for the revert
+   * path (`auth.impersonation.stop`).
+   */
+  impersonatedById?: string
 }
 
 export const sessionOptions: SessionOptions = {
