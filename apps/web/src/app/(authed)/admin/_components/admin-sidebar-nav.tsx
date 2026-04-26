@@ -53,10 +53,12 @@ export function AdminSidebarNav() {
   return (
     <>
       {/* Mobile hamburger — inline at the top of the page content, not
-          floating. Hidden on md+ where the sidebar is always visible. */}
+          floating. Hidden on md+ where the sidebar is always visible.
+          `self-start` prevents the parent flex from stretching the
+          button to full content height. */}
       <button
         type="button"
-        className="border-base-divider-medium bg-base-canvas-default text-base-content-strong inline-flex w-fit items-center gap-2 rounded-md border px-3 py-2 text-sm shadow-sm md:hidden"
+        className="border-base-divider-medium bg-base-canvas-default text-base-content-strong inline-flex w-fit items-center gap-2 self-start rounded-md border px-3 py-2 text-sm shadow-sm md:hidden"
         aria-label={mobileOpen ? 'Close admin menu' : 'Open admin menu'}
         aria-expanded={mobileOpen}
         onClick={() => setMobileOpen((prev) => !prev)}
