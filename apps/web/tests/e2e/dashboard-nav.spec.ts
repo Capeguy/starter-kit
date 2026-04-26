@@ -19,17 +19,21 @@ test.describe('Dashboard navigation + sub-routes + breadcrumbs', () => {
       page.getByRole('heading', { name: /Welcome/, level: 1 }),
     ).toBeVisible()
 
-    const nav = page.getByRole('navigation', { name: /Dashboard navigation/i })
-    await expect(nav.getByRole('link', { name: 'Overview' })).toBeVisible()
-    await expect(nav.getByRole('link', { name: 'My files' })).toBeVisible()
-    await expect(nav.getByRole('link', { name: 'Activity' })).toBeVisible()
-    await expect(nav.getByRole('link', { name: 'Settings' })).toBeVisible()
+    // shadcn `Sidebar` doesn't auto-set a nav landmark, but it does render an
+    // inner `<div data-sidebar="sidebar">` that scopes the chrome. Use that
+    // attribute to target sidebar links specifically (the dashboard body also
+    // contains "See all →" links to /dashboard/files and /dashboard/activity).
+    const sidebar = page.locator('[data-sidebar="sidebar"]')
+    await expect(sidebar.getByRole('link', { name: 'Overview' })).toBeVisible()
+    await expect(sidebar.getByRole('link', { name: 'My files' })).toBeVisible()
+    await expect(sidebar.getByRole('link', { name: 'Activity' })).toBeVisible()
+    await expect(sidebar.getByRole('link', { name: 'Settings' })).toBeVisible()
 
-    // OUI's SidebarItem applies data-selected="true" to the wrapping <li>
-    // when isSelected is true (the inner <a> doesn't get aria-current).
-    const overviewItem = nav.locator('li[data-selected="true"]')
-    await expect(overviewItem).toHaveCount(1)
-    await expect(overviewItem).toContainText('Overview')
+    // shadcn `SidebarMenuButton` with `isActive` sets `data-active="true"` on
+    // the rendered element. Because the menu button uses `asChild` + `<Link>`,
+    // the active attribute lands on the anchor itself.
+    const overviewLink = sidebar.getByRole('link', { name: 'Overview' })
+    await expect(overviewLink).toHaveAttribute('data-active', 'true')
 
     await ctx.close()
   })
@@ -47,15 +51,15 @@ test.describe('Dashboard navigation + sub-routes + breadcrumbs', () => {
       page.getByRole('heading', { name: /Welcome/, level: 1 }),
     ).toBeVisible()
 
-    const nav = page.getByRole('navigation', { name: /Dashboard navigation/i })
+    const sidebar = page.locator('[data-sidebar="sidebar"]')
 
-    await nav.getByRole('link', { name: 'Activity' }).click()
+    await sidebar.getByRole('link', { name: 'Activity' }).click()
     await expect(page).toHaveURL(/\/dashboard\/activity$/, { timeout: 10_000 })
     await expect(
       page.getByRole('heading', { name: 'Activity', level: 1 }),
     ).toBeVisible()
 
-    await nav.getByRole('link', { name: 'Settings' }).click()
+    await sidebar.getByRole('link', { name: 'Settings' }).click()
     await expect(page).toHaveURL(/\/dashboard\/settings$/, { timeout: 10_000 })
     await expect(
       page.getByRole('heading', { name: 'Settings', level: 1 }),
@@ -77,13 +81,15 @@ test.describe('Dashboard navigation + sub-routes + breadcrumbs', () => {
       page.getByRole('heading', { name: 'Activity', level: 1 }),
     ).toBeVisible()
 
-    // OUI Breadcrumbs renders as <ol role="list" aria-label="Breadcrumbs">,
-    // not a navigation landmark. Both crumbs are <a> (the trailing one
-    // is rendered as a disabled link, no href).
-    const crumbs = page.getByRole('list', { name: 'Breadcrumbs' })
+    // shadcn `Breadcrumb` renders as `<nav aria-label="breadcrumb">`.
+    // `BreadcrumbLink` is an anchor; `BreadcrumbPage` is a span with
+    // role="link" + aria-current="page" (rendered as a non-link current crumb).
+    const crumbs = page.getByRole('navigation', { name: /breadcrumb/i })
     const dashboardCrumb = crumbs.getByRole('link', { name: 'Dashboard' })
     await expect(dashboardCrumb).toBeVisible()
-    await expect(crumbs.getByRole('link', { name: 'Activity' })).toBeVisible()
+    const activityCrumb = crumbs.getByText('Activity', { exact: true })
+    await expect(activityCrumb).toBeVisible()
+    await expect(activityCrumb).toHaveAttribute('aria-current', 'page')
 
     await dashboardCrumb.click()
     await expect(page).toHaveURL(/\/dashboard$/, { timeout: 10_000 })
@@ -94,7 +100,7 @@ test.describe('Dashboard navigation + sub-routes + breadcrumbs', () => {
     await ctx.close()
   })
 
-  test('mobile drawer opens, lists all four items, closes via the in-drawer Close Menu', async ({
+  test('mobile drawer opens, lists all four items, closes via Escape', async ({
     browser,
   }) => {
     const user = await createTestUser({ name: `DashMobileUser-${uniq()}` })
@@ -108,24 +114,30 @@ test.describe('Dashboard navigation + sub-routes + breadcrumbs', () => {
       page.getByRole('heading', { name: /Welcome/, level: 1 }),
     ).toBeVisible()
 
-    const openTrigger = page.getByRole('button', { name: 'Open Menu' })
-    await expect(openTrigger).toBeVisible()
-    await openTrigger.click()
+    // On mobile, shadcn `Sidebar` swaps the inline desktop sidebar for a
+    // `Sheet` that's only mounted while open. So no `[data-sidebar="sidebar"]`
+    // exists in the DOM until the trigger is clicked.
+    await expect(page.locator('[data-sidebar="sidebar"]')).toHaveCount(0)
 
-    const nav = page.getByRole('navigation', { name: /Dashboard navigation/i })
-    await expect(nav.getByRole('link', { name: 'Overview' })).toBeVisible()
-    await expect(nav.getByRole('link', { name: 'My files' })).toBeVisible()
-    await expect(nav.getByRole('link', { name: 'Activity' })).toBeVisible()
-    await expect(nav.getByRole('link', { name: 'Settings' })).toBeVisible()
+    // The `SidebarTrigger` button is the only mount point for the drawer.
+    // It uses an `sr-only` "Toggle Sidebar" label (one button, not two states).
+    const toggle = page.getByRole('button', { name: 'Toggle Sidebar' })
+    await expect(toggle).toBeVisible()
+    await toggle.click()
 
-    // Two "Close Menu" controls exist while the drawer is open (the trigger
-    // button toggles to "Close Menu" and the in-drawer header has its own).
-    // Use the in-drawer one (scoped to the nav landmark) to close.
-    await nav.getByRole('button', { name: 'Close Menu' }).click()
+    // Drawer opens — sidebar mounts inside a Sheet with data-mobile="true".
+    const drawer = page.locator('[data-sidebar="sidebar"][data-mobile="true"]')
+    await expect(drawer).toBeVisible()
+    await expect(drawer.getByRole('link', { name: 'Overview' })).toBeVisible()
+    await expect(drawer.getByRole('link', { name: 'My files' })).toBeVisible()
+    await expect(drawer.getByRole('link', { name: 'Activity' })).toBeVisible()
+    await expect(drawer.getByRole('link', { name: 'Settings' })).toBeVisible()
 
-    // After closing, the trigger flips back to "Open Menu" — which is the
-    // hamburger-only-visible-on-mobile state we started in.
-    await expect(page.getByRole('button', { name: 'Open Menu' })).toBeVisible()
+    // shadcn's `Sheet` hides its built-in close button via `[&>button]:hidden`
+    // for sidebar usage; the project closes the drawer via Escape, backdrop,
+    // or by clicking a link inside.
+    await page.keyboard.press('Escape')
+    await expect(drawer).toHaveCount(0)
 
     await ctx.close()
   })
