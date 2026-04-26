@@ -1,8 +1,10 @@
+import { TRPCError } from '@trpc/server'
 import z from 'zod'
 
+import type { TransactionClient } from '@acme/db'
 import { db } from '@acme/db'
 
-import { ALL_CAPABILITIES, Capability } from '~/lib/rbac'
+import { ALL_CAPABILITIES, Capability, SystemRoleId } from '~/lib/rbac'
 import {
   deleteUser,
   getUser,
@@ -17,6 +19,7 @@ import {
 } from '~/server/modules/audit/audit.service'
 import { deleteFile, listAllFiles } from '~/server/modules/file/file.service'
 import { broadcast } from '~/server/modules/notification/notification.service'
+import { extractIpAddress } from '~/server/utils/request'
 import {
   capabilityProcedure,
   createTRPCRouter,
@@ -235,6 +238,126 @@ export const adminRouter = createTRPCRouter({
           )
         }
         return db.role.delete({ where: { id: input.id } })
+      }),
+
+    // Read-only roster of users in a role; powers the "Users" count modal on
+    // /admin/roles. Anyone with a session can call this — same posture as
+    // `roles.list` above (role membership is not secret).
+    listUsers: protectedProcedure
+      .input(z.object({ roleId: z.string() }))
+      .query(async ({ input }) => {
+        const items = await db.user.findMany({
+          where: { roleId: input.roleId },
+          select: { id: true, name: true, email: true, lastLogin: true },
+          orderBy: { name: 'asc' },
+        })
+        return { items }
+      }),
+
+    // Bulk role change. Mirrors the "last admin" guard from
+    // `admin.users.setRole` so an admin can't accidentally empty `role_admin`.
+    // Wraps the updateMany + audit fan-out in a single transaction; per-user
+    // audit rows are emitted so the existing audit UI surfaces each move.
+    reassignUsers: capabilityProcedure(Capability.UserRoleAssign)
+      .input(
+        z.object({
+          fromRoleId: z.string(),
+          toRoleId: z.string(),
+          userIds: z.array(z.string()).min(1),
+        }),
+      )
+      .mutation(async ({ input, ctx }) => {
+        if (input.fromRoleId === input.toRoleId) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Source and target roles must be different.',
+          })
+        }
+
+        const [fromRole, toRole] = await Promise.all([
+          db.role.findUnique({
+            where: { id: input.fromRoleId },
+            select: { id: true, name: true },
+          }),
+          db.role.findUnique({
+            where: { id: input.toRoleId },
+            select: { id: true, name: true },
+          }),
+        ])
+        if (!fromRole) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Source role not found',
+          })
+        }
+        if (!toRole) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Target role not found',
+          })
+        }
+
+        const result = await db.$transaction(async (tx: TransactionClient) => {
+          // Defense in depth: the modal only offers users currently in
+          // `fromRoleId`, but an outdated client could submit stale ids. Reject
+          // before we mutate anything so the audit log isn't polluted with
+          // no-op rows.
+          const matching = await tx.user.findMany({
+            where: { id: { in: input.userIds }, roleId: input.fromRoleId },
+            select: { id: true },
+          })
+          if (matching.length !== input.userIds.length) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message:
+                'One or more users no longer belong to the source role. Refresh and try again.',
+            })
+          }
+
+          // Last-admin guard: count admins after the prospective move.
+          if (input.fromRoleId === SystemRoleId.Admin) {
+            const totalAdmins = await tx.user.count({
+              where: { roleId: SystemRoleId.Admin },
+            })
+            if (totalAdmins - input.userIds.length < 1) {
+              throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message:
+                  'Cannot reassign: the system must always have at least one Admin.',
+              })
+            }
+          }
+
+          const updated = await tx.user.updateMany({
+            where: { id: { in: input.userIds }, roleId: input.fromRoleId },
+            data: { roleId: input.toRoleId },
+          })
+
+          // Inline auditLog inserts (rather than `recordAuditEvent`) so they
+          // share the transaction — if the bulk role change rolls back, the
+          // audit rows roll back with it.
+          const ip = extractIpAddress(ctx.headers)
+          const userAgent = ctx.headers.get('user-agent') ?? null
+          for (const userId of input.userIds) {
+            await tx.auditLog.create({
+              data: {
+                userId,
+                action: AuditAction.UserRoleChange,
+                metadata: {
+                  actingUserId: ctx.user.id,
+                  oldRoleId: input.fromRoleId,
+                  newRoleId: input.toRoleId,
+                },
+                ip,
+                userAgent,
+              },
+            })
+          }
+
+          return { count: updated.count }
+        })
+
+        return result
       }),
   }),
 

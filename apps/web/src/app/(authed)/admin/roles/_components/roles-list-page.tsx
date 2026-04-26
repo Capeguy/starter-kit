@@ -22,6 +22,7 @@ import {
 } from '~/components/ui/data-table'
 import { useTRPC } from '~/trpc/react'
 import { RoleEditor } from './role-editor'
+import { RoleUsersModal } from './role-users-modal'
 
 interface RoleSummary {
   id: string
@@ -36,6 +37,10 @@ export const RolesListPage = () => {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState<RoleSummary | 'new' | null>(null)
+  const [usersModalRole, setUsersModalRole] = useState<{
+    id: string
+    name: string
+  } | null>(null)
 
   const { data } = useSuspenseQuery(trpc.admin.roles.list.queryOptions())
 
@@ -111,7 +116,18 @@ export const RolesListPage = () => {
                       ? '(none)'
                       : `${r.capabilities.length} granted`}
                   </DataTableCell>
-                  <DataTableCell>{r._count.users}</DataTableCell>
+                  <DataTableCell>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setUsersModalRole({ id: r.id, name: r.name })
+                      }
+                      className="text-base-content-brand hover:underline"
+                      aria-label={`View ${r._count.users} user${r._count.users === 1 ? '' : 's'} in role ${r.name}`}
+                    >
+                      {r._count.users}
+                    </button>
+                  </DataTableCell>
                   <DataTableCell>
                     <div className="flex justify-end gap-2">
                       <Button
@@ -157,6 +173,13 @@ export const RolesListPage = () => {
             })
             setEditing(null)
           }}
+        />
+      )}
+
+      {usersModalRole && (
+        <RoleUsersModal
+          role={usersModalRole}
+          onClose={() => setUsersModalRole(null)}
         />
       )}
     </div>
