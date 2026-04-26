@@ -8,6 +8,7 @@ import {
   AuditAction,
   recordAuditEvent,
 } from '~/server/modules/audit/audit.service'
+import { getSession } from '~/server/session'
 import {
   capabilityProcedure,
   createTRPCRouter,
@@ -26,7 +27,11 @@ export const impersonationRouter = createTRPCRouter({
   start: capabilityProcedure(Capability.UserImpersonate)
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      if (ctx.session.impersonatedById) {
+      // The session passed through tRPC middleware is a spread copy that
+      // has lost iron-session's `save()` prototype method. Re-acquire the
+      // real session instance to mutate + persist.
+      const session = await getSession()
+      if (session.impersonatedById) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
           message:
@@ -48,9 +53,9 @@ export const impersonationRouter = createTRPCRouter({
       }
 
       const originalUserId = ctx.user.id
-      ctx.session.impersonatedById = originalUserId
-      ctx.session.userId = target.id
-      await ctx.session.save()
+      session.impersonatedById = originalUserId
+      session.userId = target.id
+      await session.save()
 
       await recordAuditEvent({
         userId: originalUserId,
@@ -69,18 +74,19 @@ export const impersonationRouter = createTRPCRouter({
    * needs to be able to stop).
    */
   stop: protectedProcedure.mutation(async ({ ctx }) => {
-    const originalUserId = ctx.session.impersonatedById
+    const session = await getSession()
+    const originalUserId = session.impersonatedById
     if (!originalUserId) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
         message: 'Not currently impersonating.',
       })
     }
-    const impersonatedUserId = ctx.session.userId
+    const impersonatedUserId = session.userId
 
-    ctx.session.userId = originalUserId
-    delete ctx.session.impersonatedById
-    await ctx.session.save()
+    session.userId = originalUserId
+    delete session.impersonatedById
+    await session.save()
 
     await recordAuditEvent({
       userId: originalUserId,
