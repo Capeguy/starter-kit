@@ -163,9 +163,8 @@ export const McpSettingsPage = () => {
         <CardHeader title="How to connect" />
         <CardBody className="prose-body-2 text-base-content-medium flex flex-col gap-3">
           <p>
-            Users mint a personal API token in{' '}
-            <code>/dashboard?tab=settings</code>, then register this server with
-            the Claude CLI:
+            Users mint a personal API token in <code>/dashboard/settings</code>,
+            then register this server with the Claude CLI:
           </p>
           <pre className="prose-caption-2 border-base-divider-subtle overflow-x-auto rounded-md border p-2 font-mono dark:border-zinc-600 dark:bg-zinc-800">
             {`claude mcp add vibe-stack \\

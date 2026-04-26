@@ -10,6 +10,7 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 
+import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import {
   DataTable,
   DataTableBody,
@@ -75,6 +76,7 @@ export const MyFilesPage = () => {
 
   return (
     <div className="flex flex-1 flex-col gap-6">
+      <RegistryBreadcrumbs />
       <header className="flex flex-col gap-1">
         <h1 className="prose-h2 text-base-content-strong">My files</h1>
         <p className="prose-body-2 text-base-content-medium">

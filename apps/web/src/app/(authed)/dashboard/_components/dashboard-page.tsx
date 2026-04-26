@@ -2,10 +2,8 @@
 
 import { useState } from 'react'
 import NextLink from 'next/link'
-import { useSearchParams } from 'next/navigation'
 import { Avatar } from '@opengovsg/oui/avatar'
 import { Badge } from '@opengovsg/oui/badge'
-import { Tab, TabList, TabPanel, Tabs } from '@opengovsg/oui/tabs'
 import { toast } from '@opengovsg/oui/toast'
 import {
   useQuery,
@@ -15,6 +13,7 @@ import {
 
 import { LinkButton } from '@acme/ui/link-button'
 
+import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { EmptyState } from '~/components/ui/empty-state'
 import { useTRPC } from '~/trpc/react'
@@ -22,35 +21,21 @@ import { formatAuditEvent } from '../../_components/audit-action-labels'
 import { ErrorBomb } from '../../_components/error-bomb'
 import { FilePickerButton } from '../../_components/file-picker-button'
 import { RelativeTime } from '../../_components/relative-time'
-import { ApiTokensSection } from '../settings/_components/api-tokens-section'
 
 const formatDate = (date: Date): string =>
   new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' }).format(date)
-
-const VALID_TABS = ['overview', 'files', 'activity', 'settings'] as const
-type DashboardTab = (typeof VALID_TABS)[number]
 
 export const DashboardPage = () => {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
-  // Allow ?tab=settings (etc.) deep-links from the command palette / external
-  // bookmarks. OUI Tabs is uncontrolled here — set the initial selection only.
-  const searchParams = useSearchParams()
-  const tabParam = searchParams.get('tab')
-  const initialTab: DashboardTab = (VALID_TABS as readonly string[]).includes(
-    tabParam ?? '',
-  )
-    ? (tabParam as DashboardTab)
-    : 'overview'
-
   const { data: me } = useSuspenseQuery(trpc.me.get.queryOptions())
   const { data: filesData } = useQuery(
     trpc.file.listMine.queryOptions({ limit: 5 }),
   )
   const { data: activityData } = useQuery(
-    trpc.audit.listMine.queryOptions({ limit: 8 }),
+    trpc.audit.listMine.queryOptions({ limit: 5 }),
   )
 
   if (!me) return null
@@ -89,6 +74,7 @@ export const DashboardPage = () => {
        * non-prod inside ErrorBomb itself.
        */}
       <ErrorBomb />
+      <RegistryBreadcrumbs />
       <header className="flex flex-col gap-1">
         <h1 className="prose-h2 text-base-content-strong">
           Welcome, {me.name ?? 'there'}
@@ -98,196 +84,164 @@ export const DashboardPage = () => {
         </p>
       </header>
 
-      <Tabs defaultSelectedKey={initialTab}>
-        <TabList
-          aria-label="Dashboard sections"
-          className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          <Tab id="overview">Overview</Tab>
-          <Tab id="files">Files</Tab>
-          <Tab id="activity">Activity</Tab>
-          <Tab id="settings">Settings</Tab>
-        </TabList>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader title="Profile" />
+          <CardBody className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <Avatar size="md" name={me.name ?? 'You'}>
+                {me.avatarUrl && <Avatar.Image src={me.avatarUrl} alt="" />}
+                <Avatar.Fallback />
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="prose-label-md text-base-content-strong">
+                  {me.name ?? '(unnamed)'}
+                </span>
+                <Badge
+                  variant="subtle"
+                  color="main"
+                  size="sm"
+                  className="mt-1 w-fit"
+                >
+                  {me.role.name}
+                </Badge>
+              </div>
+            </div>
+            <FilePickerButton
+              label="Change avatar"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              isPending={uploadingAvatar}
+              onFileSelected={(f) => void handleAvatarUpload(f)}
+            />
+          </CardBody>
+        </Card>
 
-        {/* Overview tab */}
-        <TabPanel id="overview">
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            {/* Profile card */}
-            <Card>
-              <CardHeader title="Profile" />
-              <CardBody className="flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  <Avatar size="md" name={me.name ?? 'You'}>
-                    {me.avatarUrl && <Avatar.Image src={me.avatarUrl} alt="" />}
-                    <Avatar.Fallback />
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <span className="prose-label-md text-base-content-strong">
-                      {me.name ?? '(unnamed)'}
-                    </span>
-                    <Badge
-                      variant="subtle"
-                      color="main"
-                      size="sm"
-                      className="mt-1 w-fit"
-                    >
-                      {me.role.name}
-                    </Badge>
-                  </div>
-                </div>
-                <FilePickerButton
-                  label="Change avatar"
-                  accept="image/png,image/jpeg,image/webp,image/gif"
-                  isPending={uploadingAvatar}
-                  onFileSelected={(f) => void handleAvatarUpload(f)}
-                />
-              </CardBody>
-            </Card>
+        <Card>
+          <CardHeader title="Summary" />
+          <CardBody className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="prose-body-2 text-base-content-medium">
+                Files uploaded
+              </span>
+              <span className="prose-label-md text-base-content-strong">
+                {fileCount}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="prose-body-2 text-base-content-medium">
+                Role
+              </span>
+              <span className="prose-label-md text-base-content-strong">
+                {me.role.name}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="prose-body-2 text-base-content-medium">
+                Member since
+              </span>
+              <span className="prose-label-md text-base-content-strong">
+                {formatDate(me.createdAt)}
+              </span>
+            </div>
+          </CardBody>
+        </Card>
+      </div>
 
-            {/* Summary stats card */}
-            <Card>
-              <CardHeader title="Summary" />
-              <CardBody className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="prose-body-2 text-base-content-medium">
-                    Files uploaded
-                  </span>
-                  <span className="prose-label-md text-base-content-strong">
-                    {fileCount}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="prose-body-2 text-base-content-medium">
-                    Role
-                  </span>
-                  <span className="prose-label-md text-base-content-strong">
-                    {me.role.name}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="prose-body-2 text-base-content-medium">
-                    Member since
-                  </span>
-                  <span className="prose-label-md text-base-content-strong">
-                    {formatDate(me.createdAt)}
-                  </span>
-                </div>
-              </CardBody>
-            </Card>
-          </div>
-
-          <p className="prose-caption-2 text-base-content-medium mt-4">
-            Notifications appear in the bell icon top-right and refresh every 15
-            seconds.
-          </p>
-        </TabPanel>
-
-        {/* Files tab */}
-        <TabPanel id="files">
-          <div className="mt-4">
-            <Card>
-              <CardHeader
-                title="Recent files"
-                actions={
-                  <NextLink
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader
+            title="Recent files"
+            actions={
+              <NextLink
+                href="/dashboard/files"
+                className="prose-label-md text-base-content-brand hover:underline"
+              >
+                See all →
+              </NextLink>
+            }
+          />
+          <CardBody>
+            {!filesData || filesData.items.length === 0 ? (
+              <EmptyState
+                title="No files yet"
+                description="Upload a file to get started."
+                action={
+                  <LinkButton
                     href="/dashboard/files"
-                    className="prose-label-md text-base-content-brand hover:underline"
+                    variant="outline"
+                    size="sm"
                   >
-                    See all in Files →
-                  </NextLink>
+                    Go to Files
+                  </LinkButton>
                 }
               />
-              <CardBody>
-                {!filesData || filesData.items.length === 0 ? (
-                  <EmptyState
-                    title="No files yet"
-                    description="Upload a file to get started."
-                    action={
-                      <LinkButton
-                        href="/dashboard/files"
-                        variant="outline"
-                        size="sm"
-                      >
-                        Go to Files
-                      </LinkButton>
-                    }
-                  />
-                ) : (
-                  <ul className="prose-body-2 flex flex-col gap-1">
-                    {filesData.items.map((f) => (
-                      <li
-                        key={f.id}
-                        className="border-base-divider-subtle flex items-center justify-between border-b py-1 last:border-b-0"
-                      >
-                        <a
-                          href={`/api/files/${f.id}/download`}
-                          className="text-base-content-brand truncate hover:underline"
-                        >
-                          {f.filename}
-                        </a>
-                        <RelativeTime
-                          date={f.createdAt}
-                          className="text-base-content-medium ml-2 shrink-0"
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardBody>
-            </Card>
-          </div>
-        </TabPanel>
+            ) : (
+              <ul className="prose-body-2 flex flex-col gap-1">
+                {filesData.items.map((f) => (
+                  <li
+                    key={f.id}
+                    className="border-base-divider-subtle flex items-center justify-between border-b py-1 last:border-b-0"
+                  >
+                    <a
+                      href={`/api/files/${f.id}/download`}
+                      className="text-base-content-brand truncate hover:underline"
+                    >
+                      {f.filename}
+                    </a>
+                    <RelativeTime
+                      date={f.createdAt}
+                      className="text-base-content-medium ml-2 shrink-0"
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardBody>
+        </Card>
 
-        {/* Activity tab */}
-        <TabPanel id="activity">
-          <div className="mt-4">
-            <Card>
-              <CardHeader title="Recent activity" />
-              <CardBody>
-                {!activityData || activityData.items.length === 0 ? (
-                  <EmptyState
-                    title="No activity yet"
-                    description="Your recent actions will appear here."
-                  />
-                ) : (
-                  <ul className="prose-body-2 flex flex-col gap-1">
-                    {activityData.items.map((a) => (
-                      <li
-                        key={a.id}
-                        className="border-base-divider-subtle flex items-center justify-between gap-2 border-b py-1 last:border-b-0"
-                      >
-                        <span className="text-base-content-default">
-                          {formatAuditEvent(
-                            { action: a.action, metadata: a.metadata },
-                            'self',
-                            activityData.relatedUsers,
-                          )}
-                        </span>
-                        <RelativeTime
-                          date={a.createdAt}
-                          className="text-base-content-medium shrink-0"
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardBody>
-            </Card>
-          </div>
-        </TabPanel>
-
-        {/* Settings tab */}
-        <TabPanel id="settings">
-          <div className="mt-4">
-            <Card>
-              <CardHeader title="Personal API tokens" />
-              <CardBody>
-                <ApiTokensSection />
-              </CardBody>
-            </Card>
-          </div>
-        </TabPanel>
-      </Tabs>
+        <Card>
+          <CardHeader
+            title="Recent activity"
+            actions={
+              <NextLink
+                href="/dashboard/activity"
+                className="prose-label-md text-base-content-brand hover:underline"
+              >
+                See all →
+              </NextLink>
+            }
+          />
+          <CardBody>
+            {!activityData || activityData.items.length === 0 ? (
+              <EmptyState
+                title="No activity yet"
+                description="Your recent actions will appear here."
+              />
+            ) : (
+              <ul className="prose-body-2 flex flex-col gap-1">
+                {activityData.items.map((a) => (
+                  <li
+                    key={a.id}
+                    className="border-base-divider-subtle flex items-center justify-between gap-2 border-b py-1 last:border-b-0"
+                  >
+                    <span className="text-base-content-default">
+                      {formatAuditEvent(
+                        { action: a.action, metadata: a.metadata },
+                        'self',
+                        activityData.relatedUsers,
+                      )}
+                    </span>
+                    <RelativeTime
+                      date={a.createdAt}
+                      className="text-base-content-medium shrink-0"
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardBody>
+        </Card>
+      </div>
     </div>
   )
 }

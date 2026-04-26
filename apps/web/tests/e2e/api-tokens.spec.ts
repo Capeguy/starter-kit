@@ -83,9 +83,8 @@ test.describe('Personal API tokens + REST + MCP', () => {
     await signInAs(ctx, user.id)
     const page = await ctx.newPage()
 
-    // 1) Mint a token via the settings UI (Settings tab on the dashboard);
-    //    assert plaintext is shown once.
-    await page.goto('/dashboard?tab=settings')
+    // 1) Mint a token via the settings UI; assert plaintext is shown once.
+    await page.goto('/dashboard/settings')
 
     await page.getByRole('button', { name: 'New token' }).click()
     await page.getByLabel('Name').fill(`E2E ${t}`)

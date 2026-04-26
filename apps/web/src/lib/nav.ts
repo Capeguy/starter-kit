@@ -2,10 +2,10 @@
  * Single source of truth for navigation across the authed app.
  *
  * Three consumers read from this file:
- * - The admin sidebar (`apps/web/src/app/(authed)/admin/_components/admin-sidebar-nav.tsx`)
- *   renders groups + items here.
+ * - The shared sidebar (`apps/web/src/components/nav-sidebar.tsx`) renders
+ *   groups + items for whichever NavRoot is passed in (admin or user).
  * - The Cmd+K command palette (`apps/web/src/components/command-palette.tsx`)
- *   pulls its "Pages" section from here.
+ *   pulls its grouped sections from here.
  * - The registry-driven breadcrumb component
  *   (`apps/web/src/components/registry-breadcrumbs.tsx`) walks the registry
  *   to resolve a chain from the current pathname.
@@ -28,6 +28,7 @@ import {
   BiFolder,
   BiHistory,
   BiHome,
+  BiPulse,
   BiCog as BiSettings,
   BiShield,
   BiToggleRight,
@@ -147,8 +148,7 @@ export const ADMIN_NAV: NavRoot = {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// User dashboard (palette only — these don't render in a sidebar today,
-// but Cmd+K + breadcrumbs benefit from them)
+// User dashboard
 // ────────────────────────────────────────────────────────────────────────────
 
 export const USER_NAV: NavRoot = {
@@ -171,14 +171,16 @@ export const USER_NAV: NavRoot = {
           icon: BiFolder,
         },
         {
-          path: '/dashboard?tab=settings',
+          path: '/dashboard/activity',
+          label: 'Activity',
+          description: 'Your recent sign-ins, passkey events, and changes',
+          icon: BiPulse,
+        },
+        {
+          path: '/dashboard/settings',
           label: 'Settings',
           description: 'Personal API tokens, preferences',
           icon: BiSettings,
-          // Settings is a tab on /dashboard, not a separate route. The
-          // breadcrumb / sidebar matchers don't see this item; it's
-          // palette-only.
-          matches: [/^\/dashboard\/?\?tab=settings/],
         },
       ],
     },
