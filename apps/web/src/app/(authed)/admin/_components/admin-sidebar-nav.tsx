@@ -107,10 +107,13 @@ export function AdminSidebarNav() {
         <span>{mobileOpen ? 'Close menu' : 'Admin menu'}</span>
       </button>
 
-      {/* Mobile backdrop */}
+      {/* Mobile backdrop. z-[60] sits above the OUI Navbar (which uses
+          z-40) so the navbar gets darkened too — otherwise it stayed
+          fully bright while everything below dimmed, which felt broken
+          in both light and dark mode. */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/50 md:hidden"
+          className="fixed inset-0 z-[60] bg-black/60 md:hidden"
           aria-hidden="true"
           onClick={() => setMobileOpen(false)}
         />
@@ -118,10 +121,12 @@ export function AdminSidebarNav() {
 
       {/* Sidebar drawer (mobile) / static column (md+). The wrapping div
           owns the surface bg + shadow so the drawer is opaque against the
-          backdrop; SidebarRoot itself sits transparently on top. */}
+          backdrop; SidebarRoot itself sits transparently on top. The
+          drawer renders AFTER the backdrop in the DOM so it stacks on
+          top at the same z-index. */}
       <div
         className={[
-          'fixed inset-y-0 left-0 z-40 w-64 md:static md:z-auto md:w-auto',
+          'fixed inset-y-0 left-0 z-[60] w-64 md:static md:z-auto md:w-auto',
           'bg-base-canvas-default border-base-divider-medium border-r shadow-xl md:shadow-none',
           'flex flex-col',
           'transition-transform duration-200 ease-out',
