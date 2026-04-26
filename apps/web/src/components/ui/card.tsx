@@ -1,68 +1,58 @@
-import type { HTMLAttributes, ReactNode } from 'react'
-import { cn } from '@opengovsg/oui-theme'
+import type { ComponentProps, ReactNode } from 'react'
 
-export interface CardProps extends HTMLAttributes<HTMLElement> {
-  className?: string
-}
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardTitle,
+  CardHeader as ShadcnCardHeader,
+} from '~/components/ui/_card-primitives'
 
-export const Card = ({ className, ...rest }: CardProps) => (
-  <section
-    className={cn(
-      'border-base-divider-medium bg-base-canvas-default rounded-md border',
-      className,
-    )}
-    {...rest}
-  />
-)
-
-export interface CardHeaderProps extends HTMLAttributes<HTMLElement> {
+export type CardHeaderProps = ComponentProps<'div'> & {
   title?: string
   actions?: ReactNode
-  className?: string
+  children?: ReactNode
 }
 
-export const CardHeader = ({
-  title,
-  actions,
-  children,
-  className,
-  ...rest
-}: CardHeaderProps) => (
-  <header
-    className={cn(
-      'border-base-divider-subtle flex items-center justify-between gap-3 border-b px-4 py-3',
-      className,
-    )}
-    {...rest}
-  >
-    {title !== undefined || actions !== undefined ? (
-      <>
-        {title !== undefined && (
-          <h2 className="prose-h4 text-base-content-strong">{title}</h2>
-        )}
-        {actions}
-      </>
-    ) : (
-      children
-    )}
-  </header>
-)
-
-export interface CardBodyProps extends HTMLAttributes<HTMLDivElement> {
-  className?: string
+/**
+ * Backwards-compatible CardHeader.
+ *
+ * Legacy callers use `<CardHeader title="…" actions={…} />`. When either
+ * `title` or `actions` is provided, this renders the equivalent shadcn
+ * composition (`CardHeader > CardTitle` + optional `CardAction`).
+ *
+ * Modern callers can also pass `children` directly to compose freely
+ * against the shadcn primitives, mirroring the underlying shadcn
+ * `CardHeader` API.
+ */
+function CardHeader({ title, actions, children, ...rest }: CardHeaderProps) {
+  if (title !== undefined || actions !== undefined) {
+    return (
+      <ShadcnCardHeader {...rest}>
+        {title !== undefined && <CardTitle>{title}</CardTitle>}
+        {actions !== undefined && <CardAction>{actions}</CardAction>}
+        {children}
+      </ShadcnCardHeader>
+    )
+  }
+  return <ShadcnCardHeader {...rest}>{children}</ShadcnCardHeader>
 }
 
-export const CardBody = ({ className, ...rest }: CardBodyProps) => (
-  <div className={cn('px-4 py-4', className)} {...rest} />
-)
+/**
+ * Backwards-compatible alias for shadcn's `CardContent`. New code should
+ * prefer `CardContent` directly.
+ */
+const CardBody = CardContent
 
-export interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
-  className?: string
+export {
+  Card,
+  CardAction,
+  CardBody,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 }
-
-export const CardFooter = ({ className, ...rest }: CardFooterProps) => (
-  <div
-    className={cn('border-base-divider-subtle border-t px-4 py-3', className)}
-    {...rest}
-  />
-)
