@@ -1,10 +1,11 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Button } from '@opengovsg/oui'
-import { cn } from '@opengovsg/oui-theme'
 
 import { ErrorSvg } from '@acme/ui/svgs'
+
+import { Button } from '~/components/ui/button'
+import { cn } from '~/lib/utils'
 
 interface ErrorCardProps {
   fullscreen?: boolean
@@ -26,7 +27,6 @@ export const ErrorCard = ({
   const canGoBack = typeof window !== 'undefined' && window.history.length > 0
   const handleBack = () => {
     if (typeof window === 'undefined') return
-    // Check if there is a previous entry in the browser's history stack
     if (canGoBack) {
       router.back()
     } else {
@@ -43,21 +43,13 @@ export const ErrorCard = ({
     >
       {svg}
 
-      <div className="flex flex-col items-center gap-4">
-        <span className="prose-h2">{title}</span>
-        <span className="prose-body-1">{message}</span>
-        {/* {
-          // TODO: Add Datadog or other logging session ID here
-          ddSessionId && (
-            <span className="prose-label-md">
-              Session ID: <code>{ddSessionId}</code>
-            </span>
-          )
-        } */}
+      <div className="flex flex-col items-center gap-4 text-center">
+        <h2 className="text-foreground text-2xl font-bold">{title}</h2>
+        <p className="text-muted-foreground text-base">{message}</p>
       </div>
 
       {canGoBack && (
-        <Button onPress={handleBack} color="neutral">
+        <Button onClick={handleBack} variant="secondary">
           Go Back
         </Button>
       )}

@@ -1,44 +1,49 @@
 'use client'
 
-import type { ModalProps } from '@opengovsg/oui/modal'
 import { useCallback, useEffect, useState } from 'react'
-import { Banner } from '@opengovsg/oui/banner'
-import { Button } from '@opengovsg/oui/button'
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from '@opengovsg/oui/modal'
+import { AlertTriangle } from 'lucide-react'
 
+import { Button } from '~/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog'
 import { REQUIRE_UPDATE_EVENT } from '~/constants'
 
-const VersionModal = (props: ModalProps) => {
+interface VersionModalProps {
+  isOpen: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+const VersionModal = ({ isOpen, onOpenChange }: VersionModalProps) => {
   return (
-    <Modal {...props}>
-      <ModalContent>
-        <ModalHeader className="flex flex-col gap-1">
-          Update available
-        </ModalHeader>
-        <ModalBody>
-          A new version of this app is available. Please refresh the page to get
-          the latest version.
-        </ModalBody>
-        <ModalFooter>
-          <Button slot="close" color="neutral" variant="clear">
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Update available</DialogTitle>
+          <DialogDescription>
+            A new version of this app is available. Please refresh the page to
+            get the latest version.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button
-            onPress={() => {
+            onClick={() => {
               window.location.reload()
             }}
           >
             Refresh
           </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -66,9 +71,13 @@ export const VersionCheckWrapper = () => {
   return (
     <>
       {requireUpdate && (
-        <Banner variant="warning">
-          An update is available. Please refresh the page.
-        </Banner>
+        <div
+          role="status"
+          className="flex items-center justify-center gap-2 border-b border-amber-300/60 bg-amber-50 px-4 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/50 dark:text-amber-100"
+        >
+          <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
+          <span>An update is available. Please refresh the page.</span>
+        </div>
       )}
       <VersionModal isOpen={isOpen} onOpenChange={setIsOpen} />
     </>

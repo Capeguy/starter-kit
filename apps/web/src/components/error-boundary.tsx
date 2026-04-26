@@ -3,11 +3,12 @@
 import type { ReactNode } from 'react'
 import type { FallbackProps } from 'react-error-boundary'
 import { useEffect } from 'react'
-import { Banner } from '@opengovsg/oui/banner'
-import { Button } from '@opengovsg/oui/button'
 import * as Sentry from '@sentry/nextjs'
+import { AlertTriangle } from 'lucide-react'
 import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary'
 
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
+import { Button } from '~/components/ui/button'
 import { env } from '~/env'
 
 export interface ErrorBoundaryProps {
@@ -17,7 +18,7 @@ export interface ErrorBoundaryProps {
 /**
  * Per-segment error boundary used to wrap UI inside the authed layout.
  *
- * Renders an OUI Banner with friendly text plus "Try again" + "Reload page"
+ * Renders an Alert with friendly text plus "Try again" + "Reload page"
  * actions. Auto-reports the error to Sentry when `NEXT_PUBLIC_SENTRY_DSN`
  * is configured; otherwise logs to the console (no hard dependency).
  *
@@ -59,18 +60,22 @@ const ErrorBoundaryFallback = ({
       className="flex flex-col gap-4"
       data-testid="error-boundary-fallback"
     >
-      <Banner variant="error" isDismissable={false}>
-        Something went wrong. The error has been reported — try again, or reload
-        the page if it persists.
-      </Banner>
+      <Alert variant="destructive">
+        <AlertTriangle />
+        <AlertTitle>Something went wrong</AlertTitle>
+        <AlertDescription>
+          The error has been reported — try again, or reload the page if it
+          persists.
+        </AlertDescription>
+      </Alert>
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="solid" onPress={() => resetErrorBoundary()}>
+        <Button size="sm" onClick={() => resetErrorBoundary()}>
           Try again
         </Button>
         <Button
           size="sm"
           variant="outline"
-          onPress={() => {
+          onClick={() => {
             if (typeof window !== 'undefined') {
               window.location.reload()
             }
@@ -79,9 +84,9 @@ const ErrorBoundaryFallback = ({
           Reload page
         </Button>
       </div>
-      <details className="text-base-content-medium">
-        <summary className="prose-body-2 cursor-pointer">Error details</summary>
-        <pre className="prose-caption-2 mt-2 max-h-64 overflow-auto whitespace-pre-wrap">
+      <details className="text-muted-foreground">
+        <summary className="cursor-pointer text-sm">Error details</summary>
+        <pre className="mt-2 max-h-64 overflow-auto text-xs whitespace-pre-wrap">
           {message}
         </pre>
       </details>

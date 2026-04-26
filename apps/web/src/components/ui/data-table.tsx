@@ -1,5 +1,28 @@
-import type { HTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from 'react'
-import { cn } from '@opengovsg/oui-theme'
+/**
+ * Backwards-compatible re-exports of the shadcn `Table` primitives under
+ * the legacy `DataTable*` names that consumer pages already use. New code
+ * should prefer importing the shadcn `Table*` components directly.
+ *
+ * The wrapper preserves the legacy `DataTableEmpty` helper and the outer
+ * scrollable container (with the `scroll-shadow-x` accent) that the old
+ * OUI-era component provided.
+ */
+import type {
+  HTMLAttributes,
+  ReactNode,
+  TdHTMLAttributes,
+  ThHTMLAttributes,
+} from 'react'
+
+import { cn } from '~/lib/utils'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './table'
 
 // ---------------------------------------------------------------------------
 // DataTable — outer container
@@ -9,16 +32,10 @@ export interface DataTableProps extends HTMLAttributes<HTMLDivElement> {
   className?: string
 }
 
-/**
- * Scrollable, bordered container that wraps a <table>.
- * Mirrors the hand-rolled pattern:
- *   <div className="border-base-divider-medium overflow-x-auto rounded-md border">
- */
 export const DataTable = ({ className, ...rest }: DataTableProps) => (
   <div
     className={cn(
-      'border-base-divider-medium overflow-x-auto rounded-md border',
-      'scroll-shadow-x',
+      'border-border scroll-shadow-x overflow-x-auto rounded-md border',
       className,
     )}
     {...rest}
@@ -38,11 +55,8 @@ export const DataTableHeader = ({
   className,
   ...rest
 }: DataTableHeaderProps) => (
-  <thead
-    className={cn(
-      'prose-label-sm bg-base-canvas-alt text-base-content-medium',
-      className,
-    )}
+  <TableHeader
+    className={cn('bg-muted/50 text-muted-foreground text-xs', className)}
     {...rest}
   />
 )
@@ -57,7 +71,7 @@ export interface DataTableHeadProps
 }
 
 export const DataTableHead = ({ className, ...rest }: DataTableHeadProps) => (
-  <th className={cn('px-3 py-2', className)} {...rest} />
+  <TableHead className={cn('h-9 px-3 py-2', className)} {...rest} />
 )
 
 // ---------------------------------------------------------------------------
@@ -70,7 +84,7 @@ export interface DataTableBodyProps
 }
 
 export const DataTableBody = ({ className, ...rest }: DataTableBodyProps) => (
-  <tbody className={cn('prose-body-2', className)} {...rest} />
+  <TableBody className={cn('text-sm', className)} {...rest} />
 )
 
 // ---------------------------------------------------------------------------
@@ -82,13 +96,7 @@ export interface DataTableRowProps extends HTMLAttributes<HTMLTableRowElement> {
 }
 
 export const DataTableRow = ({ className, ...rest }: DataTableRowProps) => (
-  <tr
-    className={cn(
-      'border-base-divider-subtle hover:bg-base-canvas-alt border-t',
-      className,
-    )}
-    {...rest}
-  />
+  <TableRow className={cn(className)} {...rest} />
 )
 
 // ---------------------------------------------------------------------------
@@ -101,7 +109,7 @@ export interface DataTableCellProps
 }
 
 export const DataTableCell = ({ className, ...rest }: DataTableCellProps) => (
-  <td className={cn('px-3 py-2', className)} {...rest} />
+  <TableCell className={cn('px-3 py-2', className)} {...rest} />
 )
 
 // ---------------------------------------------------------------------------
@@ -110,21 +118,21 @@ export const DataTableCell = ({ className, ...rest }: DataTableCellProps) => (
 
 export interface DataTableEmptyProps {
   colSpan?: number
-  children?: React.ReactNode
+  children?: ReactNode
 }
 
 export const DataTableEmpty = ({
   colSpan = 1,
   children,
 }: DataTableEmptyProps) => (
-  <tr>
-    <td
+  <TableRow>
+    <TableCell
       colSpan={colSpan}
-      className="text-base-content-medium px-3 py-8 text-center"
+      className="text-muted-foreground px-3 py-8 text-center"
     >
       {children}
-    </td>
-  </tr>
+    </TableCell>
+  </TableRow>
 )
 
 // ---------------------------------------------------------------------------
@@ -136,5 +144,5 @@ export interface DataTableRootProps extends HTMLAttributes<HTMLTableElement> {
 }
 
 export const DataTableRoot = ({ className, ...rest }: DataTableRootProps) => (
-  <table className={cn('w-full min-w-max text-left', className)} {...rest} />
+  <Table className={cn('w-full min-w-max text-left', className)} {...rest} />
 )

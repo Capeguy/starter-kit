@@ -1,8 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { Link } from 'react-aria-components'
-import { BiRightArrowAlt } from 'react-icons/bi'
+import { ArrowRight } from 'lucide-react'
 
 import { LinkButton } from '@acme/ui/link-button'
 import { RestrictedFooter } from '@acme/ui/restricted-footer'
@@ -29,15 +28,15 @@ export const LandingPageComponent = ({
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="bg-base-canvas-brand-subtle">
+      <div className="bg-muted">
         <div className="container mx-auto px-4">
           <LandingPageHeader isAuthed={isAuthed} />
           <div className="flex flex-col py-14 md:flex-row md:py-22">
             <div className="flex flex-1 flex-col">
-              <h1 className="lg:prose-responsive-display-heavy-1280 md:prose-responsive-display-heavy-480 prose-responsive-display-heavy text-base-content-strong">
+              <h1 className="text-foreground text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
                 Build production ready applications in minutes.
               </h1>
-              <p className="prose-body-1 text-base-content-default mt-4">
+              <p className="text-foreground mt-4 text-base">
                 StarterApp is our baseline application created by StarterKit.
                 You can explore it to get a sense of basic functions and
                 interactions.
@@ -45,7 +44,7 @@ export const LandingPageComponent = ({
               <div className="mt-10">
                 <LinkButton
                   href={ctaLink}
-                  endContent={<BiRightArrowAlt className="size-6" />}
+                  endContent={<ArrowRight className="size-5" />}
                 >
                   Explore StarterApp
                 </LinkButton>
@@ -79,7 +78,7 @@ export const LandingPageComponent = ({
           />
         </div>
       </LandingSection>
-      <LandingSection className="bg-base-canvas-brand-subtle">
+      <LandingSection className="bg-muted">
         <div className="flex flex-col items-center gap-6 py-14 md:gap-12 md:py-22 lg:flex-row lg:gap-30">
           <div className="flex flex-1 flex-col gap-4">
             <SectionHeader>Another call to action</SectionHeader>
@@ -110,21 +109,21 @@ export const LandingPageComponent = ({
             Check out the <strong>Open Government Products Suite</strong>, and
             if you are a public officer you can mix and match from our set of
             productivity and collaboration tools.{' '}
-            <Link
+            <a
               href="https://reports.open.gov.sg/products"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-interaction-main-default hover:text-interaction-main-hover inline-flex items-center gap-0.5 underline underline-offset-4"
+              className="text-primary hover:text-primary/80 inline-flex items-center gap-0.5 underline underline-offset-4"
             >
               Full list of OGP products
-              <BiRightArrowAlt className="text-2xl" />
-            </Link>
+              <ArrowRight className="size-5" />
+            </a>
           </SectionBody>
         </LandingSection>
       )}
       <LandingSection
         classNames={{
-          section: 'bg-base-content-strong',
+          section: 'bg-foreground',
           inner: 'items-center gap-8',
         }}
       >
@@ -137,7 +136,7 @@ export const LandingPageComponent = ({
             height={56}
           />
         )}
-        <SectionHeader className="text-white">
+        <SectionHeader className="text-background">
           Start building your app now
         </SectionHeader>
         <LinkButton href={ctaLink}>Get started</LinkButton>

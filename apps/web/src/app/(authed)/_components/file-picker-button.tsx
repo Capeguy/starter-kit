@@ -1,8 +1,9 @@
 'use client'
 
 import { useId, useRef, useState } from 'react'
-import { Button } from '@opengovsg/oui/button'
-import { BiUpload } from 'react-icons/bi'
+import { Loader2, Upload } from 'lucide-react'
+
+import { Button } from '~/components/ui/button'
 
 interface FilePickerButtonProps {
   label?: string
@@ -12,9 +13,9 @@ interface FilePickerButtonProps {
 }
 
 /**
- * Wraps a hidden native file input with an OUI Button trigger so the user
- * sees a proper styled control instead of the bare browser widget.
- * The picked filename is shown next to the button as a hint.
+ * Wraps a hidden native file input with a styled Button trigger so the
+ * user sees a proper control instead of the bare browser widget. The
+ * picked filename is shown next to the button as a hint.
  */
 export const FilePickerButton = ({
   label = 'Choose file',
@@ -45,16 +46,21 @@ export const FilePickerButton = ({
         }}
       />
       <Button
+        type="button"
         size="sm"
         variant="outline"
-        startContent={<BiUpload className="h-4 w-4" />}
-        isPending={isPending}
-        onPress={() => inputRef.current?.click()}
+        disabled={isPending}
+        onClick={() => inputRef.current?.click()}
       >
+        {isPending ? (
+          <Loader2 className="animate-spin" />
+        ) : (
+          <Upload aria-hidden />
+        )}
         {label}
       </Button>
       {filename && (
-        <span className="prose-caption-2 text-base-content-medium truncate">
+        <span className="text-muted-foreground truncate text-xs">
           {filename}
         </span>
       )}

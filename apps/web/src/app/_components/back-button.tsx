@@ -1,19 +1,16 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Button } from '@opengovsg/oui'
-import { BiArrowBack } from 'react-icons/bi'
+import { ArrowLeft } from 'lucide-react'
+
+import { Button } from '~/components/ui/button'
 
 export const BackButton = () => {
   const router = useRouter()
 
   return (
-    <Button
-      startContent={<BiArrowBack />}
-      variant="clear"
-      size="xs"
-      onPress={() => router.back()}
-    >
+    <Button variant="ghost" size="sm" onClick={() => router.back()}>
+      <ArrowLeft />
       Back
     </Button>
   )

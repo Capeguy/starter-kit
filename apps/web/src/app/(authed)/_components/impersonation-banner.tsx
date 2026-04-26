@@ -1,10 +1,10 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Button } from '@opengovsg/oui/button'
-import { toast } from '@opengovsg/oui/toast'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
+import { Button } from '~/components/ui/button'
 import { useTRPC } from '~/trpc/react'
 
 export const ImpersonationBanner = () => {
@@ -32,18 +32,17 @@ export const ImpersonationBanner = () => {
     <div
       role="status"
       aria-live="polite"
-      className="bg-utility-feedback-warning flex flex-wrap items-center justify-between gap-3 border-b border-amber-700/40 px-4 py-2 text-amber-950 dark:border-amber-200/30 dark:text-amber-50"
+      className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-300/60 bg-amber-100 px-4 py-2 text-sm text-amber-950 dark:border-amber-900/40 dark:bg-amber-950 dark:text-amber-100"
     >
-      <span className="prose-label-md">
+      <span className="font-medium">
         You are impersonating <strong>{me.name ?? '(unnamed)'}</strong> as{' '}
         <strong>{me.impersonator.name ?? '(unnamed)'}</strong>.
       </span>
       <Button
         size="sm"
-        color="critical"
-        variant="solid"
-        isPending={stop.isPending}
-        onPress={() => stop.mutate()}
+        variant="destructive"
+        disabled={stop.isPending}
+        onClick={() => stop.mutate()}
       >
         Stop impersonation
       </Button>

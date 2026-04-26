@@ -10,10 +10,11 @@
  */
 import { useEffect } from 'react'
 import NextLink from 'next/link'
-import { Banner } from '@opengovsg/oui/banner'
-import { Button } from '@opengovsg/oui/button'
 import * as Sentry from '@sentry/nextjs'
+import { AlertTriangle } from 'lucide-react'
 
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
+import { Button } from '~/components/ui/button'
 import { AUTHED_ROOT_ROUTE } from '~/constants'
 import { env } from '~/env'
 
@@ -38,32 +39,33 @@ export default function AuthedError({ error, reset }: AuthedErrorProps) {
       className="container mx-auto flex flex-col gap-4 p-4"
       data-testid="authed-segment-error"
     >
-      <Banner variant="error" isDismissable={false}>
-        Something went wrong loading this page. The error has been reported.
-      </Banner>
+      <Alert variant="destructive">
+        <AlertTriangle />
+        <AlertTitle>Something went wrong</AlertTitle>
+        <AlertDescription>
+          We couldn&apos;t load this page. The error has been reported.
+        </AlertDescription>
+      </Alert>
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="solid" onPress={() => reset()}>
+        <Button size="sm" onClick={() => reset()}>
           Try again
         </Button>
         <Button
           size="sm"
           variant="outline"
-          onPress={() => {
+          onClick={() => {
             if (typeof window !== 'undefined') window.location.reload()
           }}
         >
           Reload page
         </Button>
-        <NextLink
-          href={AUTHED_ROOT_ROUTE}
-          className="prose-label-md text-base-content-brand inline-flex items-center px-3 py-2 hover:underline"
-        >
-          Go to dashboard
-        </NextLink>
+        <Button asChild size="sm" variant="link">
+          <NextLink href={AUTHED_ROOT_ROUTE}>Go to dashboard</NextLink>
+        </Button>
       </div>
-      <details className="text-base-content-medium">
-        <summary className="prose-body-2 cursor-pointer">Error details</summary>
-        <pre className="prose-caption-2 mt-2 max-h-64 overflow-auto whitespace-pre-wrap">
+      <details className="text-muted-foreground">
+        <summary className="cursor-pointer text-sm">Error details</summary>
+        <pre className="mt-2 max-h-64 overflow-auto text-xs whitespace-pre-wrap">
           {error.message}
           {error.digest ? `\n\nDigest: ${error.digest}` : ''}
         </pre>

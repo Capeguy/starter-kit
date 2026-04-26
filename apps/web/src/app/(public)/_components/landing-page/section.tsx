@@ -1,6 +1,6 @@
-import type { SlotsToClasses } from '@opengovsg/oui-theme'
 import type { PropsWithChildren } from 'react'
-import { cn } from '@opengovsg/oui-theme'
+
+import { cn } from '~/lib/utils'
 
 export const LandingSection = ({
   children,
@@ -8,7 +8,7 @@ export const LandingSection = ({
   classNames,
 }: PropsWithChildren<{
   className?: string
-  classNames?: SlotsToClasses<'section' | 'inner'>
+  classNames?: { section?: string; inner?: string }
 }>) => {
   return (
     <section className={className ?? classNames?.section}>
@@ -31,7 +31,7 @@ export const SectionHeader = ({
   return (
     <h2
       className={cn(
-        'md:prose-responsive-heading-heavy-480 prose-responsive-heading-heavy text-base-content-strong',
+        'text-foreground text-3xl font-bold tracking-tight md:text-4xl',
         className,
       )}
     >
@@ -41,5 +41,5 @@ export const SectionHeader = ({
 }
 
 export const SectionBody = ({ children }: PropsWithChildren) => {
-  return <p className="prose-body-1 text-base-content-default">{children}</p>
+  return <p className="text-foreground text-base">{children}</p>
 }

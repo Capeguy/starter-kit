@@ -1,5 +1,6 @@
-import { Button } from '@opengovsg/oui/button'
-import { BiErrorCircle } from 'react-icons/bi'
+import { AlertCircle } from 'lucide-react'
+
+import { Button } from '~/components/ui/button'
 
 export interface ErrorStateProps {
   title?: string
@@ -17,22 +18,22 @@ export const ErrorState = ({
 
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-10 text-center">
-      <BiErrorCircle className="text-utility-feedback-critical h-8 w-8" />
-      <p className="prose-h4 text-base-content-strong">{title}</p>
+      <AlertCircle className="text-destructive h-8 w-8" />
+      <p className="text-foreground text-base font-semibold">{title}</p>
       {message !== undefined && (
         <details className="text-left">
-          <summary className="prose-body-2 text-utility-feedback-critical cursor-pointer">
+          <summary className="text-destructive cursor-pointer text-sm">
             {message}
           </summary>
           {stack !== undefined && (
-            <pre className="prose-caption-2 text-base-content-medium mt-2 overflow-auto whitespace-pre-wrap">
+            <pre className="text-muted-foreground mt-2 overflow-auto text-xs whitespace-pre-wrap">
               {stack}
             </pre>
           )}
         </details>
       )}
       {onRetry !== undefined && (
-        <Button variant="outline" size="sm" onPress={onRetry}>
+        <Button variant="outline" size="sm" onClick={onRetry}>
           Try again
         </Button>
       )}
