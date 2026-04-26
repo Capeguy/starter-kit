@@ -25,9 +25,11 @@ export default async function AdminLayout({ children }: DynamicLayoutProps) {
   }
 
   return (
-    <div className="flex flex-1 gap-0">
+    // Stack on mobile (hamburger button above, page content below); side-by-
+    // side on md+ (sidebar left, page content right).
+    <div className="flex flex-1 flex-col gap-3 md:flex-row md:gap-0">
       <AdminSidebarNav />
-      <div className="min-w-0 flex-1 pl-0 md:pl-4">{children}</div>
+      <div className="min-w-0 flex-1 md:pl-4">{children}</div>
     </div>
   )
 }
