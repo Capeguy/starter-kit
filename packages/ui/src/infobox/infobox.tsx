@@ -1,61 +1,59 @@
-import type { SlotsToClasses } from '@opengovsg/oui-theme'
+import type { ReactNode } from 'react'
 import { useMemo } from 'react'
-import {
-  BiSolidCheckCircle,
-  BiSolidErrorCircle,
-  BiSolidInfoCircle,
-} from 'react-icons/bi'
+import { CheckCircle2, Info, XCircle } from 'lucide-react'
 
 import type { InfoboxSlots, InfoboxVariantProps } from './infobox.styles'
-import { mapPropsVariants } from '../utils'
-import { infoboxStyles } from './infobox.styles'
+import { cn } from '../utils'
+import { infoboxBase, infoboxIcon } from './infobox.styles'
 
 interface InfoboxProps extends InfoboxVariantProps {
+  /** The content of the infobox. */
+  children: ReactNode
   /**
-   * The content of the infobox.
+   * Icon to show on the left of the infobox. If not specified, a default
+   * icon will be used according to the variant. Provide `null` to hide.
    */
-  children: React.ReactNode
-  /**
-   * Icon to show on the left of the infobox.
-   * If not specified, a default icon will be used according to the infobox variant.
-   * Provide `null` to hide the icon.
-   */
-  icon?: React.ReactNode | null
+  icon?: ReactNode | null
   className?: string
-  classNames?: SlotsToClasses<InfoboxSlots>
+  classNames?: Partial<Record<InfoboxSlots, string>>
 }
 
-export const Infobox = (originalProps: InfoboxProps) => {
-  const [props, variantProps] = mapPropsVariants(
-    originalProps,
-    infoboxStyles.variantKeys,
-  )
+export const Infobox = ({
+  variant = 'info',
+  size = 'md',
+  icon,
+  className,
+  classNames,
+  children,
+}: InfoboxProps) => {
+  const iconClassName = infoboxIcon({
+    variant,
+    size,
+    className: classNames?.icon,
+  })
 
-  const styles = infoboxStyles(variantProps)
-
-  const icon = useMemo(() => {
-    const iconClassName = styles.icon({ className: props.classNames?.icon })
-    if (props.icon) {
-      return <div className={iconClassName}>{props.icon}</div>
-    }
-    switch (variantProps.variant) {
+  const renderedIcon = useMemo(() => {
+    if (icon === null) return null
+    if (icon !== undefined) return <span className={iconClassName}>{icon}</span>
+    switch (variant) {
       case 'error':
-        return <BiSolidErrorCircle className={iconClassName} />
+        return <XCircle className={iconClassName} aria-hidden />
       case 'success':
-        return <BiSolidCheckCircle className={iconClassName} />
+        return <CheckCircle2 className={iconClassName} aria-hidden />
       default:
-        return <BiSolidInfoCircle className={iconClassName} />
+        return <Info className={iconClassName} aria-hidden />
     }
-  }, [props.classNames?.icon, props.icon, styles, variantProps.variant])
+  }, [icon, iconClassName, variant])
 
   return (
     <div
-      className={styles.base({
-        className: props.className ?? props.classNames?.base,
-      })}
+      className={cn(
+        infoboxBase({ variant, size }),
+        className ?? classNames?.base,
+      )}
     >
-      {icon}
-      {props.children}
+      {renderedIcon}
+      <div className="min-w-0 flex-1">{children}</div>
     </div>
   )
 }

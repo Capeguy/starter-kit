@@ -1,13 +1,14 @@
-import { cn } from '@opengovsg/oui-theme'
+import type { ReactNode } from 'react'
 
 import { EmptyResultsSvg } from './svgs/empty-results-svg'
+import { cn } from './utils'
 
 export interface EmptyPlaceholderProps {
-  svg?: React.ReactNode
+  svg?: ReactNode
   title?: string
   description?: string
   size?: 'sm' | 'lg'
-  children?: React.ReactNode
+  children?: ReactNode
   className?: string
 }
 
@@ -22,15 +23,25 @@ export const EmptyPlaceholder = ({
   return (
     <div
       className={cn(
-        `flex w-full flex-col items-center justify-center gap-2 py-12`,
+        'flex w-full flex-col items-center justify-center gap-2 py-12',
         className,
       )}
     >
-      <p className={size === 'sm' ? 'prose-h5' : 'prose-h4'}>
+      <p
+        className={cn(
+          'text-foreground font-semibold',
+          size === 'sm' ? 'text-base' : 'text-lg',
+        )}
+      >
         {title ?? 'No Records'}
       </p>
       {description && (
-        <p className={size === 'sm' ? 'prose-body-2' : 'prose-body-1'}>
+        <p
+          className={cn(
+            'text-muted-foreground',
+            size === 'sm' ? 'text-sm' : 'text-base',
+          )}
+        >
           {description}
         </p>
       )}

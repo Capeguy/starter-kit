@@ -666,6 +666,15 @@ importers:
       '@opengovsg/oui-theme':
         specifier: catalog:oui
         version: 0.0.52(react@19.2.5)(tailwind-variants@3.1.1(tailwind-merge@3.5.0)(tailwindcss@4.2.2))(tailwindcss@4.2.2)
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      lucide-react:
+        specifier: ^1.11.0
+        version: 1.11.0(react@19.2.5)
       react-aria:
         specifier: ^3.44.0
         version: 3.44.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -681,6 +690,9 @@ importers:
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      tailwind-merge:
+        specifier: ^3.5.0
+        version: 3.5.0
       tailwind-variants:
         specifier: ^3.1.1
         version: 3.1.1(tailwind-merge@3.5.0)(tailwindcss@4.2.2)

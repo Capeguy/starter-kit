@@ -1,3 +1,13 @@
+import type { ClassValue } from 'clsx'
+import { clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+
+/**
+ * Tailwind-aware className merger. Same semantics as the shadcn-style `cn`
+ * helper used in `apps/web/src/lib/utils.ts`.
+ */
+export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs))
+
 /**
  * Utility to separate variant props from other props.
  * @example
