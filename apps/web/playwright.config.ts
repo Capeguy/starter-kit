@@ -11,9 +11,11 @@ const baseUrl = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3111'
 console.log(`ℹ️ Using base URL "${baseUrl}"`)
 
 const opts = {
-  // launch headless on CI, in browser locally
-  headless: !!process.env.CI || !!process.env.PLAYWRIGHT_HEADLESS,
-  // collectCoverage: !!process.env.PLAYWRIGHT_HEADLESS,
+  // Default to headless everywhere. Pass PLAYWRIGHT_HEADED=1 (or use the
+  // `e2e:headed` / `e2e:ui` scripts) when you actually want to watch a run —
+  // running multiple suites in parallel locally was popping up windows
+  // disruptively.
+  headless: !process.env.PLAYWRIGHT_HEADED,
 }
 
 export default defineConfig({
