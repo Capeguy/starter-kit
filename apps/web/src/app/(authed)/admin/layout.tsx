@@ -5,7 +5,6 @@ import { db } from '@acme/db'
 import type { DynamicLayoutProps } from '~/types/nextjs'
 import { NavSidebar } from '~/components/nav-sidebar'
 import { AUTHED_ROOT_ROUTE, LOGIN_ROUTE } from '~/constants'
-import { ADMIN_NAV } from '~/lib/nav'
 import { Capability, hasCapability } from '~/lib/rbac'
 import { getSession } from '~/server/session'
 
@@ -29,7 +28,7 @@ export default async function AdminLayout({ children }: DynamicLayoutProps) {
     // Stack on mobile (hamburger button above, page content below); side-by-
     // side on md+ (sidebar left, page content right).
     <div className="flex flex-1 flex-col gap-3 md:flex-row md:gap-0">
-      <NavSidebar nav={ADMIN_NAV} mobileLabel="Admin menu" />
+      <NavSidebar navKey="admin" mobileLabel="Admin menu" />
       <div className="min-w-0 flex-1 md:pl-4">{children}</div>
     </div>
   )

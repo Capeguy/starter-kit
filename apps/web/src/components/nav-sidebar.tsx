@@ -6,29 +6,38 @@ import { SidebarItem, SidebarRoot } from '@opengovsg/oui'
 import { useQuery } from '@tanstack/react-query'
 import { BiMenu, BiX } from 'react-icons/bi'
 
-import type { NavRoot } from '~/lib/nav'
-import { findActiveItem, visibleGroups } from '~/lib/nav'
+import { ADMIN_NAV, findActiveItem, USER_NAV, visibleGroups } from '~/lib/nav'
 import { useTRPC } from '~/trpc/react'
 
+/**
+ * Which nav root to render. Passed as a string key (not the NavRoot object
+ * itself) because NavRoot contains icon ComponentTypes that fail to serialize
+ * across the server-component → client-component boundary. The lookup table
+ * lives inside this client module instead.
+ */
+type NavKey = 'admin' | 'user'
+
+const NAVS = { admin: ADMIN_NAV, user: USER_NAV } as const
+
 interface NavSidebarProps {
-  /** Which nav root to render (admin, user dashboard, …). */
-  nav: NavRoot
+  navKey: NavKey
   /** Label for the mobile hamburger trigger AND the drawer header. */
   mobileLabel: string
 }
 
 /**
- * Shared sidebar that renders any `NavRoot`. Used by both the admin layout
- * (`ADMIN_NAV`) and the user dashboard layout (`USER_NAV`). Capability-gates
- * items via `visibleGroups`, computes active state via `findActiveItem`, and
- * provides a mobile drawer that dims the navbar (z-[60] beats the OUI Navbar's
- * z-40 so the entire chrome darkens together).
+ * Shared sidebar that renders either ADMIN_NAV or USER_NAV. Used by both the
+ * admin layout and the user dashboard layout. Capability-gates items via
+ * `visibleGroups`, computes active state via `findActiveItem`, and provides a
+ * mobile drawer that dims the navbar (z-[60] beats the OUI Navbar's z-40 so
+ * the entire chrome darkens together).
  */
-export function NavSidebar({ nav, mobileLabel }: NavSidebarProps) {
+export function NavSidebar({ navKey, mobileLabel }: NavSidebarProps) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const trpc = useTRPC()
   const { data: me } = useQuery(trpc.me.get.queryOptions())
+  const nav = NAVS[navKey]
   const groups = visibleGroups(nav.groups, me?.role.capabilities)
   const active = findActiveItem(pathname, nav)
 
