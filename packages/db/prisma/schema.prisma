@@ -58,6 +58,7 @@ model User {
   issuedInvites Invite[]            @relation("InviteIssuer")
   claimedInvite Invite?             @relation("InviteClaimer")
   apiTokens     ApiToken[]
+  systemMessageUpdates SystemMessage[]
 
   lastLogin DateTime? @db.Timestamptz(3)
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
@@ -235,6 +236,34 @@ model FeatureFlag {
   allowedUserIds String[] @map("allowed_user_ids")
   createdAt      DateTime @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime @updatedAt @db.Timestamptz(3)
+
+  @@schema("vibe_stack")
+}
+
+/// Singleton row holding the app-wide system message banner. There is at
+/// most one row, identified by the literal id "singleton" so admin updates
+/// are a simple upsert without a count query.
+///
+/// `enabled` is the master switch — banner only renders when true.
+/// `severity` controls the visual treatment (info / warning / critical).
+/// `updatedById` is `SetNull` so deleting an admin doesn't wipe the row.
+model SystemMessage {
+  id          String                @id @default("singleton")
+  enabled     Boolean               @default(false)
+  message     String
+  severity    SystemMessageSeverity @default(INFO)
+  updatedAt   DateTime              @updatedAt @db.Timestamptz(3)
+  updatedById String?               @map("updated_by_id")
+  updatedBy   User?                 @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([updatedById])
+  @@schema("vibe_stack")
+}
+
+enum SystemMessageSeverity {
+  INFO
+  WARNING
+  CRITICAL
 
   @@schema("vibe_stack")
 }

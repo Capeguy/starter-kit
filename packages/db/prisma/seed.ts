@@ -76,6 +76,16 @@ async function main() {
     }
   }
 
+  // Singleton SystemMessage row. Default `enabled: false` so freshly-seeded
+  // installs don't show a banner — admins opt in via /admin/system-message.
+  // The migration also inserts the row, so this upsert is just defensive in
+  // case the migration ran before the default text was wired up.
+  await db.systemMessage.upsert({
+    where: { id: 'singleton' },
+    update: {},
+    create: { id: 'singleton', enabled: false, message: '' },
+  })
+
   console.log(
     `Seeded: 1 admin (${admin.name}), ${users.length} users (${users.map((u) => u.name).join(', ')})`,
   )
