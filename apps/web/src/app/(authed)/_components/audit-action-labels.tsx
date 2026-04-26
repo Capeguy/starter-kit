@@ -213,6 +213,23 @@ export const formatAuditEvent = (
       )
     }
 
+    case 'user.invite.issue': {
+      // Row's user is the admin who issued the invite. Pre-fill metadata
+      // (email/name) is informational only — the recipient ultimately picks
+      // their own account name.
+      const inviteEmail = getMetaString(row.metadata, 'email')
+      const inviteName = getMetaString(row.metadata, 'name')
+      const recipient = inviteName ?? inviteEmail ?? 'a recipient'
+      return isSelf
+        ? `You issued an invite link for ${recipient}`
+        : `${subject} issued an invite link for ${recipient}`
+    }
+
+    case 'user.invite.claim':
+      return isSelf
+        ? 'You registered an account via an invite link'
+        : `${subject} registered an account via an invite link`
+
     default:
       return row.action
   }

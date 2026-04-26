@@ -1,10 +1,13 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { SidebarItem, SidebarRoot } from '@opengovsg/oui'
+import { useQuery } from '@tanstack/react-query'
 import {
   BiBell,
+  BiEnvelope,
   BiFile,
   BiHistory,
   BiMenu,
@@ -13,12 +16,32 @@ import {
   BiX,
 } from 'react-icons/bi'
 
-const NAV_ITEMS = [
+import type { CapabilityCode } from '~/lib/rbac'
+import { Capability, hasCapability } from '~/lib/rbac'
+import { useTRPC } from '~/trpc/react'
+
+interface NavItem {
+  href: string
+  label: string
+  icon: ReactNode
+  tooltip: string
+  /** If set, only show when the current user has this capability. */
+  capability?: CapabilityCode
+}
+
+const NAV_ITEMS: readonly NavItem[] = [
   {
     href: '/admin/users',
     label: 'Users',
     icon: <BiUser size={20} />,
     tooltip: 'Users',
+  },
+  {
+    href: '/admin/invites',
+    label: 'Invites',
+    icon: <BiEnvelope size={20} />,
+    tooltip: 'Invites',
+    capability: Capability.UserInviteIssue,
   },
   {
     href: '/admin/audit',
@@ -44,11 +67,17 @@ const NAV_ITEMS = [
     icon: <BiShield size={20} />,
     tooltip: 'Roles & capabilities',
   },
-] as const
+]
 
 export function AdminSidebarNav() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const trpc = useTRPC()
+  const { data: me } = useQuery(trpc.me.get.queryOptions())
+  const visibleItems = NAV_ITEMS.filter(
+    (item) =>
+      !item.capability || hasCapability(me?.role.capabilities, item.capability),
+  )
 
   return (
     <>
@@ -103,7 +132,7 @@ export function AdminSidebarNav() {
           </button>
         </div>
         <SidebarRoot className="h-full">
-          {NAV_ITEMS.map((item) => (
+          {visibleItems.map((item) => (
             <SidebarItem
               key={item.href}
               href={item.href}
