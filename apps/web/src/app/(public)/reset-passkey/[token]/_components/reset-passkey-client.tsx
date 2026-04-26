@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@opengovsg/oui/button'
-import { Infobox } from '@opengovsg/oui/infobox'
 import { startRegistration } from '@simplewebauthn/browser'
 import { useMutation } from '@tanstack/react-query'
+import { CheckCircle2, XCircle } from 'lucide-react'
 
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Button } from '~/components/ui/button'
 import { AUTHED_ROOT_ROUTE } from '~/constants'
 import { useTRPC } from '~/trpc/react'
 
@@ -69,10 +70,13 @@ export const ResetPasskeyClient = ({ token }: Props) => {
   if (done) {
     return (
       <div className="flex max-w-md flex-col gap-4 text-center">
-        <h1 className="prose-h2 text-base-content-strong">All set</h1>
-        <Infobox variant="success">
-          Your new passkey is registered. Redirecting…
-        </Infobox>
+        <h1 className="text-foreground text-2xl font-bold">All set</h1>
+        <Alert variant="success">
+          <CheckCircle2 />
+          <AlertDescription>
+            Your new passkey is registered. Redirecting…
+          </AlertDescription>
+        </Alert>
       </div>
     )
   }
@@ -80,19 +84,24 @@ export const ResetPasskeyClient = ({ token }: Props) => {
   return (
     <div className="flex w-full max-w-md flex-col gap-4">
       <header className="flex flex-col gap-1">
-        <h1 className="prose-h2 text-base-content-strong">
+        <h1 className="text-foreground text-2xl font-bold">
           Reset your passkey
         </h1>
-        <p className="prose-body-2 text-base-content-medium">
+        <p className="text-muted-foreground text-sm">
           An admin issued this link so you can register a new passkey for your
           account. Any existing passkeys on your account will be replaced.
         </p>
       </header>
-      {error && <Infobox variant="error">{error}</Infobox>}
-      <Button isPending={isPending} onPress={handleClaim} size="md">
+      {error && (
+        <Alert variant="destructive">
+          <XCircle />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      <Button disabled={isPending} onClick={handleClaim}>
         {isPending ? 'Working…' : 'Register new passkey'}
       </Button>
-      <p className="prose-caption-2 text-base-content-medium">
+      <p className="text-muted-foreground text-xs">
         Single-use link. If it doesn&apos;t work, ask the admin for a fresh one.
       </p>
     </div>

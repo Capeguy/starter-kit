@@ -2,13 +2,14 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@opengovsg/oui/button'
-import { Infobox } from '@opengovsg/oui/infobox'
 import { startRegistration } from '@simplewebauthn/browser'
 import { useMutation } from '@tanstack/react-query'
+import { CheckCircle2, XCircle } from 'lucide-react'
 
 import { TextField } from '@acme/ui/text-field'
 
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Button } from '~/components/ui/button'
 import { AUTHED_ROOT_ROUTE } from '~/constants'
 import { useTRPC } from '~/trpc/react'
 
@@ -82,10 +83,13 @@ export const InviteClient = ({ token }: Props) => {
   if (done) {
     return (
       <div className="flex max-w-md flex-col gap-4 text-center">
-        <h1 className="prose-h2 text-base-content-strong">Welcome</h1>
-        <Infobox variant="success">
-          Your account is set up. Redirecting…
-        </Infobox>
+        <h1 className="text-foreground text-2xl font-bold">Welcome</h1>
+        <Alert variant="success">
+          <CheckCircle2 />
+          <AlertDescription>
+            Your account is set up. Redirecting…
+          </AlertDescription>
+        </Alert>
       </div>
     )
   }
@@ -96,11 +100,11 @@ export const InviteClient = ({ token }: Props) => {
       className="flex w-full max-w-md flex-col gap-4"
     >
       <header className="flex flex-col gap-1">
-        <h1 className="prose-h2 text-base-content-strong">
+        <h1 className="text-foreground text-2xl font-bold">
           Accept your invite
         </h1>
-        <p className="prose-body-2 text-base-content-medium">
-          You've been invited to join. Pick a display name and register a
+        <p className="text-muted-foreground text-sm">
+          You&apos;ve been invited to join. Pick a display name and register a
           passkey to create your account.
         </p>
       </header>
@@ -116,11 +120,16 @@ export const InviteClient = ({ token }: Props) => {
         onChange={setName}
         isRequired
       />
-      {error && <Infobox variant="error">{error}</Infobox>}
-      <Button type="submit" isPending={isPending} size="md">
+      {error && (
+        <Alert variant="destructive">
+          <XCircle />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      <Button type="submit" disabled={isPending}>
         {isPending ? 'Working…' : 'Register passkey'}
       </Button>
-      <p className="prose-caption-2 text-base-content-medium">
+      <p className="text-muted-foreground text-xs">
         Single-use link. If it doesn&apos;t work, ask the admin for a fresh one.
       </p>
     </form>

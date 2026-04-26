@@ -2,14 +2,15 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@opengovsg/oui/button'
-import { Infobox } from '@opengovsg/oui/infobox'
 import { startAuthentication, startRegistration } from '@simplewebauthn/browser'
 import { useMutation } from '@tanstack/react-query'
+import { Info, XCircle } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 
 import { TextField } from '@acme/ui/text-field'
 
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Button } from '~/components/ui/button'
 import { AUTHED_ROOT_ROUTE } from '~/constants'
 import { useTRPC } from '~/trpc/react'
 
@@ -84,7 +85,6 @@ export const PasskeyFlow = () => {
       try {
         response = await startAuthentication({ optionsJSON: options })
       } catch (browserErr: unknown) {
-        // No passkey available on this device, or the user dismissed the prompt.
         if (errorName(browserErr) === 'NotAllowedError') {
           switchToNeedsName('no_passkey')
           return
@@ -100,7 +100,6 @@ export const PasskeyFlow = () => {
         router.push(AUTHED_ROOT_ROUTE)
       } catch (verifyErr: unknown) {
         if (trpcErrorCode(verifyErr) === 'NOT_FOUND') {
-          // Server doesn't recognise this credential — recover by registering.
           switchToNeedsName('unknown_passkey')
           return
         }
@@ -151,13 +150,21 @@ export const PasskeyFlow = () => {
         onSubmit={handleCreate}
         className="flex flex-1 flex-col gap-4"
       >
-        <Infobox variant="info">
-          {reason === 'unknown_passkey'
-            ? "We don't have your details on file. Enter a name to create an account."
-            : 'Enter your name to create a new account with a passkey.'}
-        </Infobox>
+        <Alert variant="info">
+          <Info />
+          <AlertDescription>
+            {reason === 'unknown_passkey'
+              ? "We don't have your details on file. Enter a name to create an account."
+              : 'Enter your name to create a new account with a passkey.'}
+          </AlertDescription>
+        </Alert>
 
-        {error && <Infobox variant="error">{error}</Infobox>}
+        {error && (
+          <Alert variant="destructive">
+            <XCircle />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         <Controller
           control={control}
@@ -179,11 +186,11 @@ export const PasskeyFlow = () => {
           )}
         />
 
-        <Button size="md" isPending={isRegistering} type="submit">
+        <Button disabled={isRegistering} type="submit">
           Create account
         </Button>
 
-        <Button size="md" variant="clear" onPress={goBack}>
+        <Button variant="ghost" onClick={goBack}>
           ← Back
         </Button>
       </form>
@@ -192,13 +199,18 @@ export const PasskeyFlow = () => {
 
   return (
     <div className="flex flex-1 flex-col gap-4">
-      <p className="prose-body-2 text-base-content-medium">
+      <p className="text-muted-foreground text-sm">
         Sign in with an existing passkey, or we&apos;ll help you create one.
       </p>
 
-      {error && <Infobox variant="error">{error}</Infobox>}
+      {error && (
+        <Alert variant="destructive">
+          <XCircle />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-      <Button size="md" isPending={isAuthenticating} onPress={handleContinue}>
+      <Button disabled={isAuthenticating} onClick={handleContinue}>
         Continue with Passkey
       </Button>
     </div>
