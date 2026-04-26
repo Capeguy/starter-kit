@@ -1,24 +1,19 @@
 'use client'
 
 import { useState, useSyncExternalStore } from 'react'
-import { Badge } from '@opengovsg/oui/badge'
-import { Button } from '@opengovsg/oui/button'
-import { Infobox } from '@opengovsg/oui/infobox'
-import {
-  Modal,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from '@opengovsg/oui/modal'
-import { toast } from '@opengovsg/oui/toast'
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
+import { AlertTriangle } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { TextField } from '@acme/ui/text-field'
 
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
 import {
   DataTable,
   DataTableBody,
@@ -29,6 +24,13 @@ import {
   DataTableRoot,
   DataTableRow,
 } from '~/components/ui/data-table'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog'
 import { useTRPC } from '~/trpc/react'
 import { RelativeTime } from '../../../_components/relative-time'
 
@@ -75,13 +77,13 @@ export const ApiTokensSection = () => {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-4">
-        <p className="prose-body-2 text-base-content-medium">
+        <p className="text-muted-foreground text-sm">
           Personal API tokens authenticate calls to the REST API (
           <code>/api/v1/*</code>) and the MCP server (<code>/api/mcp</code>).
           Tokens are scoped to your account and inherit your role&apos;s
           capabilities.
         </p>
-        <Button onPress={() => setIsCreating(true)}>New token</Button>
+        <Button onClick={() => setIsCreating(true)}>New token</Button>
       </div>
 
       <DataTable>
@@ -113,11 +115,11 @@ export const ApiTokensSection = () => {
                     : 'active'
                 return (
                   <DataTableRow key={token.id}>
-                    <DataTableCell className="prose-label-md text-base-content-strong">
+                    <DataTableCell className="text-foreground font-medium">
                       {token.name}
                     </DataTableCell>
                     <DataTableCell>
-                      <code className="prose-caption-2">{token.prefix}…</code>
+                      <code className="text-xs">{token.prefix}…</code>
                     </DataTableCell>
                     <DataTableCell>
                       <RelativeTime date={token.createdAt} />
@@ -126,36 +128,30 @@ export const ApiTokensSection = () => {
                       {token.lastUsedAt ? (
                         <RelativeTime date={token.lastUsedAt} />
                       ) : (
-                        <span className="text-base-content-medium">Never</span>
+                        <span className="text-muted-foreground">Never</span>
                       )}
                     </DataTableCell>
                     <DataTableCell>{formatDate(token.expiresAt)}</DataTableCell>
                     <DataTableCell>
                       {status === 'active' ? (
-                        <Badge color="success" variant="subtle" size="sm">
-                          Active
-                        </Badge>
+                        <Badge variant="success">Active</Badge>
                       ) : status === 'expired' ? (
-                        <Badge color="warning" variant="subtle" size="sm">
-                          Expired
-                        </Badge>
+                        <Badge variant="warning">Expired</Badge>
                       ) : (
-                        <Badge color="critical" variant="subtle" size="sm">
-                          Revoked
-                        </Badge>
+                        <Badge variant="destructive">Revoked</Badge>
                       )}
                     </DataTableCell>
                     <DataTableCell className="text-right">
                       {!revoked && (
                         <Button
                           size="sm"
-                          variant="clear"
-                          color="critical"
-                          isPending={
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          disabled={
                             revokeMutation.isPending &&
                             revokeMutation.variables.id === token.id
                           }
-                          onPress={() =>
+                          onClick={() =>
                             revokeMutation.mutate({ id: token.id })
                           }
                         >
@@ -230,93 +226,88 @@ const NewTokenModal = ({ onClose }: NewTokenModalProps) => {
   }
 
   return (
-    <Modal isOpen onOpenChange={(open) => !open && onClose()}>
-      <ModalContent>
-        {() => (
-          <>
-            <ModalHeader>
-              {issued ? 'Token created' : 'New personal API token'}
-            </ModalHeader>
-            <div className="flex flex-col gap-4 px-6 pb-2">
-              {!issued ? (
-                <>
-                  <p className="prose-body-2 text-base-content-medium">
-                    Tokens carry your account&apos;s capabilities. Treat them
-                    like passwords.
-                  </p>
-                  <TextField
-                    label="Name"
-                    inputProps={{
-                      placeholder: 'CLI on laptop',
-                      name: 'name',
-                      maxLength: 120,
-                    }}
-                    value={name}
-                    onChange={setName}
-                    isRequired
-                  />
-                  <fieldset className="flex flex-col gap-2">
-                    <legend className="prose-label-md mb-1">Expires in</legend>
-                    {EXPIRY_PRESETS.map((preset) => (
-                      <label
-                        key={preset.label}
-                        className="flex items-center gap-2"
-                      >
-                        <input
-                          type="radio"
-                          name="expiresInDays"
-                          checked={expiresInDays === preset.value}
-                          onChange={() => setExpiresInDays(preset.value)}
-                          className="accent-interaction-main-default dark:border-zinc-600 dark:bg-zinc-800"
-                        />
-                        <span className="prose-body-2">{preset.label}</span>
-                      </label>
-                    ))}
-                  </fieldset>
-                </>
-              ) : (
-                <>
-                  <Infobox variant="warning">
-                    This is the only time you&apos;ll see this token. Copy it
-                    now — once this dialog closes, only the prefix
-                    <code className="mx-1">{issued.prefix}…</code>
-                    will be visible in the tokens list.
-                  </Infobox>
-                  <textarea
-                    readOnly
-                    value={issued.plaintext}
-                    rows={2}
-                    className="border-base-divider-medium prose-body-2 w-full rounded-md border p-2 font-mono dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
-                    onClick={(e) => e.currentTarget.select()}
-                    aria-label="Personal API token plaintext"
-                  />
-                  {issued.expiresAt && (
-                    <p className="prose-caption-2 text-base-content-medium">
-                      Expires {formatDate(issued.expiresAt)}.
-                    </p>
-                  )}
-                </>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {issued ? 'Token created' : 'New personal API token'}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4">
+          {!issued ? (
+            <>
+              <p className="text-muted-foreground text-sm">
+                Tokens carry your account&apos;s capabilities. Treat them like
+                passwords.
+              </p>
+              <TextField
+                label="Name"
+                inputProps={{
+                  placeholder: 'CLI on laptop',
+                  name: 'name',
+                  maxLength: 120,
+                }}
+                value={name}
+                onChange={setName}
+                isRequired
+              />
+              <fieldset className="flex flex-col gap-2">
+                <legend className="mb-1 text-sm font-medium">Expires in</legend>
+                {EXPIRY_PRESETS.map((preset) => (
+                  <label key={preset.label} className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="expiresInDays"
+                      checked={expiresInDays === preset.value}
+                      onChange={() => setExpiresInDays(preset.value)}
+                      className="accent-primary"
+                    />
+                    <span className="text-sm">{preset.label}</span>
+                  </label>
+                ))}
+              </fieldset>
+            </>
+          ) : (
+            <>
+              <Alert variant="warning">
+                <AlertTriangle />
+                <AlertDescription>
+                  This is the only time you&apos;ll see this token. Copy it now
+                  — once this dialog closes, only the prefix
+                  <code className="mx-1">{issued.prefix}…</code>
+                  will be visible in the tokens list.
+                </AlertDescription>
+              </Alert>
+              <textarea
+                readOnly
+                value={issued.plaintext}
+                rows={2}
+                className="border-border bg-muted/50 w-full rounded-md border p-2 font-mono text-sm"
+                onClick={(e) => e.currentTarget.select()}
+                aria-label="Personal API token plaintext"
+              />
+              {issued.expiresAt && (
+                <p className="text-muted-foreground text-xs">
+                  Expires {formatDate(issued.expiresAt)}.
+                </p>
               )}
-            </div>
-            <ModalFooter>
-              <Button variant="clear" onPress={onClose}>
-                {issued ? 'Done' : 'Cancel'}
-              </Button>
-              {!issued ? (
-                <Button
-                  onPress={handleSubmit}
-                  isPending={issueMutation.isPending}
-                >
-                  Create token
-                </Button>
-              ) : (
-                <Button onPress={handleCopy}>Copy token</Button>
-              )}
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
-    </Modal>
+            </>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>
+            {issued ? 'Done' : 'Cancel'}
+          </Button>
+          {!issued ? (
+            <Button onClick={handleSubmit} disabled={issueMutation.isPending}>
+              Create token
+            </Button>
+          ) : (
+            <Button onClick={handleCopy}>Copy token</Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -340,14 +331,14 @@ const HowToUseHelp = () => {
   const host = origin || 'https://your-domain'
   return (
     <details
-      className="border-base-divider-subtle rounded-md border p-3"
+      className="border-border rounded-md border p-3"
       open={open}
       onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)}
     >
-      <summary className="prose-label-md text-base-content-strong cursor-pointer">
+      <summary className="text-foreground cursor-pointer text-sm font-medium">
         How to use these tokens
       </summary>
-      <div className="prose-body-2 text-base-content-medium mt-3 flex flex-col gap-3">
+      <div className="text-muted-foreground mt-3 flex flex-col gap-3 text-sm">
         <p>
           Send your token in the <code>Authorization</code> header as a Bearer
           credential. Same-origin scope: requests must originate from this
@@ -355,15 +346,15 @@ const HowToUseHelp = () => {
           requests will be blocked).
         </p>
         <div>
-          <p className="prose-label-sm mb-1">REST: GET /api/v1/me</p>
-          <pre className="prose-caption-2 border-base-divider-subtle overflow-x-auto rounded-md border p-2 font-mono dark:border-zinc-600 dark:bg-zinc-800">
+          <p className="mb-1 text-xs font-medium">REST: GET /api/v1/me</p>
+          <pre className="border-border bg-muted/50 overflow-x-auto rounded-md border p-2 font-mono text-xs">
             {`curl -H "Authorization: Bearer vibe_pat_…" \\
   ${host}/api/v1/me`}
           </pre>
         </div>
         <div>
-          <p className="prose-label-sm mb-1">MCP: tools/list (JSON-RPC)</p>
-          <pre className="prose-caption-2 border-base-divider-subtle overflow-x-auto rounded-md border p-2 font-mono dark:border-zinc-600 dark:bg-zinc-800">
+          <p className="mb-1 text-xs font-medium">MCP: tools/list (JSON-RPC)</p>
+          <pre className="border-border bg-muted/50 overflow-x-auto rounded-md border p-2 font-mono text-xs">
             {`curl -H "Authorization: Bearer vibe_pat_…" \\
   -H "Content-Type: application/json" \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' \\

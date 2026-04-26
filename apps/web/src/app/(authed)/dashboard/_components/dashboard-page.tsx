@@ -2,18 +2,18 @@
 
 import { useState } from 'react'
 import NextLink from 'next/link'
-import { Avatar } from '@opengovsg/oui/avatar'
-import { Badge } from '@opengovsg/oui/badge'
-import { toast } from '@opengovsg/oui/toast'
 import {
   useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 import { LinkButton } from '@acme/ui/link-button'
 
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
+import { Badge } from '~/components/ui/badge'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { EmptyState } from '~/components/ui/empty-state'
 import { useTRPC } from '~/trpc/react'
@@ -24,6 +24,11 @@ import { RelativeTime } from '../../_components/relative-time'
 
 const formatDate = (date: Date): string =>
   new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' }).format(date)
+
+const initials = (name: string | null | undefined): string => {
+  if (!name) return '?'
+  return name.slice(0, 2).toUpperCase()
+}
 
 export const DashboardPage = () => {
   const trpc = useTRPC()
@@ -76,10 +81,10 @@ export const DashboardPage = () => {
       <ErrorBomb />
       <RegistryBreadcrumbs />
       <header className="flex flex-col gap-1">
-        <h1 className="prose-h2 text-base-content-strong">
+        <h1 className="text-foreground text-2xl font-bold">
           Welcome, {me.name ?? 'there'}
         </h1>
-        <p className="prose-body-2 text-base-content-medium">
+        <p className="text-muted-foreground text-sm">
           Member since {formatDate(me.createdAt)}.
         </p>
       </header>
@@ -89,20 +94,17 @@ export const DashboardPage = () => {
           <CardHeader title="Profile" />
           <CardBody className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
-              <Avatar size="md" name={me.name ?? 'You'}>
-                {me.avatarUrl && <Avatar.Image src={me.avatarUrl} alt="" />}
-                <Avatar.Fallback />
+              <Avatar className="h-10 w-10">
+                {me.avatarUrl && (
+                  <AvatarImage src={me.avatarUrl} alt={me.name ?? 'You'} />
+                )}
+                <AvatarFallback>{initials(me.name ?? 'You')}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="prose-label-md text-base-content-strong">
+                <span className="text-foreground text-sm font-medium">
                   {me.name ?? '(unnamed)'}
                 </span>
-                <Badge
-                  variant="subtle"
-                  color="main"
-                  size="sm"
-                  className="mt-1 w-fit"
-                >
+                <Badge variant="info" className="mt-1 w-fit">
                   {me.role.name}
                 </Badge>
               </div>
@@ -120,26 +122,24 @@ export const DashboardPage = () => {
           <CardHeader title="Summary" />
           <CardBody className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="prose-body-2 text-base-content-medium">
+              <span className="text-muted-foreground text-sm">
                 Files uploaded
               </span>
-              <span className="prose-label-md text-base-content-strong">
+              <span className="text-foreground text-sm font-medium">
                 {fileCount}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="prose-body-2 text-base-content-medium">
-                Role
-              </span>
-              <span className="prose-label-md text-base-content-strong">
+              <span className="text-muted-foreground text-sm">Role</span>
+              <span className="text-foreground text-sm font-medium">
                 {me.role.name}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="prose-body-2 text-base-content-medium">
+              <span className="text-muted-foreground text-sm">
                 Member since
               </span>
-              <span className="prose-label-md text-base-content-strong">
+              <span className="text-foreground text-sm font-medium">
                 {formatDate(me.createdAt)}
               </span>
             </div>
@@ -154,7 +154,7 @@ export const DashboardPage = () => {
             actions={
               <NextLink
                 href="/dashboard/files"
-                className="prose-label-md text-base-content-brand hover:underline"
+                className="text-primary text-sm font-medium hover:underline"
               >
                 See all →
               </NextLink>
@@ -176,21 +176,21 @@ export const DashboardPage = () => {
                 }
               />
             ) : (
-              <ul className="prose-body-2 flex flex-col gap-1">
+              <ul className="flex flex-col gap-1 text-sm">
                 {filesData.items.map((f) => (
                   <li
                     key={f.id}
-                    className="border-base-divider-subtle flex items-center justify-between border-b py-1 last:border-b-0"
+                    className="border-border flex items-center justify-between border-b py-1 last:border-b-0"
                   >
                     <a
                       href={`/api/files/${f.id}/download`}
-                      className="text-base-content-brand truncate hover:underline"
+                      className="text-primary truncate hover:underline"
                     >
                       {f.filename}
                     </a>
                     <RelativeTime
                       date={f.createdAt}
-                      className="text-base-content-medium ml-2 shrink-0"
+                      className="text-muted-foreground ml-2 shrink-0"
                     />
                   </li>
                 ))}
@@ -205,7 +205,7 @@ export const DashboardPage = () => {
             actions={
               <NextLink
                 href="/dashboard/activity"
-                className="prose-label-md text-base-content-brand hover:underline"
+                className="text-primary text-sm font-medium hover:underline"
               >
                 See all →
               </NextLink>
@@ -218,13 +218,13 @@ export const DashboardPage = () => {
                 description="Your recent actions will appear here."
               />
             ) : (
-              <ul className="prose-body-2 flex flex-col gap-1">
+              <ul className="flex flex-col gap-1 text-sm">
                 {activityData.items.map((a) => (
                   <li
                     key={a.id}
-                    className="border-base-divider-subtle flex items-center justify-between gap-2 border-b py-1 last:border-b-0"
+                    className="border-border flex items-center justify-between gap-2 border-b py-1 last:border-b-0"
                   >
-                    <span className="text-base-content-default">
+                    <span className="text-foreground">
                       {formatAuditEvent(
                         { action: a.action, metadata: a.metadata },
                         'self',
@@ -233,7 +233,7 @@ export const DashboardPage = () => {
                     </span>
                     <RelativeTime
                       date={a.createdAt}
-                      className="text-base-content-medium shrink-0"
+                      className="text-muted-foreground shrink-0"
                     />
                   </li>
                 ))}

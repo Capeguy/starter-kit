@@ -1,16 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@opengovsg/oui/button'
-import { Infobox } from '@opengovsg/oui/infobox'
-import { toast } from '@opengovsg/oui/toast'
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
+import { Info } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Button } from '~/components/ui/button'
 import {
   DataTable,
   DataTableBody,
@@ -78,15 +79,15 @@ export const MyFilesPage = () => {
     <div className="flex flex-1 flex-col gap-6">
       <RegistryBreadcrumbs />
       <header className="flex flex-col gap-1">
-        <h1 className="prose-h2 text-base-content-strong">My files</h1>
-        <p className="prose-body-2 text-base-content-medium">
+        <h1 className="text-foreground text-2xl font-bold">My files</h1>
+        <p className="text-muted-foreground text-sm">
           Upload, list, and delete your files. Stored on Vercel Blob; URLs are
           public-but-obscure (random suffix per upload).
         </p>
       </header>
 
       {canUpload ? (
-        <div className="border-base-divider-medium flex flex-col items-start gap-3 rounded-md border p-4">
+        <div className="border-border flex flex-col items-start gap-3 rounded-md border p-4">
           <FilePickerButton
             label="Upload a file"
             isPending={uploading}
@@ -94,17 +95,24 @@ export const MyFilesPage = () => {
           />
         </div>
       ) : (
-        <Infobox variant="info">
-          File uploads are restricted to roles with the <code>file.upload</code>{' '}
-          capability. Ask an admin to grant it if you need to upload.
-        </Infobox>
+        <Alert variant="info">
+          <Info />
+          <AlertDescription>
+            File uploads are restricted to roles with the{' '}
+            <code>file.upload</code> capability. Ask an admin to grant it if you
+            need to upload.
+          </AlertDescription>
+        </Alert>
       )}
 
       {data.items.length === 0 ? (
-        <Infobox variant="info">
-          No files yet.
-          {canUpload ? ' Upload one above.' : ''}
-        </Infobox>
+        <Alert variant="info">
+          <Info />
+          <AlertDescription>
+            No files yet.
+            {canUpload ? ' Upload one above.' : ''}
+          </AlertDescription>
+        </Alert>
       ) : (
         <DataTable>
           <DataTableRoot>
@@ -122,15 +130,15 @@ export const MyFilesPage = () => {
                   <DataTableCell>
                     <a
                       href={`/api/files/${f.id}/download`}
-                      className="text-base-content-brand hover:underline"
+                      className="text-primary hover:underline"
                     >
                       {f.filename}
                     </a>
                   </DataTableCell>
-                  <DataTableCell className="text-base-content-medium">
+                  <DataTableCell className="text-muted-foreground">
                     {formatBytes(f.size)}
                   </DataTableCell>
-                  <DataTableCell className="text-base-content-medium">
+                  <DataTableCell className="text-muted-foreground">
                     {new Intl.DateTimeFormat('en-GB', {
                       dateStyle: 'short',
                       timeStyle: 'short',
@@ -140,7 +148,7 @@ export const MyFilesPage = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onPress={() => {
+                      onClick={() => {
                         if (confirm(`Delete ${f.filename}?`)) {
                           deleteFile.mutate({ fileId: f.id })
                         }
