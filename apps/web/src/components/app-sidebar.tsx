@@ -74,7 +74,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const SwitchIcon = otherRoot === ADMIN_NAV ? Shield : LayoutDashboard
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
