@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { ThemeProvider } from 'next-themes'
 
 import type { DynamicLayoutProps } from '~/types/nextjs'
+import { ErrorBoundary } from '~/components/error-boundary'
 import { LOGIN_ROUTE } from '~/constants'
 import { getSession } from '~/server/session'
 import { HydrateClient, prefetch, trpc } from '~/trpc/server'
@@ -29,8 +30,15 @@ export default async function AuthedLayout({ children }: DynamicLayoutProps) {
           <VersionCheckWrapper />
           <ImpersonationBanner />
           <AuthedNavbar />
+          {/*
+           * The ErrorBoundary wraps only the page content (not the navbar) so
+           * that crashes below it still leave the navbar interactive — users
+           * can still navigate, log out, or open the account menu while seeing
+           * the friendly fallback. This is the React render-error boundary;
+           * Next.js's segment-level crashes are caught by `error.tsx`.
+           */}
           <div className="container mx-auto flex flex-col gap-4 p-4">
-            {children}
+            <ErrorBoundary>{children}</ErrorBoundary>
           </div>
         </main>
       </HydrateClient>

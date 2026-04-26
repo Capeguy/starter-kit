@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { LoadingState } from '~/components/ui/loading-state'
+import { SkeletonTable } from '~/components/ui/skeleton'
 import { HydrateClient, prefetch, trpc } from '~/trpc/server'
 import { UsersListPage } from './_components/users-list-page'
 
@@ -11,7 +11,7 @@ export default async function AdminUsersRoute() {
 
   return (
     <HydrateClient>
-      <Suspense fallback={<LoadingState />}>
+      <Suspense fallback={<SkeletonTable rows={6} cols={5} />}>
         <UsersListPage />
       </Suspense>
     </HydrateClient>
