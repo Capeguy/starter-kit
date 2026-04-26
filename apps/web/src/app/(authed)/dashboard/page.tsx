@@ -2,7 +2,10 @@ import { HydrateClient, prefetch, trpc } from '~/trpc/server'
 import { DashboardPage } from './_components/dashboard-page'
 
 export default async function DashboardRoute() {
-  await prefetch(trpc.me.get.queryOptions())
+  await Promise.all([
+    prefetch(trpc.me.get.queryOptions()),
+    prefetch(trpc.apiToken.listMine.queryOptions()),
+  ])
 
   return (
     <HydrateClient>

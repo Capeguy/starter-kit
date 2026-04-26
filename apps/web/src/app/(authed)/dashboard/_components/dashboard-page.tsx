@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import NextLink from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Avatar } from '@opengovsg/oui/avatar'
 import { Badge } from '@opengovsg/oui/badge'
 import { Tab, TabList, TabPanel, Tabs } from '@opengovsg/oui/tabs'
@@ -21,14 +22,28 @@ import { formatAuditEvent } from '../../_components/audit-action-labels'
 import { ErrorBomb } from '../../_components/error-bomb'
 import { FilePickerButton } from '../../_components/file-picker-button'
 import { RelativeTime } from '../../_components/relative-time'
+import { ApiTokensSection } from '../settings/_components/api-tokens-section'
 
 const formatDate = (date: Date): string =>
   new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' }).format(date)
+
+const VALID_TABS = ['overview', 'files', 'activity', 'settings'] as const
+type DashboardTab = (typeof VALID_TABS)[number]
 
 export const DashboardPage = () => {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+
+  // Allow ?tab=settings (etc.) deep-links from the command palette / external
+  // bookmarks. OUI Tabs is uncontrolled here — set the initial selection only.
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const initialTab: DashboardTab = (VALID_TABS as readonly string[]).includes(
+    tabParam ?? '',
+  )
+    ? (tabParam as DashboardTab)
+    : 'overview'
 
   const { data: me } = useSuspenseQuery(trpc.me.get.queryOptions())
   const { data: filesData } = useQuery(
@@ -83,7 +98,7 @@ export const DashboardPage = () => {
         </p>
       </header>
 
-      <Tabs>
+      <Tabs defaultSelectedKey={initialTab}>
         <TabList
           aria-label="Dashboard sections"
           className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -264,19 +279,12 @@ export const DashboardPage = () => {
         {/* Settings tab */}
         <TabPanel id="settings">
           <div className="mt-4">
-            <EmptyState
-              title="Manage account settings"
-              description="Personal API tokens, profile preferences, and more live on the settings page."
-              action={
-                <LinkButton
-                  href="/dashboard/settings"
-                  variant="outline"
-                  size="sm"
-                >
-                  Open settings
-                </LinkButton>
-              }
-            />
+            <Card>
+              <CardHeader title="Personal API tokens" />
+              <CardBody>
+                <ApiTokensSection />
+              </CardBody>
+            </Card>
           </div>
         </TabPanel>
       </Tabs>

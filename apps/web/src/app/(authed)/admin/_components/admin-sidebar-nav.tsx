@@ -7,7 +7,6 @@ import { SidebarItem, SidebarRoot } from '@opengovsg/oui'
 import { useQuery } from '@tanstack/react-query'
 import {
   BiBell,
-  BiEnvelope,
   BiFile,
   BiHistory,
   BiMenu,
@@ -36,13 +35,6 @@ const NAV_ITEMS: readonly NavItem[] = [
     label: 'Users',
     icon: <BiUser size={20} />,
     tooltip: 'Users',
-  },
-  {
-    href: '/admin/invites',
-    label: 'Invites',
-    icon: <BiEnvelope size={20} />,
-    tooltip: 'Invites',
-    requires: Capability.UserInviteIssue,
   },
   {
     href: '/admin/audit',

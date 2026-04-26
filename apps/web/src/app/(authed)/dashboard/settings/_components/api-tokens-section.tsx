@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { Badge } from '@opengovsg/oui/badge'
 import { Button } from '@opengovsg/oui/button'
 import { Infobox } from '@opengovsg/oui/infobox'
@@ -320,8 +320,24 @@ const NewTokenModal = ({ onClose }: NewTokenModalProps) => {
   )
 }
 
+// useSyncExternalStore lets us read window.location.origin client-side
+// without triggering a setState-in-effect (eslint rejects that pattern) and
+// without an SSR/CSR hydration mismatch on the initial render.
+// origin never changes mid-session, so subscribe is a no-op unsubscribe.
+const subscribeNoop = () => () => {
+  /* no-op: window.location.origin is immutable for the session */
+}
+const useOrigin = () =>
+  useSyncExternalStore(
+    subscribeNoop,
+    () => window.location.origin,
+    () => '',
+  )
+
 const HowToUseHelp = () => {
   const [open, setOpen] = useState(false)
+  const origin = useOrigin()
+  const host = origin || 'https://your-domain'
   return (
     <details
       className="border-base-divider-subtle rounded-md border p-3"
@@ -342,7 +358,7 @@ const HowToUseHelp = () => {
           <p className="prose-label-sm mb-1">REST: GET /api/v1/me</p>
           <pre className="prose-caption-2 border-base-divider-subtle overflow-x-auto rounded-md border p-2 font-mono dark:border-zinc-600 dark:bg-zinc-800">
             {`curl -H "Authorization: Bearer vibe_pat_…" \\
-  https://YOUR_DOMAIN/api/v1/me`}
+  ${host}/api/v1/me`}
           </pre>
         </div>
         <div>
@@ -351,7 +367,7 @@ const HowToUseHelp = () => {
             {`curl -H "Authorization: Bearer vibe_pat_…" \\
   -H "Content-Type: application/json" \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' \\
-  https://YOUR_DOMAIN/api/mcp`}
+  ${host}/api/mcp`}
           </pre>
         </div>
       </div>

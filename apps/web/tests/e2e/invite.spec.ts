@@ -60,7 +60,7 @@ test.describe('Admin invite flow', () => {
     const adminCtx = await browser.newContext()
     await signInAs(adminCtx, admin.id)
     const adminPage = await adminCtx.newPage()
-    await adminPage.goto('/admin/invites')
+    await adminPage.goto('/admin/users')
     await expect(
       adminPage.getByRole('heading', { name: 'Invites' }),
     ).toBeVisible()
@@ -207,12 +207,12 @@ test.describe('Admin invite flow', () => {
       },
     })
 
-    // Admin opens /admin/invites, hits Revoke on the row.
+    // Admin opens /admin/users, hits Revoke on the row.
     const adminCtx = await browser.newContext()
     await signInAs(adminCtx, admin.id)
     const adminPage = await adminCtx.newPage()
     adminPage.on('dialog', (d) => d.accept())
-    await adminPage.goto('/admin/invites')
+    await adminPage.goto('/admin/users')
     const row = adminPage.getByRole('row').filter({ hasText: 'To Revoke' })
     await row.getByRole('button', { name: 'Revoke' }).click()
 
@@ -252,10 +252,10 @@ test.describe('Admin invite flow', () => {
   })
 
   // ──────────────────────────────────────────────────────────────────────
-  // Test 3 — capability gate: regular user cannot reach /admin/invites
+  // Test 3 — capability gate: regular user cannot reach /admin/users
   // and cannot call the API even if they bypass the UI.
   // ──────────────────────────────────────────────────────────────────────
-  test('user without user.invite.issue cannot reach /admin/invites or call invites.issue', async ({
+  test('user without user.invite.issue cannot reach /admin/users or call invites.issue', async ({
     browser,
   }) => {
     const tag = uniq()
@@ -266,7 +266,7 @@ test.describe('Admin invite flow', () => {
     const page = await ctx.newPage()
 
     // /admin/* gates on admin.access — user gets bounced to /dashboard.
-    await page.goto('/admin/invites')
+    await page.goto('/admin/users')
     await expect(page).toHaveURL(/\/dashboard$/)
 
     // Direct API call rejected with 403 (FORBIDDEN).

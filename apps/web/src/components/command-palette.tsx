@@ -56,11 +56,11 @@ const PAGE_ENTRIES: PageEntry[] = [
     keywords: ['uploads', 'documents'],
   },
   {
-    href: '/dashboard/settings',
+    href: '/dashboard?tab=settings',
     label: 'Settings',
-    description: 'Account preferences',
+    description: 'Account preferences and API tokens',
     icon: <BiSliderAlt aria-hidden className="h-4 w-4" />,
-    keywords: ['preferences', 'profile'],
+    keywords: ['preferences', 'profile', 'tokens', 'api'],
   },
   {
     href: ADMIN_ROOT_ROUTE,
