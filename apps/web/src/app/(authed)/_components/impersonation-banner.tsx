@@ -32,7 +32,7 @@ export const ImpersonationBanner = () => {
     <div
       role="status"
       aria-live="polite"
-      className="bg-utility-feedback-warning text-base-content-strong flex items-center justify-between gap-3 px-4 py-2"
+      className="bg-utility-feedback-warning flex flex-wrap items-center justify-between gap-3 border-b border-amber-700/40 px-4 py-2 text-amber-950 dark:border-amber-200/30 dark:text-amber-50"
     >
       <span className="prose-label-md">
         You are impersonating <strong>{me.name ?? '(unnamed)'}</strong> as{' '}
@@ -40,7 +40,8 @@ export const ImpersonationBanner = () => {
       </span>
       <Button
         size="sm"
-        variant="outline"
+        color="critical"
+        variant="solid"
         isPending={stop.isPending}
         onPress={() => stop.mutate()}
       >
