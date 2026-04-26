@@ -52,8 +52,26 @@ test.beforeAll(async ({ databaseContainer }) => {
       WHEN duplicate_object THEN NULL;
     END$$;
   `)
-  // Re-snapshot AFTER our DDL, so the per-test resetDbToSnapshot in
-  // app-fixture afterEach restores to a state that includes ApiToken.
+  // Enable the MCP server in the snapshot. The route returns 404 when
+  // mcp.enabled is off, which would break tests/list / tools/call below.
+  // (Per-tool flags default-on when the row is absent, so we don't need
+  // to insert a row per tool.)
+  await db.featureFlag.upsert({
+    where: { key: 'mcp.enabled' },
+    update: { enabled: true, rolloutPercent: 100 },
+    create: {
+      key: 'mcp.enabled',
+      enabled: true,
+      rolloutPercent: 100,
+      allowedUserIds: [],
+      name: 'MCP server',
+      description: 'MCP server endpoint accepts requests',
+    },
+  })
+
+  // Re-snapshot AFTER our DDL + flag insert, so the per-test
+  // resetDbToSnapshot in app-fixture afterEach restores to a state that
+  // includes ApiToken AND the mcp.enabled flag.
   await takeDbSnapshot(databaseContainer)
 })
 

@@ -29,6 +29,12 @@ import {
   upsert as upsertFeatureFlag,
 } from '~/server/modules/feature-flag/feature-flag.service'
 import { deleteFile, listAllFiles } from '~/server/modules/file/file.service'
+import {
+  getMcpSettings,
+  MCP_TOOLS,
+  setMcpEnabled,
+  setToolEnabled,
+} from '~/server/modules/mcp/mcp.service'
 import { broadcast } from '~/server/modules/notification/notification.service'
 import { extractIpAddress } from '~/server/utils/request'
 import {
@@ -526,6 +532,34 @@ export const adminRouter = createTRPCRouter({
           headers: ctx.headers,
         })
         return result
+      }),
+  }),
+
+  mcp: createTRPCRouter({
+    // Read the master + per-tool MCP toggles. Capability.AdminAccess (which
+    // all admins have) is sufficient — these are operational toggles, not
+    // RBAC-class settings.
+    getSettings: capabilityProcedure(Capability.AdminAccess).query(() =>
+      getMcpSettings(),
+    ),
+
+    setEnabled: capabilityProcedure(Capability.AdminAccess)
+      .input(z.object({ enabled: z.boolean() }))
+      .mutation(async ({ input }) => {
+        await setMcpEnabled(input.enabled)
+        return { enabled: input.enabled }
+      }),
+
+    setToolEnabled: capabilityProcedure(Capability.AdminAccess)
+      .input(
+        z.object({
+          name: z.enum(MCP_TOOLS.map((t) => t.name) as [string, ...string[]]),
+          enabled: z.boolean(),
+        }),
+      )
+      .mutation(async ({ input }) => {
+        await setToolEnabled(input.name, input.enabled)
+        return { name: input.name, enabled: input.enabled }
       }),
   }),
 })

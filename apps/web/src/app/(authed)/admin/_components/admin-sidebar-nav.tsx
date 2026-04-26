@@ -7,6 +7,7 @@ import { SidebarItem, SidebarRoot } from '@opengovsg/oui'
 import { useQuery } from '@tanstack/react-query'
 import {
   BiBell,
+  BiCog,
   BiFile,
   BiHistory,
   BiMenu,
@@ -66,6 +67,12 @@ const NAV_ITEMS: readonly NavItem[] = [
     icon: <BiToggleRight size={20} />,
     tooltip: 'Feature flags',
     requires: Capability.FeatureFlagManage,
+  },
+  {
+    href: '/admin/mcp',
+    label: 'MCP server',
+    icon: <BiCog size={20} />,
+    tooltip: 'MCP server',
   },
 ] as const
 

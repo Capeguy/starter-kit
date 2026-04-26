@@ -10,6 +10,11 @@
  * Auth is Bearer-token only (same surface as `/api/v1/*`). Same-origin
  * scope; no CORS headers.
  *
+ * Default-disabled: when an admin hasn't turned on `mcp.enabled` in
+ * /admin/mcp, every method returns 404 — same surface a non-existent
+ * route would present. Per-tool toggles further hide individual tools
+ * from `tools/list` and reject `tools/call`.
+ *
  * We deliberately don't pull in `@modelcontextprotocol/sdk` — it targets
  * stdio/SSE transports and would need a server adapter we don't need.
  * JSON-RPC over a single POST is ~80 lines.
@@ -19,6 +24,11 @@ import { db } from '@acme/db'
 import type { AuthenticatedRequestUser } from '~/lib/api-auth'
 import { authenticateApiRequest } from '~/lib/api-auth'
 import { listMyFiles } from '~/server/modules/file/file.service'
+import {
+  isMcpEnabled,
+  isToolEnabled,
+  MCP_TOOLS,
+} from '~/server/modules/mcp/mcp.service'
 import { listMine as listMyNotifications } from '~/server/modules/notification/notification.service'
 
 const PROTOCOL_VERSION = '2024-11-05'
@@ -45,40 +55,23 @@ const err = (
     { status },
   )
 
-// MCP tool registry. Keep the inputSchemas in sync with the dispatcher's
-// argument parsing below.
-const TOOLS = [
-  {
-    name: 'get_my_profile',
-    description: "Get the authenticated user's profile",
-    inputSchema: {
-      type: 'object',
-      properties: {},
-      required: [],
+// Tool registry. Defines `inputSchema` for `tools/list`; the registry
+// itself (names/descriptions) lives in mcp.service.ts so the admin
+// settings page can iterate it without depending on this route file.
+const TOOL_INPUT_SCHEMAS: Record<string, unknown> = {
+  get_my_profile: { type: 'object', properties: {}, required: [] },
+  list_my_files: {
+    type: 'object',
+    properties: { limit: { type: 'integer', maximum: 50 } },
+  },
+  list_my_notifications: {
+    type: 'object',
+    properties: {
+      limit: { type: 'integer', maximum: 50 },
+      unreadOnly: { type: 'boolean' },
     },
   },
-  {
-    name: 'list_my_files',
-    description: 'List files uploaded by the authenticated user',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        limit: { type: 'integer', maximum: 50 },
-      },
-    },
-  },
-  {
-    name: 'list_my_notifications',
-    description: "List the authenticated user's notifications",
-    inputSchema: {
-      type: 'object',
-      properties: {
-        limit: { type: 'integer', maximum: 50 },
-        unreadOnly: { type: 'boolean' },
-      },
-    },
-  },
-] as const
+}
 
 const clampLimit = (raw: unknown): number => {
   const n = typeof raw === 'number' ? raw : 20
@@ -134,7 +127,20 @@ const dispatchTool = async (
   }
 }
 
+const notFound = () => new Response(null, { status: 404 })
+
+// GET probes (curl, link previewers, etc.) get the same 404 as POST when
+// MCP is off, so the endpoint indistinguishably "doesn't exist".
+export async function GET() {
+  if (!(await isMcpEnabled())) return notFound()
+  return new Response(null, { status: 405 })
+}
+
 export async function POST(request: Request) {
+  if (!(await isMcpEnabled())) {
+    return notFound()
+  }
+
   // Auth is checked first — if the request is unauthenticated we never
   // even peek at the body, which keeps the MCP-error surface uniform with
   // the REST routes.
@@ -163,8 +169,27 @@ export async function POST(request: Request) {
         serverInfo: SERVER_INFO,
       })
 
-    case 'tools/list':
-      return ok(id, { tools: TOOLS })
+    case 'tools/list': {
+      // Filter the static registry by the per-tool flag so admins can
+      // hide individual tools without restarting / redeploying.
+      const enabled = await Promise.all(
+        MCP_TOOLS.map(async (t) => ({
+          tool: t,
+          on: await isToolEnabled(t.name),
+        })),
+      )
+      const tools = enabled
+        .filter((e) => e.on)
+        .map((e) => ({
+          name: e.tool.name,
+          description: e.tool.description,
+          inputSchema: TOOL_INPUT_SCHEMAS[e.tool.name] ?? {
+            type: 'object',
+            properties: {},
+          },
+        }))
+      return ok(id, { tools })
+    }
 
     case 'tools/call': {
       const p = (params ?? {}) as { name?: unknown; arguments?: unknown }
@@ -173,8 +198,14 @@ export async function POST(request: Request) {
         p.arguments && typeof p.arguments === 'object'
           ? (p.arguments as Record<string, unknown>)
           : {}
-      if (!toolName || !TOOLS.some((t) => t.name === toolName)) {
+      if (!toolName || !MCP_TOOLS.some((t) => t.name === toolName)) {
         return err(id, -32601, `Method not found: ${toolName ?? '(missing)'}`)
+      }
+      // Admin-disabled tools look indistinguishable from non-existent
+      // tools to the client (same -32601), so callers can't probe which
+      // tools have been turned off.
+      if (!(await isToolEnabled(toolName))) {
+        return err(id, -32601, `Method not found: ${toolName}`)
       }
       try {
         const result = await dispatchTool(toolName, toolArgs, auth)
