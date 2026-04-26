@@ -45,7 +45,10 @@ export function UserDetailPage({ userId }: UserDetailPageProps) {
       />
 
       <Tabs>
-        <TabList aria-label="User detail sections">
+        <TabList
+          aria-label="User detail sections"
+          className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           <Tab id="profile">Profile</Tab>
           <Tab id="audit">Audit</Tab>
           <Tab id="sessions">Sessions</Tab>

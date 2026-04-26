@@ -77,7 +77,10 @@ export const DashboardPage = () => {
       </header>
 
       <Tabs>
-        <TabList aria-label="Dashboard sections">
+        <TabList
+          aria-label="Dashboard sections"
+          className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           <Tab id="overview">Overview</Tab>
           <Tab id="files">Files</Tab>
           <Tab id="activity">Activity</Tab>
