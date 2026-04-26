@@ -114,14 +114,20 @@ Validated with `@t3-oss/env-nextjs` in `apps/web/src/env.ts` and `packages/db/sr
 
 `iron-session` (`src/lib/auth.ts`, `src/server/session.ts`) backs the cookie. Auth is **WebAuthn passkeys** (`@simplewebauthn/server` + `/browser`); see `src/server/modules/auth/passkey.service.ts`. Session shape is `{ userId }`.
 
-### UI components — use the OGP OUI design system
+### UI components — shadcn/ui via the next-shadcn-admin-dashboard reference
 
-All UI must be composed from the OGP design system rather than ad-hoc Tailwind divs. Reach for an existing primitive before building one.
+This project's design language follows **next-shadcn-admin-dashboard**:
 
-- **Package:** `@opengovsg/oui` (catalog: `oui`). Usually imported as `import { Button } from '@opengovsg/oui/button'` (subpath imports per component).
-- **Source / catalogue of components:** https://github.com/opengovsg/oui-design-system, components live under `packages/components/src/`. Currently exposed: `accordion`, `avatar`, `badge`, `banner`, `breadcrumbs`, `button`, `calendar`, `checkbox`, `combo-box`, `date-field`, `date-picker`, `date-range-picker`, `field`, `file-dropzone`, `govt-banner`, `infobox`, `input`, `link`, `menu`, `modal`, `navbar`, `number-field`, `pagination`, `phone-number-field`, `popover`, `radio-group`, `range-calendar`, `ripple`, `search-field`, `select`, `sidebar`, `skip-nav-link`, `spinner`, `system`, `tabs`, `tag-field`, `text-area`, `text-area-field`, `text-field`, `time-field`, `toast`, `toggle`, `tooltip`. **Check the live Storybook in that repo** for prop signatures and visual reference before composing your own version.
-- **What to avoid:** raw `<button className="...">`, `<div className="rounded-md bg-red-50…">` style alert boxes, hand-rolled headings/cards. Use OUI's `Button`, `Infobox`, `Banner`, etc. instead. Tailwind utility classes are still fine for layout (`flex`, `gap-*`, `grid`, spacing) and for one-off positioning, but not as a substitute for design-system components.
-- **Project's own UI package:** `packages/ui` wraps a few OUI primitives with project-specific defaults (e.g. `@acme/ui/text-field`). Prefer the `@acme/ui` wrapper when one exists; otherwise import directly from `@opengovsg/oui/*`.
+- Source: https://github.com/arhamkhnz/next-shadcn-admin-dashboard
+- Live preview (use as the visual + structural reference): https://next-shadcn-admin-dashboard.vercel.app/dashboard/default
+
+When composing or restyling UI, look at how the reference does it (sidebar layout, card chrome, header, breadcrumbs, navigation density, mobile drawer, dark-mode treatment) and mirror it. Reach for shadcn/ui primitives before building one yourself.
+
+**Migration in progress.** Historically this repo used `@opengovsg/oui` and the codebase still imports from `@opengovsg/oui/*` heavily. As pages get touched, migrate them to shadcn/ui patterns. Don't introduce _new_ OUI usage — when adding a primitive that's not yet in the project, install/copy from shadcn/ui rather than reaching for OUI.
+
+**Project's own UI package:** `packages/ui` historically wrapped OUI primitives (e.g. `@acme/ui/text-field`). Existing wrappers can stay until their consumer pages are migrated; new wrappers should sit on shadcn/ui.
+
+**What to avoid:** raw `<button className="...">`, `<div className="rounded-md bg-red-50…">` style alert boxes, hand-rolled headings/cards. Use design-system primitives. Tailwind utility classes are still fine for layout (`flex`, `gap-*`, `grid`, spacing) and one-off positioning, but not as a substitute for components.
 
 ## Conventions to be aware of
 
