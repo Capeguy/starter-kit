@@ -37,6 +37,10 @@ export const Capability = {
   FileUpload: 'file.upload',
   FileReadAny: 'file.read.any',
   FileDeleteAny: 'file.delete.any',
+
+  // Feature flags
+  FeatureFlagRead: 'feature_flag.read',
+  FeatureFlagManage: 'feature_flag.manage',
 } as const
 
 export type CapabilityCode = (typeof Capability)[keyof typeof Capability]

@@ -17,6 +17,11 @@ import {
   AuditAction,
   recordAuditEvent,
 } from '~/server/modules/audit/audit.service'
+import {
+  list as listFeatureFlags,
+  remove as removeFeatureFlag,
+  upsert as upsertFeatureFlag,
+} from '~/server/modules/feature-flag/feature-flag.service'
 import { deleteFile, listAllFiles } from '~/server/modules/file/file.service'
 import { broadcast } from '~/server/modules/notification/notification.service'
 import { extractIpAddress } from '~/server/utils/request'
@@ -383,5 +388,67 @@ export const adminRouter = createTRPCRouter({
           href: input.href ?? null,
         }),
       ),
+  }),
+
+  featureFlags: createTRPCRouter({
+    list: capabilityProcedure(Capability.FeatureFlagManage).query(() =>
+      listFeatureFlags(),
+    ),
+
+    upsert: capabilityProcedure(Capability.FeatureFlagManage)
+      .input(
+        z.object({
+          // Lowercase dotted slugs only — keeps the keyspace tidy and avoids
+          // accidents like "MyFlag" vs "myflag" coexisting.
+          key: z
+            .string()
+            .min(1)
+            .max(64)
+            .regex(
+              /^[a-z0-9][a-z0-9._-]*$/,
+              'Use lowercase letters, digits, dots, underscores, or hyphens.',
+            ),
+          name: z.string().min(1).max(120),
+          description: z.string().max(500).nullish(),
+          enabled: z.boolean(),
+          rolloutPercent: z.number().int().min(0).max(100),
+          allowedUserIds: z.array(z.string()).default([]),
+        }),
+      )
+      .mutation(async ({ input, ctx }) => {
+        const result = await upsertFeatureFlag({
+          key: input.key,
+          name: input.name,
+          description: input.description ?? null,
+          enabled: input.enabled,
+          rolloutPercent: input.rolloutPercent,
+          allowedUserIds: input.allowedUserIds,
+        })
+        await recordAuditEvent({
+          userId: ctx.user.id,
+          action: AuditAction.FeatureFlagUpsert,
+          metadata: {
+            key: input.key,
+            enabled: input.enabled,
+            rolloutPercent: input.rolloutPercent,
+            allowedUserIdsCount: input.allowedUserIds.length,
+          },
+          headers: ctx.headers,
+        })
+        return result
+      }),
+
+    delete: capabilityProcedure(Capability.FeatureFlagManage)
+      .input(z.object({ key: z.string().min(1).max(64) }))
+      .mutation(async ({ input, ctx }) => {
+        const result = await removeFeatureFlag({ key: input.key })
+        await recordAuditEvent({
+          userId: ctx.user.id,
+          action: AuditAction.FeatureFlagDelete,
+          metadata: { key: input.key },
+          headers: ctx.headers,
+        })
+        return result
+      }),
   }),
 })

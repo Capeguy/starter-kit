@@ -239,6 +239,7 @@ describe('user.service', () => {
         // refactor in commit b56e1fb made `role` a Role row reference.
         role: { id: 'role_user', name: 'User' },
       })
+      expect(user?.role.name).toBe('User')
       expect(user?.createdAt).toBeInstanceOf(Date)
     })
 

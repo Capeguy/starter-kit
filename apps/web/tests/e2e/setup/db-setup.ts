@@ -65,7 +65,18 @@ export const applyMigrations = async (container: DatabaseContainer) => {
     )
     .catch(() => [{ exists: false }])
   if (existing[0]?.exists) {
-    console.log('Skipping applyMigrations: schema already migrated')
+    // Container survives across runs (and across worktrees on the same dev
+    // box). The User-exists short-circuit was historically all-or-nothing,
+    // which leaves new feature-branch tables (FeatureFlag, etc.) missing on
+    // a parallel worktree's run. Apply just the migrations whose primary
+    // table is missing — narrow heuristic that's safe because each new
+    // migration in this repo's history adds at most one named table.
+    const post = await ensureBranchSpecificTables(client)
+    if (post.applied > 0) {
+      console.log(`Applied ${post.applied} branch-specific migration(s)`)
+    } else {
+      console.log('Skipping applyMigrations: schema already migrated')
+    }
     return
   }
 
@@ -94,6 +105,107 @@ export const applyMigrations = async (container: DatabaseContainer) => {
   }
 }
 
+/**
+ * For the cross-worktree-reuse case: if the persistent container has the
+ * baseline schema but is missing tables this branch added, apply those
+ * specific migrations + every following migration. Returns the count of
+ * migrations applied.
+ *
+ * Heuristic: scan each migration directory's `migration.sql` for
+ * `CREATE TABLE "vibe_stack"."<name>"`. For the first one whose table is
+ * missing, apply it AND every subsequent migration in order. This handles
+ * the two-step pattern of "table migration" + "data grant migration"
+ * shipped together — the grant uses `DISTINCT unnest` to remain idempotent.
+ */
+const ensureBranchSpecificTables = async (
+  client: PrismaClient,
+): Promise<{ applied: number }> => {
+  const prismaMigrationDir = join(
+    fileURLToPath(dirname(import.meta.url)),
+    '..',
+    '..',
+    '..',
+    '..',
+    '..',
+    'packages',
+    'db',
+    'prisma',
+    'migrations',
+  )
+  let applied = 0
+  let startApplyingFromIndex = -1
+  const allFiles = readdirSync(prismaMigrationDir)
+    .sort()
+    .filter((f) => statSync(`${prismaMigrationDir}/${f}`).isDirectory())
+
+  for (let i = 0; i < allFiles.length; i++) {
+    const file = allFiles[i]
+    if (!file) continue
+    const sql = readFileSync(
+      `${prismaMigrationDir}/${file}/migration.sql`,
+      'utf8',
+    )
+    const tableMatches = Array.from(
+      sql.matchAll(/CREATE TABLE\s+"vibe_stack"\."([^"]+)"/gi),
+    )
+      .map((m) => m[1])
+      .filter((s): s is string => typeof s === 'string')
+    if (tableMatches.length === 0) continue
+
+    const checks = await Promise.all(
+      tableMatches.map(async (t) => {
+        const r = await client.$queryRawUnsafe<{ exists: boolean }[]>(
+          `SELECT EXISTS (
+             SELECT 1 FROM information_schema.tables
+             WHERE table_schema='vibe_stack' AND table_name=$1
+           ) AS exists`,
+          t,
+        )
+        return r[0]?.exists ?? false
+      }),
+    )
+    if (!checks.every(Boolean)) {
+      startApplyingFromIndex = i
+      break
+    }
+  }
+
+  if (startApplyingFromIndex < 0) return { applied: 0 }
+
+  for (let i = startApplyingFromIndex; i < allFiles.length; i++) {
+    const file = allFiles[i]
+    if (!file) continue
+    const sql = readFileSync(
+      `${prismaMigrationDir}/${file}/migration.sql`,
+      'utf8',
+    )
+    try {
+      await client.$executeRawUnsafe(sql)
+      applied++
+      console.log(`Applied branch migration: ${file}`)
+    } catch (err) {
+      // Tolerate "already exists" errors — could happen if part of the
+      // migration overlaps something a parallel branch added.
+      const msg = (err as Error).message
+      if (
+        /already exists/i.test(msg) ||
+        /duplicate_/i.test(msg) ||
+        /relation .* already exists/i.test(msg)
+      ) {
+        console.log(
+          `Skipped already-applied branch migration: ${file} (${msg.split('\n')[0]})`,
+        )
+        continue
+      }
+      console.warn(
+        `ensureBranchSpecificTables: ${file} failed: ${msg.split('\n')[0]}`,
+      )
+      // Don't throw — keep going so subsequent migrations can apply.
+    }
+  }
+  return { applied }
+}
+
 export const setupTestClient = (connectionString: string) => {
   const client = new PrismaClient({
     adapter: new PrismaPg({ connectionString }),
@@ -115,7 +227,7 @@ export async function clearTransactionalData(container: DatabaseContainer) {
       `psql -d ${getConnectionString(
         container,
         true,
-      )} -c 'TRUNCATE TABLE vibe_stack."Account", vibe_stack."AuditLog", vibe_stack."File", vibe_stack."Notification", vibe_stack."Passkey", vibe_stack."PasskeyChallenge", vibe_stack."PasskeyResetToken", vibe_stack."User", vibe_stack."VerificationToken" RESTART IDENTITY CASCADE;'`,
+      )} -c 'TRUNCATE TABLE vibe_stack."Account", vibe_stack."AuditLog", vibe_stack."FeatureFlag", vibe_stack."File", vibe_stack."Notification", vibe_stack."Passkey", vibe_stack."PasskeyChallenge", vibe_stack."PasskeyResetToken", vibe_stack."User", vibe_stack."VerificationToken" RESTART IDENTITY CASCADE;'`,
     ],
     { user: 'root' },
   )

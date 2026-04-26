@@ -187,3 +187,21 @@ model File {
   @@index([userId, createdAt])
   @@schema("vibe_stack")
 }
+
+/// Self-hosted feature flag. `enabled` is the master switch; when on,
+/// `allowedUserIds` always-on overrides the percent rollout. The percent
+/// rollout uses a stable SHA-256 hash of `${key}:${userId}` so a given user
+/// always falls in the same bucket for a given flag — see
+/// `apps/web/src/server/modules/feature-flag/feature-flag.service.ts`.
+model FeatureFlag {
+  key            String   @id @db.VarChar(64)
+  name           String
+  description    String?
+  enabled        Boolean  @default(false)
+  rolloutPercent Int      @default(0) @map("rollout_percent")
+  allowedUserIds String[] @map("allowed_user_ids")
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
+
+  @@schema("vibe_stack")
+}

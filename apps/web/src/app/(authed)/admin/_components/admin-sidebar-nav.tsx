@@ -3,17 +3,32 @@
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { SidebarItem, SidebarRoot } from '@opengovsg/oui'
+import { useQuery } from '@tanstack/react-query'
 import {
   BiBell,
   BiFile,
   BiHistory,
   BiMenu,
   BiShield,
+  BiToggleRight,
   BiUser,
   BiX,
 } from 'react-icons/bi'
 
-const NAV_ITEMS = [
+import type { CapabilityCode } from '~/lib/rbac'
+import { Capability, hasCapability } from '~/lib/rbac'
+import { useTRPC } from '~/trpc/react'
+
+interface NavItem {
+  href: string
+  label: string
+  icon: React.ReactNode
+  tooltip: string
+  /** Optional capability gate — item is hidden when the user lacks it. */
+  requires?: CapabilityCode
+}
+
+const NAV_ITEMS: readonly NavItem[] = [
   {
     href: '/admin/users',
     label: 'Users',
@@ -44,11 +59,28 @@ const NAV_ITEMS = [
     icon: <BiShield size={20} />,
     tooltip: 'Roles & capabilities',
   },
+  {
+    href: '/admin/feature-flags',
+    label: 'Feature flags',
+    icon: <BiToggleRight size={20} />,
+    tooltip: 'Feature flags',
+    requires: Capability.FeatureFlagManage,
+  },
 ] as const
 
 export function AdminSidebarNav() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const trpc = useTRPC()
+  // Source the user's capabilities for client-side gating. Server-side
+  // enforcement still lives in `capabilityProcedure(...)` on the routers
+  // — this is purely cosmetic so users without the capability don't see
+  // a nav item that would 403 on click.
+  const { data: me } = useQuery(trpc.me.get.queryOptions())
+  const capabilities = me?.role.capabilities ?? []
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => !item.requires || hasCapability(capabilities, item.requires),
+  )
 
   return (
     <>
@@ -103,7 +135,7 @@ export function AdminSidebarNav() {
           </button>
         </div>
         <SidebarRoot className="h-full">
-          {NAV_ITEMS.map((item) => (
+          {visibleItems.map((item) => (
             <SidebarItem
               key={item.href}
               href={item.href}

@@ -50,6 +50,8 @@ const ensureSystemRoles = async () => {
         'file.upload',
         'file.read.any',
         'file.delete.any',
+        'feature_flag.read',
+        'feature_flag.manage',
       ],
     },
   })
