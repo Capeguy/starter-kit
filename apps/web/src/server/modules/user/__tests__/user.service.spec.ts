@@ -235,8 +235,9 @@ describe('user.service', () => {
         image: null,
         name: 'Test user',
         avatarUrl: null,
-        role: 'USER',
+        roleId: 'role_user',
       })
+      expect(user?.role.name).toBe('User')
       expect(user?.createdAt).toBeInstanceOf(Date)
     })
 

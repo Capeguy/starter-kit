@@ -213,6 +213,46 @@ export const formatAuditEvent = (
       )
     }
 
+    case 'feature_flag.upsert': {
+      const flagKey = getMetaString(row.metadata, 'key')
+      const enabledMeta =
+        typeof row.metadata === 'object' &&
+        row.metadata !== null &&
+        'enabled' in row.metadata
+          ? Boolean((row.metadata as Record<string, unknown>).enabled)
+          : null
+      const enabledLabel =
+        enabledMeta === null ? '' : enabledMeta ? ' (on)' : ' (off)'
+      return isSelf ? (
+        <>
+          You saved feature flag{' '}
+          <code className="prose-body-2">{flagKey ?? '?'}</code>
+          {enabledLabel}
+        </>
+      ) : (
+        <>
+          {subject} saved feature flag{' '}
+          <code className="prose-body-2">{flagKey ?? '?'}</code>
+          {enabledLabel}
+        </>
+      )
+    }
+
+    case 'feature_flag.delete': {
+      const flagKey = getMetaString(row.metadata, 'key')
+      return isSelf ? (
+        <>
+          You deleted feature flag{' '}
+          <code className="prose-body-2">{flagKey ?? '?'}</code>
+        </>
+      ) : (
+        <>
+          {subject} deleted feature flag{' '}
+          <code className="prose-body-2">{flagKey ?? '?'}</code>
+        </>
+      )
+    }
+
     default:
       return row.action
   }
