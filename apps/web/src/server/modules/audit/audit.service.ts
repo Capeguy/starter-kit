@@ -23,6 +23,8 @@ export const AuditAction = {
   UserInviteClaim: 'user.invite.claim',
   FeatureFlagUpsert: 'feature_flag.upsert',
   FeatureFlagDelete: 'feature_flag.delete',
+  ApiTokenIssue: 'api_token.issue',
+  ApiTokenRevoke: 'api_token.revoke',
 } as const
 
 export type AuditActionValue = (typeof AuditAction)[keyof typeof AuditAction]

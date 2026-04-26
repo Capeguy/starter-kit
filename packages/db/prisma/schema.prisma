@@ -57,6 +57,7 @@ model User {
   issuedResets  PasskeyResetToken[] @relation("ResetTokenIssuer")
   issuedInvites Invite[]            @relation("InviteIssuer")
   claimedInvite Invite?             @relation("InviteClaimer")
+  apiTokens     ApiToken[]
 
   lastLogin DateTime? @db.Timestamptz(3)
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
@@ -235,5 +236,25 @@ model FeatureFlag {
   createdAt      DateTime @default(now()) @db.Timestamptz(3)
   updatedAt      DateTime @updatedAt @db.Timestamptz(3)
 
+  @@schema("vibe_stack")
+}
+
+/// Personal API token. Stored as the SHA-256 hex of the plaintext (the
+/// plaintext only ever appears in the `apiToken.issue` mutation response).
+/// `prefix` is the first 8 chars of the plaintext for human-readable display
+/// in the settings UI; it is not load-bearing for verification.
+model ApiToken {
+  id         String    @id @default(cuid(2))
+  userId     String    @map("user_id")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  tokenHash  String    @unique @map("token_hash")
+  prefix     String
+  lastUsedAt DateTime? @map("last_used_at") @db.Timestamptz(3)
+  expiresAt  DateTime? @map("expires_at") @db.Timestamptz(3)
+  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([userId, revokedAt])
   @@schema("vibe_stack")
 }

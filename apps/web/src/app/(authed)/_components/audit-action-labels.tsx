@@ -270,6 +270,22 @@ export const formatAuditEvent = (
       )
     }
 
+    case 'api_token.issue': {
+      const tokenName = getMetaString(row.metadata, 'tokenName')
+      const tokenLabel = tokenName ? ` "${tokenName}"` : ''
+      return isSelf
+        ? `You issued a personal API token${tokenLabel}`
+        : `${subject} issued a personal API token${tokenLabel}`
+    }
+
+    case 'api_token.revoke': {
+      const tokenName = getMetaString(row.metadata, 'tokenName')
+      const tokenLabel = tokenName ? ` "${tokenName}"` : ''
+      return isSelf
+        ? `You revoked a personal API token${tokenLabel}`
+        : `${subject} revoked a personal API token${tokenLabel}`
+    }
+
     default:
       return row.action
   }

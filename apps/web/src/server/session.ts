@@ -14,6 +14,14 @@ export interface SessionData {
    * path (`auth.impersonation.stop`).
    */
   impersonatedById?: string
+  /**
+   * True when this session was authenticated via an `Authorization: Bearer
+   * <token>` header rather than the iron-session cookie. Set in
+   * `createTRPCContext` and on the synthetic Bearer session attached to
+   * REST/MCP routes; downstream middleware uses it to skip impersonation
+   * stop/start guards that don't make sense for token-auth callers.
+   */
+  viaApiToken?: boolean
 }
 
 export const sessionOptions: SessionOptions = {

@@ -1,4 +1,5 @@
 import { adminRouter } from '~/server/api/routers/admin.router'
+import { apiTokenRouter } from '~/server/api/routers/api-token.router'
 import { auditRouter } from '~/server/api/routers/audit.router'
 import { featureFlagRouter } from '~/server/api/routers/feature-flag.router'
 import { fileRouter } from '~/server/api/routers/file.router'
@@ -32,6 +33,7 @@ export const appRouter = createTRPCRouter({
   file: fileRouter,
   impersonation: impersonationRouter,
   featureFlag: featureFlagRouter,
+  apiToken: apiTokenRouter,
 })
 
 // export type definition of API
