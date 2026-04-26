@@ -235,7 +235,9 @@ describe('user.service', () => {
         image: null,
         name: 'Test user',
         avatarUrl: null,
-        role: 'USER',
+        // Pre-existing assertion was `role: 'USER'` (the old enum) — the RBAC
+        // refactor in commit b56e1fb made `role` a Role row reference.
+        role: { id: 'role_user', name: 'User' },
       })
       expect(user?.createdAt).toBeInstanceOf(Date)
     })
