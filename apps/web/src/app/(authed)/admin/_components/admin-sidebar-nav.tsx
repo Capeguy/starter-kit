@@ -1,80 +1,13 @@
 'use client'
 
-import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { SidebarItem, SidebarRoot } from '@opengovsg/oui'
 import { useQuery } from '@tanstack/react-query'
-import {
-  BiBell,
-  BiCog,
-  BiFile,
-  BiHistory,
-  BiMenu,
-  BiShield,
-  BiToggleRight,
-  BiUser,
-  BiX,
-} from 'react-icons/bi'
+import { BiMenu, BiX } from 'react-icons/bi'
 
-import type { CapabilityCode } from '~/lib/rbac'
-import { Capability, hasCapability } from '~/lib/rbac'
+import { ADMIN_NAV, findActiveItem, visibleGroups } from '~/lib/nav'
 import { useTRPC } from '~/trpc/react'
-
-interface NavItem {
-  href: string
-  label: string
-  icon: ReactNode
-  tooltip: string
-  /** Optional capability gate — item is hidden when the user lacks it. */
-  requires?: CapabilityCode
-}
-
-const NAV_ITEMS: readonly NavItem[] = [
-  {
-    href: '/admin/users',
-    label: 'Users',
-    icon: <BiUser size={20} />,
-    tooltip: 'Users',
-  },
-  {
-    href: '/admin/audit',
-    label: 'Audit log',
-    icon: <BiHistory size={20} />,
-    tooltip: 'Audit log',
-  },
-  {
-    href: '/admin/notifications',
-    label: 'Send notification',
-    icon: <BiBell size={20} />,
-    tooltip: 'Send notification',
-  },
-  {
-    href: '/admin/files',
-    label: 'All files',
-    icon: <BiFile size={20} />,
-    tooltip: 'All files',
-  },
-  {
-    href: '/admin/roles',
-    label: 'Roles & capabilities',
-    icon: <BiShield size={20} />,
-    tooltip: 'Roles & capabilities',
-  },
-  {
-    href: '/admin/feature-flags',
-    label: 'Feature flags',
-    icon: <BiToggleRight size={20} />,
-    tooltip: 'Feature flags',
-    requires: Capability.FeatureFlagManage,
-  },
-  {
-    href: '/admin/mcp',
-    label: 'MCP server',
-    icon: <BiCog size={20} />,
-    tooltip: 'MCP server',
-  },
-] as const
 
 export function AdminSidebarNav() {
   const pathname = usePathname()
@@ -85,10 +18,8 @@ export function AdminSidebarNav() {
   // — this is purely cosmetic so users without the capability don't see
   // a nav item that would 403 on click.
   const { data: me } = useQuery(trpc.me.get.queryOptions())
-  const capabilities = me?.role.capabilities ?? []
-  const visibleItems = NAV_ITEMS.filter(
-    (item) => !item.requires || hasCapability(capabilities, item.requires),
-  )
+  const groups = visibleGroups(ADMIN_NAV.groups, me?.role.capabilities)
+  const active = findActiveItem(pathname, ADMIN_NAV)
 
   return (
     <>
@@ -148,19 +79,38 @@ export function AdminSidebarNav() {
           </button>
         </div>
         <SidebarRoot className="h-full">
-          {visibleItems.map((item) => (
-            <SidebarItem
-              key={item.href}
-              href={item.href}
-              startContent={item.icon}
-              tooltip={item.tooltip}
-              isSelected={
-                pathname === item.href || pathname.startsWith(item.href + '/')
-              }
-              onPress={() => setMobileOpen(false)}
+          {groups.map((group, gi) => (
+            <div
+              key={group.label}
+              className={gi > 0 ? 'mt-2' : undefined}
+              role="group"
+              aria-label={group.label}
             >
-              {item.label}
-            </SidebarItem>
+              {/* Section header. Collapses to icon-only at md when the
+                  Sidebar is in collapsed mode (the OUI Sidebar handles
+                  its own collapse styling; we hide the label to avoid
+                  a stray header taking width). */}
+              <div className="px-3 pt-3 pb-1">
+                <span className="prose-caption-2 text-base-content-medium tracking-wide uppercase">
+                  {group.label}
+                </span>
+              </div>
+              {group.items.map((item) => {
+                const Icon = item.icon
+                return (
+                  <SidebarItem
+                    key={item.path}
+                    href={item.path}
+                    startContent={<Icon size={20} />}
+                    tooltip={item.label}
+                    isSelected={active?.item.path === item.path}
+                    onPress={() => setMobileOpen(false)}
+                  >
+                    {item.label}
+                  </SidebarItem>
+                )
+              })}
+            </div>
           ))}
         </SidebarRoot>
       </div>
