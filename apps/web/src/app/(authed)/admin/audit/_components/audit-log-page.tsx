@@ -111,6 +111,7 @@ export const AuditLogPage = () => {
                             user: row.user,
                           },
                           'admin',
+                          data.relatedUsers,
                         )}
                       </span>
                       <span className="prose-caption-2 text-base-content-medium font-mono">

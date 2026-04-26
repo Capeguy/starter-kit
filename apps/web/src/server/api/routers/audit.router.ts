@@ -11,6 +11,43 @@ const listInputSchema = z.object({
   action: z.string().nullish(),
 })
 
+// Metadata keys whose values are user IDs we may want to render as a name.
+// Keep in sync with `formatAuditEvent` in app/(authed)/_components/audit-action-labels.tsx.
+const USER_ID_METADATA_KEYS = [
+  'actingUserId',
+  'issuedById',
+  'deletedUserId',
+  'targetUserId',
+  'impersonatedUserId',
+] as const
+
+const collectRelatedUserIds = (rows: { metadata: unknown }[]): string[] => {
+  const ids = new Set<string>()
+  for (const row of rows) {
+    if (typeof row.metadata !== 'object' || row.metadata === null) continue
+    const meta = row.metadata as Record<string, unknown>
+    for (const key of USER_ID_METADATA_KEYS) {
+      const v = meta[key]
+      if (typeof v === 'string') ids.add(v)
+    }
+  }
+  return [...ids]
+}
+
+const fetchRelatedUsers = async (
+  rows: { metadata: unknown }[],
+): Promise<
+  Record<string, { id: string; name: string | null; email: string | null }>
+> => {
+  const ids = collectRelatedUserIds(rows)
+  if (ids.length === 0) return {}
+  const users = await db.user.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, name: true, email: true },
+  })
+  return Object.fromEntries(users.map((u) => [u.id, u]))
+}
+
 export const auditRouter = createTRPCRouter({
   // Admin: query the full audit log with optional filters.
   list: adminProcedure.input(listInputSchema).query(async ({ input }) => {
@@ -32,6 +69,7 @@ export const auditRouter = createTRPCRouter({
 
     return {
       items: trimmed,
+      relatedUsers: await fetchRelatedUsers(trimmed),
       nextCursor: hasNext ? trimmed[trimmed.length - 1]?.id : null,
     }
   }),
@@ -57,6 +95,7 @@ export const auditRouter = createTRPCRouter({
 
       return {
         items: trimmed,
+        relatedUsers: await fetchRelatedUsers(trimmed),
         nextCursor: hasNext ? trimmed[trimmed.length - 1]?.id : null,
       }
     }),

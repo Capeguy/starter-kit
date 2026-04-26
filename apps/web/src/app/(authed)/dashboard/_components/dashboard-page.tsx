@@ -238,6 +238,7 @@ export const DashboardPage = () => {
                           {formatAuditEvent(
                             { action: a.action, metadata: a.metadata },
                             'self',
+                            activityData.relatedUsers,
                           )}
                         </span>
                         <RelativeTime
