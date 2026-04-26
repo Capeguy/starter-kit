@@ -258,8 +258,17 @@ export const DashboardPage = () => {
         <TabPanel id="settings">
           <div className="mt-4">
             <EmptyState
-              title="Settings coming soon"
-              description="Account settings will live here."
+              title="Manage account settings"
+              description="Personal API tokens, profile preferences, and more live on the settings page."
+              action={
+                <LinkButton
+                  href="/dashboard/settings"
+                  variant="outline"
+                  size="sm"
+                >
+                  Open settings
+                </LinkButton>
+              }
             />
           </div>
         </TabPanel>

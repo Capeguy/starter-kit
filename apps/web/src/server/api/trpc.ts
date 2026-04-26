@@ -20,6 +20,8 @@ import type { CapabilityCode } from '~/lib/rbac'
 import { env } from '~/env'
 import { createLogger } from '~/lib/logger'
 import { Capability, hasCapability } from '~/lib/rbac'
+import { verifyAndTouch } from '../modules/api-token/api-token.service'
+import { extractBearerToken } from '../modules/api-token/bearer-header'
 import {
   checkRateLimit,
   createRateLimitFingerprint,
@@ -56,6 +58,24 @@ export const createTRPCContext = async ({
   const logger = createLogger({ path: 'trpc', headers })
 
   const session = await getSession()
+
+  // Bearer-token auth slot. The cookie session takes precedence, so a
+  // logged-in admin testing curl in a browser tab still uses their UI
+  // session — only fall back to the Bearer header when the cookie path
+  // produced no userId. On verification failure we leave the session
+  // empty and let `authMiddleware` reject the call (or `publicProcedure`
+  // happily run unauthenticated).
+  if (!session.userId) {
+    const bearer = extractBearerToken(headers)
+    if (bearer) {
+      const verified = await verifyAndTouch(bearer)
+      if (verified) {
+        session.userId = verified.userId
+        session.viaApiToken = true
+      }
+    }
+  }
+
   return {
     logger: logger as Logger | ScopedLogger,
     headers,

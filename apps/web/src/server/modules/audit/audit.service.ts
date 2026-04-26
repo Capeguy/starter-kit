@@ -19,6 +19,8 @@ export const AuditAction = {
   UserProfileUpdate: 'user.profile.update',
   UserImpersonateStart: 'user.impersonate.start',
   UserImpersonateStop: 'user.impersonate.stop',
+  ApiTokenIssue: 'api_token.issue',
+  ApiTokenRevoke: 'api_token.revoke',
 } as const
 
 export type AuditActionValue = (typeof AuditAction)[keyof typeof AuditAction]
