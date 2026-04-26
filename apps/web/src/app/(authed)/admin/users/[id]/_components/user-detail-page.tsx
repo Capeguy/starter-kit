@@ -4,7 +4,7 @@ import { Avatar } from '@opengovsg/oui/avatar'
 import { Tab, TabList, TabPanel, Tabs } from '@opengovsg/oui/tabs'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
-import { Breadcrumbs } from '~/components/ui/breadcrumbs'
+import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { EmptyState } from '~/components/ui/empty-state'
 import { PageHeader } from '~/components/ui/page-header'
@@ -31,13 +31,7 @@ export function UserDetailPage({ userId }: UserDetailPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <Breadcrumbs
-        items={[
-          { label: 'Admin', href: '/admin' },
-          { label: 'Users', href: '/admin/users' },
-          { label: user.name ?? '(unnamed)' },
-        ]}
-      />
+      <RegistryBreadcrumbs trailing={user.name ?? '(unnamed)'} />
 
       <PageHeader
         title={user.name ?? '(unnamed)'}

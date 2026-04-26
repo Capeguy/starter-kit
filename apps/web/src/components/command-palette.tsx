@@ -7,22 +7,18 @@ import { useQuery } from '@tanstack/react-query'
 import { Command } from 'cmdk'
 import { useTheme } from 'next-themes'
 import {
-  BiBell,
   BiFile,
-  BiFolder,
-  BiHome,
   BiLogOut,
   BiMoon,
-  BiNote,
   BiShield,
-  BiSliderAlt,
   BiSun,
   BiUser,
 } from 'react-icons/bi'
 import { useDebounceValue } from 'usehooks-ts'
 
-import { ADMIN_ROOT_ROUTE, AUTHED_ROOT_ROUTE } from '~/constants'
+import { ADMIN_ROOT_ROUTE } from '~/constants'
 import { useAuth } from '~/lib/auth'
+import { ADMIN_NAV, USER_NAV, visibleGroups } from '~/lib/nav'
 import { Capability, hasCapability } from '~/lib/rbac'
 import { useTRPC } from '~/trpc/react'
 
@@ -30,87 +26,6 @@ interface CommandPaletteProps {
   isOpen: boolean
   onClose: () => void
 }
-
-interface PageEntry {
-  href: string
-  label: string
-  description?: string
-  capability?: (typeof Capability)[keyof typeof Capability]
-  icon: React.ReactNode
-  keywords?: string[]
-}
-
-const PAGE_ENTRIES: PageEntry[] = [
-  {
-    href: AUTHED_ROOT_ROUTE,
-    label: 'Dashboard',
-    description: 'Your home page',
-    icon: <BiHome aria-hidden className="h-4 w-4" />,
-    keywords: ['home'],
-  },
-  {
-    href: '/dashboard/files',
-    label: 'My files',
-    description: 'Files you uploaded',
-    icon: <BiFile aria-hidden className="h-4 w-4" />,
-    keywords: ['uploads', 'documents'],
-  },
-  {
-    href: '/dashboard?tab=settings',
-    label: 'Settings',
-    description: 'Account preferences and API tokens',
-    icon: <BiSliderAlt aria-hidden className="h-4 w-4" />,
-    keywords: ['preferences', 'profile', 'tokens', 'api'],
-  },
-  {
-    href: ADMIN_ROOT_ROUTE,
-    label: 'Admin home',
-    description: 'Administration overview',
-    capability: Capability.AdminAccess,
-    icon: <BiShield aria-hidden className="h-4 w-4" />,
-    keywords: ['admin'],
-  },
-  {
-    href: '/admin/users',
-    label: 'Users',
-    description: 'Manage users',
-    capability: Capability.UserList,
-    icon: <BiUser aria-hidden className="h-4 w-4" />,
-    keywords: ['admin', 'people', 'members'],
-  },
-  {
-    href: '/admin/audit',
-    label: 'Audit log',
-    description: 'View audit history',
-    capability: Capability.AdminAccess,
-    icon: <BiNote aria-hidden className="h-4 w-4" />,
-    keywords: ['admin', 'logs', 'history', 'events'],
-  },
-  {
-    href: '/admin/files',
-    label: 'All files',
-    description: 'Every uploaded file',
-    capability: Capability.FileReadAny,
-    icon: <BiFolder aria-hidden className="h-4 w-4" />,
-    keywords: ['admin', 'uploads'],
-  },
-  {
-    href: '/admin/notifications',
-    label: 'Notifications composer',
-    description: 'Broadcast a notification',
-    capability: Capability.NotificationBroadcast,
-    icon: <BiBell aria-hidden className="h-4 w-4" />,
-    keywords: ['admin', 'broadcast', 'send'],
-  },
-  {
-    href: '/admin/roles',
-    label: 'Roles & capabilities',
-    description: 'Manage RBAC roles',
-    capability: Capability.AdminAccess,
-    icon: <BiShield aria-hidden className="h-4 w-4" />,
-    keywords: ['admin', 'rbac', 'permissions'],
-  },
-]
 
 const SEARCH_DEBOUNCE_MS = 300
 
@@ -127,14 +42,17 @@ const itemClass = [
   'aria-selected:text-interaction-main-default',
 ].join(' ')
 
+const groupClass =
+  'prose-caption-2 text-base-content-medium [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase'
+
 /**
  * Cmd+K command palette: keyboard-driven overlay that fuzzy-searches across
- * pages, users (admin), own files, and quick actions. Hidden behind a Radix
- * dialog (via cmdk's `Command.Dialog`) so focus trap, Esc-to-close, and
- * portal mounting come for free. Capability-gated entries are filtered out
- * before render — non-admin users never see admin items in the list, and
- * never receive admin tRPC search results either (those queries are gated
- * by the same capability check, so the request is just not made).
+ * pages (registry-sourced), users (admin), own files, and quick actions.
+ *
+ * The "Pages" section reads from `~/lib/nav` so adding a page in nav.ts
+ * surfaces it in the palette automatically. Capability-gated entries are
+ * filtered before render — non-admin users never see admin items in the
+ * list, and never receive admin tRPC search results either.
  */
 export const CommandPalette = ({ isOpen, onClose }: CommandPaletteProps) => {
   const router = useRouter()
@@ -147,12 +65,18 @@ export const CommandPalette = ({ isOpen, onClose }: CommandPaletteProps) => {
 
   const capabilities = user?.role.capabilities
 
-  const visiblePages = useMemo(
+  // Each nav root becomes its own Command.Group ("Dashboard" / "Admin").
+  // Items are filtered by capability so users only see what they can use.
+  const navSections = useMemo(
     () =>
-      PAGE_ENTRIES.filter(
-        (page) =>
-          !page.capability || hasCapability(capabilities, page.capability),
-      ),
+      [USER_NAV, ADMIN_NAV]
+        .map((root) => ({
+          label: root.label,
+          items: visibleGroups(root.groups, capabilities).flatMap(
+            (g) => g.items,
+          ),
+        }))
+        .filter((section) => section.items.length > 0),
     [capabilities],
   )
 
@@ -217,39 +141,40 @@ export const CommandPalette = ({ isOpen, onClose }: CommandPaletteProps) => {
           No matches.
         </Command.Empty>
 
-        {visiblePages.length > 0 && (
+        {navSections.map((section, idx) => (
           <Command.Group
-            heading="Pages"
-            className="prose-caption-2 text-base-content-medium [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase"
+            key={section.label}
+            heading={section.label}
+            className={idx > 0 ? `${groupClass} mt-2` : groupClass}
           >
-            {visiblePages.map((page) => (
-              <Command.Item
-                key={page.href}
-                value={`page ${page.label} ${page.description ?? ''} ${(page.keywords ?? []).join(' ')}`}
-                onSelect={() => navigate(page.href)}
-                className={itemClass}
-              >
-                <span className="text-base-content-medium group-aria-selected:text-interaction-main-default flex h-7 w-7 items-center justify-center">
-                  {page.icon}
-                </span>
-                <span className="flex flex-col">
-                  <span className="prose-label-md">{page.label}</span>
-                  {page.description && (
-                    <span className="prose-caption-2 text-base-content-medium">
-                      {page.description}
-                    </span>
-                  )}
-                </span>
-              </Command.Item>
-            ))}
+            {section.items.map((item) => {
+              const Icon = item.icon
+              return (
+                <Command.Item
+                  key={`${section.label}-${item.path}`}
+                  value={`${section.label} ${item.label} ${item.description ?? ''}`}
+                  onSelect={() => navigate(item.path)}
+                  className={itemClass}
+                >
+                  <span className="text-base-content-medium group-aria-selected:text-interaction-main-default flex h-7 w-7 items-center justify-center">
+                    <Icon className="h-4 w-4" aria-hidden />
+                  </span>
+                  <span className="flex flex-col">
+                    <span className="prose-label-md">{item.label}</span>
+                    {item.description && (
+                      <span className="prose-caption-2 text-base-content-medium">
+                        {item.description}
+                      </span>
+                    )}
+                  </span>
+                </Command.Item>
+              )
+            })}
           </Command.Group>
-        )}
+        ))}
 
         {isAdminUserSearcher && enableLiveSearch && (
-          <Command.Group
-            heading="Users"
-            className="prose-caption-2 text-base-content-medium mt-2 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase"
-          >
+          <Command.Group heading="Users" className={`${groupClass} mt-2`}>
             {usersQuery.isLoading ? (
               <Command.Loading>
                 <div className="prose-caption-2 text-base-content-medium px-3 py-2">
@@ -282,10 +207,7 @@ export const CommandPalette = ({ isOpen, onClose }: CommandPaletteProps) => {
         )}
 
         {enableLiveSearch && (
-          <Command.Group
-            heading="My files"
-            className="prose-caption-2 text-base-content-medium mt-2 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase"
-          >
+          <Command.Group heading="My files" className={`${groupClass} mt-2`}>
             {filesQuery.isLoading ? (
               <Command.Loading>
                 <div className="prose-caption-2 text-base-content-medium px-3 py-2">
@@ -315,10 +237,7 @@ export const CommandPalette = ({ isOpen, onClose }: CommandPaletteProps) => {
           </Command.Group>
         )}
 
-        <Command.Group
-          heading="Actions"
-          className="prose-caption-2 text-base-content-medium mt-2 [&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:tracking-wide [&_[cmdk-group-heading]]:uppercase"
-        >
+        <Command.Group heading="Actions" className={`${groupClass} mt-2`}>
           <Command.Item
             value="action sign out logout"
             onSelect={() => handleSelect(() => logout())}

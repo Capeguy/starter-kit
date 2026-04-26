@@ -11,7 +11,7 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 
-import { Breadcrumbs } from '~/components/ui/breadcrumbs'
+import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { useTRPC } from '~/trpc/react'
 
@@ -63,9 +63,7 @@ export const McpSettingsPage = () => {
 
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <Breadcrumbs
-        items={[{ label: 'Admin', href: '/admin' }, { label: 'MCP server' }]}
-      />
+      <RegistryBreadcrumbs />
       <header className="flex flex-col gap-1">
         <h1 className="prose-h2 text-base-content-strong">MCP server</h1>
         <p className="prose-body-2 text-base-content-medium">

@@ -1,15 +1,10 @@
-import { Breadcrumbs } from '~/components/ui/breadcrumbs'
+import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { BroadcastForm } from './_components/broadcast-form'
 
 export default function AdminNotificationsRoute() {
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <Breadcrumbs
-        items={[
-          { label: 'Admin', href: '/admin' },
-          { label: 'Send notification' },
-        ]}
-      />
+      <RegistryBreadcrumbs />
       <header className="flex flex-col gap-1">
         <h1 className="prose-h2 text-base-content-strong">
           Broadcast notification

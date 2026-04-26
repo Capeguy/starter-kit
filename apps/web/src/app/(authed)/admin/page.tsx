@@ -1,6 +1,6 @@
 import { db } from '@acme/db'
 
-import { Breadcrumbs } from '~/components/ui/breadcrumbs'
+import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 
 const StatTile = ({
   label,
@@ -42,7 +42,7 @@ export default async function AdminLandingPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <Breadcrumbs items={[{ label: 'Admin' }]} />
+      <RegistryBreadcrumbs />
 
       <header className="flex flex-col gap-1">
         <h1 className="prose-h2 text-base-content-strong">Admin</h1>

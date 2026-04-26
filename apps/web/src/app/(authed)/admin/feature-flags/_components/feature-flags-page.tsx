@@ -11,7 +11,7 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 
-import { Breadcrumbs } from '~/components/ui/breadcrumbs'
+import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import {
   DataTable,
   DataTableBody,
@@ -90,9 +90,7 @@ export const FeatureFlagsPage = () => {
 
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <Breadcrumbs
-        items={[{ label: 'Admin', href: '/admin' }, { label: 'Feature flags' }]}
-      />
+      <RegistryBreadcrumbs />
       <header className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="prose-h2 text-base-content-strong">Feature flags</h1>
