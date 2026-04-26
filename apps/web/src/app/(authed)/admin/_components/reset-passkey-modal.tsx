@@ -1,17 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@opengovsg/oui/button'
-import { Infobox } from '@opengovsg/oui/infobox'
-import {
-  Modal,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from '@opengovsg/oui/modal'
-import { toast } from '@opengovsg/oui/toast'
 import { useMutation } from '@tanstack/react-query'
+import { CheckCircle2 } from 'lucide-react'
+import { toast } from 'sonner'
 
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Button } from '~/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog'
 import { useTRPC } from '~/trpc/react'
 
 const TTL_PRESETS = [
@@ -67,82 +69,77 @@ export const ResetPasskeyModal = ({
   }
 
   return (
-    <Modal isOpen onOpenChange={(open) => !open && onClose()}>
-      <ModalContent>
-        {() => (
-          <>
-            <ModalHeader>Reset passkey for {targetName ?? userId}</ModalHeader>
-            <div className="flex flex-col gap-4 px-6 pb-2">
-              {!issued ? (
-                <>
-                  <p className="prose-body-2 text-base-content-medium">
-                    Generates a one-time URL the user can open to register a new
-                    passkey. Their existing passkeys will be wiped on use.
-                  </p>
-                  <fieldset className="flex flex-col gap-2">
-                    <legend className="prose-label-md mb-1">
-                      Link expires in
-                    </legend>
-                    {TTL_PRESETS.map((preset, i) => (
-                      <label
-                        key={preset.label}
-                        className="flex items-center gap-2"
-                      >
-                        <input
-                          type="radio"
-                          name="ttl"
-                          checked={ttlIdx === i}
-                          onChange={() => setTtlIdx(i)}
-                          className="accent-interaction-main-default dark:border-zinc-600 dark:bg-zinc-800"
-                        />
-                        <span className="prose-body-2">{preset.label}</span>
-                      </label>
-                    ))}
-                  </fieldset>
-                </>
-              ) : (
-                <>
-                  <Infobox variant="success">
-                    Reset link generated.{' '}
-                    {issued.expiresAt
-                      ? `Expires ${new Intl.DateTimeFormat('en-GB', {
-                          dateStyle: 'medium',
-                          timeStyle: 'short',
-                        }).format(issued.expiresAt)}.`
-                      : 'No expiry.'}
-                  </Infobox>
-                  <textarea
-                    readOnly
-                    value={issued.url}
-                    rows={3}
-                    className="border-base-divider-medium prose-body-2 w-full rounded-md border p-2 font-mono dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
-                    onClick={(e) => e.currentTarget.select()}
-                  />
-                  <p className="prose-caption-2 text-base-content-medium">
-                    Send this URL to the user via your own channel (Slack,
-                    email, in person). The link is single-use.
-                  </p>
-                </>
-              )}
-            </div>
-            <ModalFooter>
-              <Button variant="clear" onPress={onClose}>
-                {issued ? 'Done' : 'Cancel'}
-              </Button>
-              {!issued ? (
-                <Button
-                  onPress={handleIssue}
-                  isPending={issueMutation.isPending}
-                >
-                  Generate reset link
-                </Button>
-              ) : (
-                <Button onPress={handleCopy}>Copy URL</Button>
-              )}
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
-    </Modal>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reset passkey for {targetName ?? userId}</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4">
+          {!issued ? (
+            <>
+              <p className="text-muted-foreground text-sm">
+                Generates a one-time URL the user can open to register a new
+                passkey. Their existing passkeys will be wiped on use.
+              </p>
+              <fieldset className="flex flex-col gap-2">
+                <legend className="mb-1 text-sm font-medium">
+                  Link expires in
+                </legend>
+                {TTL_PRESETS.map((preset, i) => (
+                  <label key={preset.label} className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="ttl"
+                      checked={ttlIdx === i}
+                      onChange={() => setTtlIdx(i)}
+                      className="accent-primary"
+                    />
+                    <span className="text-sm">{preset.label}</span>
+                  </label>
+                ))}
+              </fieldset>
+            </>
+          ) : (
+            <>
+              <Alert variant="success">
+                <CheckCircle2 />
+                <AlertDescription>
+                  Reset link generated.{' '}
+                  {issued.expiresAt
+                    ? `Expires ${new Intl.DateTimeFormat('en-GB', {
+                        dateStyle: 'medium',
+                        timeStyle: 'short',
+                      }).format(issued.expiresAt)}.`
+                    : 'No expiry.'}
+                </AlertDescription>
+              </Alert>
+              <textarea
+                readOnly
+                value={issued.url}
+                rows={3}
+                className="border-border bg-muted/50 w-full rounded-md border p-2 font-mono text-sm"
+                onClick={(e) => e.currentTarget.select()}
+              />
+              <p className="text-muted-foreground text-xs">
+                Send this URL to the user via your own channel (Slack, email, in
+                person). The link is single-use.
+              </p>
+            </>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>
+            {issued ? 'Done' : 'Cancel'}
+          </Button>
+          {!issued ? (
+            <Button onClick={handleIssue} disabled={issueMutation.isPending}>
+              Generate reset link
+            </Button>
+          ) : (
+            <Button onClick={handleCopy}>Copy URL</Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

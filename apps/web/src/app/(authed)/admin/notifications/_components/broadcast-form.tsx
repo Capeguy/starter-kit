@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@opengovsg/oui/button'
-import { Infobox } from '@opengovsg/oui/infobox'
-import { toast } from '@opengovsg/oui/toast'
 import { useMutation } from '@tanstack/react-query'
+import { Info } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { TextField } from '@acme/ui/text-field'
 
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Button } from '~/components/ui/button'
 import { SystemRoleId } from '~/lib/rbac'
 import { useTRPC } from '~/trpc/react'
 import { UserPicker } from './user-picker'
@@ -71,7 +72,7 @@ export const BroadcastForm = () => {
       }}
     >
       <fieldset className="flex flex-col gap-2">
-        <legend className="prose-label-md mb-1">Audience</legend>
+        <legend className="mb-1 text-sm font-medium">Audience</legend>
         {(
           [
             { value: 'all', label: 'All users' },
@@ -86,9 +87,9 @@ export const BroadcastForm = () => {
               name="audience"
               checked={audienceKind === opt.value}
               onChange={() => setAudienceKind(opt.value)}
-              className="accent-interaction-main-default dark:border-zinc-600 dark:bg-zinc-800"
+              className="accent-primary"
             />
-            <span className="prose-body-2">{opt.label}</span>
+            <span className="text-sm">{opt.label}</span>
           </label>
         ))}
       </fieldset>
@@ -117,12 +118,15 @@ export const BroadcastForm = () => {
         onChange={setHref}
       />
 
-      <Infobox variant="info">
-        Recipients will see this in their notification bell within 15 seconds
-        (poll interval).
-      </Infobox>
+      <Alert variant="info">
+        <Info />
+        <AlertDescription>
+          Recipients will see this in their notification bell within 15 seconds
+          (poll interval).
+        </AlertDescription>
+      </Alert>
 
-      <Button type="submit" isPending={broadcast.isPending}>
+      <Button type="submit" disabled={broadcast.isPending}>
         Send broadcast
       </Button>
     </form>

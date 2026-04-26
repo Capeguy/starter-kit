@@ -1,18 +1,22 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Avatar } from '@opengovsg/oui'
-import { Infobox } from '@opengovsg/oui/infobox'
 import { useQueries, useQuery } from '@tanstack/react-query'
+import { Info } from 'lucide-react'
 
 import { TextField } from '@acme/ui/text-field'
 
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Avatar, AvatarFallback } from '~/components/ui/avatar'
 import { useTRPC } from '~/trpc/react'
 
 interface AllowedUsersPickerProps {
   value: string[]
   onChange: (ids: string[]) => void
 }
+
+const initials = (name: string | null | undefined): string =>
+  name ? name.slice(0, 2).toUpperCase() : '?'
 
 /**
  * Multi-select user picker scoped to the feature-flag editor. Backed by
@@ -34,9 +38,6 @@ export const AllowedUsersPicker = ({
     ),
   )
 
-  // Resolve chip labels for already-selected users in a single hook call so
-  // we don't break Rules of Hooks if `value` changes shape between renders.
-  // Cheap: typical allowlists are <10 users, and TanStack Query caches each.
   const selectedQueries = useQueries({
     queries: value.map((id) =>
       trpc.admin.users.get.queryOptions({ userId: id }, { staleTime: 60_000 }),
@@ -58,8 +59,8 @@ export const AllowedUsersPicker = ({
 
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="prose-label-md mb-1">Allowed users</legend>
-      <p className="prose-caption-2 text-base-content-medium mb-1">
+      <legend className="mb-1 text-sm font-medium">Allowed users</legend>
+      <p className="text-muted-foreground mb-1 text-xs">
         These users always have the flag on, regardless of rollout percent.
       </p>
 
@@ -68,15 +69,15 @@ export const AllowedUsersPicker = ({
           {selectedUsers.map(({ id, data: u }) => (
             <li
               key={id}
-              className="border-base-divider-medium bg-base-canvas-alt flex items-center gap-2 rounded-full border px-2 py-1"
+              className="border-border bg-muted flex items-center gap-2 rounded-full border px-2 py-1"
             >
-              <span className="prose-label-sm">
+              <span className="text-xs font-medium">
                 {u?.name ?? u?.email ?? id}
               </span>
               <button
                 type="button"
                 onClick={() => removeUser(id)}
-                className="text-base-content-medium hover:text-base-content-strong"
+                className="text-muted-foreground hover:text-foreground"
                 aria-label={`Remove ${u?.name ?? id}`}
               >
                 &times;
@@ -97,16 +98,17 @@ export const AllowedUsersPicker = ({
       />
 
       {q.trim() && (
-        <ul className="border-base-divider-medium flex flex-col rounded-md border">
+        <ul className="border-border flex flex-col rounded-md border">
           {isFetching && !searchResults ? (
-            <li className="prose-caption-2 text-base-content-medium px-3 py-2">
+            <li className="text-muted-foreground px-3 py-2 text-xs">
               Searching…
             </li>
           ) : !searchResults || searchResults.items.length === 0 ? (
             <li className="px-3 py-2">
-              <Infobox variant="info" classNames={{ base: 'p-2' }}>
-                No users match.
-              </Infobox>
+              <Alert variant="info" className="p-2">
+                <Info />
+                <AlertDescription>No users match.</AlertDescription>
+              </Alert>
             </li>
           ) : (
             searchResults.items
@@ -115,25 +117,23 @@ export const AllowedUsersPicker = ({
               .map((u) => (
                 <li
                   key={u.id}
-                  className="border-base-divider-subtle border-b last:border-b-0"
+                  className="border-border border-b last:border-b-0"
                 >
                   <button
                     type="button"
                     onClick={() => addUser(u.id)}
-                    className="hover:bg-base-canvas-alt flex w-full items-center gap-2 px-3 py-2 text-left"
+                    className="hover:bg-muted/50 flex w-full items-center gap-2 px-3 py-2 text-left"
                   >
-                    <Avatar
-                      size="xs"
-                      name={u.name ?? 'Unknown'}
-                      getInitials={(name) => name.slice(0, 2).toUpperCase()}
-                    >
-                      <Avatar.Fallback />
+                    <Avatar className="h-6 w-6">
+                      <AvatarFallback className="text-xs">
+                        {initials(u.name)}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <span className="prose-label-md text-base-content-strong">
+                      <span className="text-foreground text-sm font-medium">
                         {u.name ?? '(unnamed)'}
                       </span>
-                      <span className="prose-caption-2 text-base-content-medium">
+                      <span className="text-muted-foreground text-xs">
                         {u.email ?? u.id}
                       </span>
                     </div>

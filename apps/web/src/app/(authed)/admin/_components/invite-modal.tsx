@@ -1,19 +1,28 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@opengovsg/oui/button'
-import { Infobox } from '@opengovsg/oui/infobox'
-import {
-  Modal,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from '@opengovsg/oui/modal'
-import { toast } from '@opengovsg/oui/toast'
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
+import { CheckCircle2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { TextField } from '@acme/ui/text-field'
 
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Button } from '~/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select'
 import { useTRPC } from '~/trpc/react'
 
 const TTL_PRESETS = [
@@ -91,83 +100,82 @@ export const InviteModal = ({ onClose, onIssued }: InviteModalProps) => {
   }
 
   return (
-    <Modal isOpen onOpenChange={(open) => !open && onClose()}>
-      <ModalContent>
-        {() => (
-          <form onSubmit={handleIssue}>
-            <ModalHeader>New invite</ModalHeader>
-            <div className="flex flex-col gap-4 px-6 pb-2">
-              {!issued ? (
-                <>
-                  <p className="prose-body-2 text-base-content-medium">
-                    Generates a one-time URL the recipient can open to register
-                    a passkey. They'll land in the app under the role you pick.
-                  </p>
-                  <TextField
-                    label="Name (optional)"
-                    inputProps={{
-                      placeholder: 'Jane Doe',
-                      name: 'name',
-                      maxLength: 50,
-                    }}
-                    value={name}
-                    onChange={setName}
-                  />
-                  <TextField
-                    label="Email (optional)"
-                    inputProps={{
-                      placeholder: 'jane@example.com',
-                      name: 'email',
-                      type: 'email',
-                    }}
-                    value={email}
-                    onChange={setEmail}
-                  />
-                  <div className="flex flex-col gap-1">
-                    <label
-                      htmlFor="invite-role"
-                      className="prose-label-md mb-1"
-                    >
-                      Role
-                    </label>
-                    <select
-                      id="invite-role"
-                      name="roleId"
-                      value={roleId}
-                      onChange={(e) => setRoleId(e.target.value)}
-                      className="border-base-divider-medium bg-base-canvas-default rounded border px-2 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
-                    >
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <form onSubmit={handleIssue}>
+          <DialogHeader>
+            <DialogTitle>New invite</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-2">
+            {!issued ? (
+              <>
+                <p className="text-muted-foreground text-sm">
+                  Generates a one-time URL the recipient can open to register a
+                  passkey. They&apos;ll land in the app under the role you pick.
+                </p>
+                <TextField
+                  label="Name (optional)"
+                  inputProps={{
+                    placeholder: 'Jane Doe',
+                    name: 'name',
+                    maxLength: 50,
+                  }}
+                  value={name}
+                  onChange={setName}
+                />
+                <TextField
+                  label="Email (optional)"
+                  inputProps={{
+                    placeholder: 'jane@example.com',
+                    name: 'email',
+                    type: 'email',
+                  }}
+                  value={email}
+                  onChange={setEmail}
+                />
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="invite-role" className="text-sm font-medium">
+                    Role
+                  </label>
+                  <Select value={roleId} onValueChange={setRoleId}>
+                    <SelectTrigger id="invite-role">
+                      <SelectValue placeholder="Pick a role" />
+                    </SelectTrigger>
+                    <SelectContent>
                       {rolesData.items.map((r) => (
-                        <option key={r.id} value={r.id}>
+                        <SelectItem key={r.id} value={r.id}>
                           {r.name}
-                        </option>
+                        </SelectItem>
                       ))}
-                    </select>
-                  </div>
-                  <fieldset className="flex flex-col gap-2">
-                    <legend className="prose-label-md mb-1">
-                      Link expires in
-                    </legend>
-                    {TTL_PRESETS.map((preset, i) => (
-                      <label
-                        key={preset.label}
-                        className="flex items-center gap-2"
-                      >
-                        <input
-                          type="radio"
-                          name="ttl"
-                          checked={ttlIdx === i}
-                          onChange={() => setTtlIdx(i)}
-                          className="accent-interaction-main-default dark:border-zinc-600 dark:bg-zinc-800"
-                        />
-                        <span className="prose-body-2">{preset.label}</span>
-                      </label>
-                    ))}
-                  </fieldset>
-                </>
-              ) : (
-                <>
-                  <Infobox variant="success">
+                    </SelectContent>
+                  </Select>
+                </div>
+                <fieldset className="flex flex-col gap-2">
+                  <legend className="mb-1 text-sm font-medium">
+                    Link expires in
+                  </legend>
+                  {TTL_PRESETS.map((preset, i) => (
+                    <label
+                      key={preset.label}
+                      className="flex items-center gap-2"
+                    >
+                      <input
+                        type="radio"
+                        name="ttl"
+                        checked={ttlIdx === i}
+                        onChange={() => setTtlIdx(i)}
+                        className="accent-primary"
+                      />
+                      <span className="text-sm">{preset.label}</span>
+                    </label>
+                  ))}
+                </fieldset>
+              </>
+            ) : (
+              <>
+                <Alert variant="success">
+                  <CheckCircle2 />
+                  <AlertDescription>
                     Invite link generated for role &ldquo;{issued.roleName}
                     &rdquo;.{' '}
                     {issued.expiresAt
@@ -176,38 +184,38 @@ export const InviteModal = ({ onClose, onIssued }: InviteModalProps) => {
                           timeStyle: 'short',
                         }).format(issued.expiresAt)}.`
                       : 'No expiry.'}
-                  </Infobox>
-                  <textarea
-                    readOnly
-                    value={issued.url}
-                    rows={3}
-                    className="border-base-divider-medium prose-body-2 w-full rounded-md border p-2 font-mono dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
-                    onClick={(e) => e.currentTarget.select()}
-                  />
-                  <p className="prose-caption-2 text-base-content-medium">
-                    Send this URL to the recipient via your own channel (Slack,
-                    email, in person). The link is single-use.
-                  </p>
-                </>
-              )}
-            </div>
-            <ModalFooter>
-              <Button variant="clear" type="button" onPress={onClose}>
-                {issued ? 'Done' : 'Cancel'}
+                  </AlertDescription>
+                </Alert>
+                <textarea
+                  readOnly
+                  value={issued.url}
+                  rows={3}
+                  className="border-border bg-muted/50 w-full rounded-md border p-2 font-mono text-sm"
+                  onClick={(e) => e.currentTarget.select()}
+                />
+                <p className="text-muted-foreground text-xs">
+                  Send this URL to the recipient via your own channel (Slack,
+                  email, in person). The link is single-use.
+                </p>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" type="button" onClick={onClose}>
+              {issued ? 'Done' : 'Cancel'}
+            </Button>
+            {!issued ? (
+              <Button type="submit" disabled={issueMutation.isPending}>
+                Generate invite link
               </Button>
-              {!issued ? (
-                <Button type="submit" isPending={issueMutation.isPending}>
-                  Generate invite link
-                </Button>
-              ) : (
-                <Button type="button" onPress={handleCopy}>
-                  Copy URL
-                </Button>
-              )}
-            </ModalFooter>
-          </form>
-        )}
-      </ModalContent>
-    </Modal>
+            ) : (
+              <Button type="button" onClick={handleCopy}>
+                Copy URL
+              </Button>
+            )}
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }

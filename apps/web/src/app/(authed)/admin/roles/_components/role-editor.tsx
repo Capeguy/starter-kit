@@ -1,18 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@opengovsg/oui/button'
-import {
-  Modal,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from '@opengovsg/oui/modal'
-import { toast } from '@opengovsg/oui/toast'
 import { useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 import { TextField } from '@acme/ui/text-field'
 
+import { Button } from '~/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog'
 import { useTRPC } from '~/trpc/react'
 
 interface RoleInput {
@@ -102,74 +103,74 @@ export const RoleEditor = ({
   const isPending = createMutation.isPending || updateMutation.isPending
 
   return (
-    <Modal isOpen onOpenChange={(open) => !open && onClose()}>
-      <ModalContent>
-        {() => (
-          <form onSubmit={handleSubmit}>
-            <ModalHeader>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>
               {isNew ? 'Create role' : `Edit role: ${role.name}`}
-            </ModalHeader>
-            <div className="flex flex-col gap-4 px-6 pb-2">
-              <TextField
-                label="Name"
-                inputProps={{
-                  placeholder: 'Editor',
-                  name: 'name',
-                  maxLength: 50,
-                }}
-                value={name}
-                onChange={setName}
-                isRequired={isNew}
-                isDisabled={!isNew && role.isSystem}
-              />
-              {!isNew && role.isSystem && (
-                <p className="prose-caption-2 text-base-content-medium -mt-2">
-                  System role names are locked.
-                </p>
-              )}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto py-2">
+            <TextField
+              label="Name"
+              inputProps={{
+                placeholder: 'Editor',
+                name: 'name',
+                maxLength: 50,
+              }}
+              value={name}
+              onChange={setName}
+              isRequired={isNew}
+              isDisabled={!isNew && role.isSystem}
+            />
+            {!isNew && role.isSystem && (
+              <p className="text-muted-foreground -mt-2 text-xs">
+                System role names are locked.
+              </p>
+            )}
 
-              <TextField
-                label="Description (optional)"
-                inputProps={{
-                  placeholder: 'What this role is for',
-                  name: 'desc',
-                }}
-                value={description}
-                onChange={setDescription}
-              />
+            <TextField
+              label="Description (optional)"
+              inputProps={{
+                placeholder: 'What this role is for',
+                name: 'desc',
+              }}
+              value={description}
+              onChange={setDescription}
+            />
 
-              <fieldset className="flex flex-col gap-2">
-                <legend className="prose-label-md mb-1">Capabilities</legend>
-                <p className="prose-caption-2 text-base-content-medium mb-1">
-                  Tick the operations users with this role can perform. Codes
-                  are checked against the canonical catalogue in code.
-                </p>
-                <div className="flex flex-col gap-1">
-                  {allCapabilities.map((cap) => (
-                    <label key={cap} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={capabilities.has(cap)}
-                        onChange={() => toggleCap(cap)}
-                        className="accent-interaction-main-default dark:border-zinc-600 dark:bg-zinc-800"
-                      />
-                      <code className="prose-body-2">{cap}</code>
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-            </div>
-            <ModalFooter>
-              <Button variant="clear" type="button" onPress={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit" isPending={isPending}>
-                {isNew ? 'Create' : 'Save'}
-              </Button>
-            </ModalFooter>
-          </form>
-        )}
-      </ModalContent>
-    </Modal>
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-1 text-sm font-medium">Capabilities</legend>
+              <p className="text-muted-foreground mb-1 text-xs">
+                Tick the operations users with this role can perform. Codes are
+                checked against the canonical catalogue in code.
+              </p>
+              <div className="flex flex-col gap-1">
+                {allCapabilities.map((cap) => (
+                  <label key={cap} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={capabilities.has(cap)}
+                      onChange={() => toggleCap(cap)}
+                      className="accent-primary"
+                    />
+                    <code className="text-sm">{cap}</code>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" type="button" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isPending}>
+              {isNew ? 'Create' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }

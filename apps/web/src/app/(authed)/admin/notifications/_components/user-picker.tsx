@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Avatar } from '@opengovsg/oui'
-import { Infobox } from '@opengovsg/oui/infobox'
 import { useQuery } from '@tanstack/react-query'
+import { Info } from 'lucide-react'
 
 import { TextField } from '@acme/ui/text-field'
 
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Avatar, AvatarFallback } from '~/components/ui/avatar'
 import { useTRPC } from '~/trpc/react'
 
 interface PickedUser {
@@ -19,6 +20,9 @@ interface UserPickerProps {
   value: PickedUser | null
   onChange: (user: PickedUser | null) => void
 }
+
+const initials = (name: string | null | undefined): string =>
+  name ? name.slice(0, 2).toUpperCase() : '?'
 
 /**
  * Search-as-you-type picker backed by `admin.users.list`. Emits the full
@@ -38,19 +42,19 @@ export const UserPicker = ({ value, onChange }: UserPickerProps) => {
 
   if (value) {
     return (
-      <div className="border-base-divider-medium flex items-center justify-between rounded-md border p-3">
+      <div className="border-border flex items-center justify-between rounded-md border p-3">
         <div className="flex flex-col">
-          <span className="prose-label-md text-base-content-strong">
+          <span className="text-foreground text-sm font-medium">
             {value.name ?? '(unnamed)'}
           </span>
-          <span className="prose-caption-2 text-base-content-medium">
+          <span className="text-muted-foreground text-xs">
             {value.email ?? value.id}
           </span>
         </div>
         <button
           type="button"
           onClick={() => onChange(null)}
-          className="prose-label-sm text-base-content-brand hover:underline"
+          className="text-primary text-sm font-medium hover:underline"
         >
           Change
         </button>
@@ -70,42 +74,38 @@ export const UserPicker = ({ value, onChange }: UserPickerProps) => {
         onChange={setQ}
       />
       {q.trim() && (
-        <ul className="border-base-divider-medium flex flex-col rounded-md border">
+        <ul className="border-border flex flex-col rounded-md border">
           {isFetching && !data ? (
-            <li className="prose-caption-2 text-base-content-medium px-3 py-2">
+            <li className="text-muted-foreground px-3 py-2 text-xs">
               Searching…
             </li>
           ) : !data || data.items.length === 0 ? (
             <li className="px-3 py-2">
-              <Infobox variant="info" classNames={{ base: 'p-2' }}>
-                No users match.
-              </Infobox>
+              <Alert variant="info" className="p-2">
+                <Info />
+                <AlertDescription>No users match.</AlertDescription>
+              </Alert>
             </li>
           ) : (
             data.items.map((u) => (
-              <li
-                key={u.id}
-                className="border-base-divider-subtle border-b last:border-b-0"
-              >
+              <li key={u.id} className="border-border border-b last:border-b-0">
                 <button
                   type="button"
                   onClick={() =>
                     onChange({ id: u.id, name: u.name, email: u.email })
                   }
-                  className="hover:bg-base-canvas-alt flex w-full items-center gap-2 px-3 py-2 text-left"
+                  className="hover:bg-muted/50 flex w-full items-center gap-2 px-3 py-2 text-left"
                 >
-                  <Avatar
-                    size="xs"
-                    name={u.name ?? 'Unknown'}
-                    getInitials={(name) => name.slice(0, 2).toUpperCase()}
-                  >
-                    <Avatar.Fallback />
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback className="text-xs">
+                      {initials(u.name)}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
-                    <span className="prose-label-md text-base-content-strong">
+                    <span className="text-foreground text-sm font-medium">
                       {u.name ?? '(unnamed)'}
                     </span>
-                    <span className="prose-caption-2 text-base-content-medium">
+                    <span className="text-muted-foreground text-xs">
                       {u.email ?? u.id}
                     </span>
                   </div>

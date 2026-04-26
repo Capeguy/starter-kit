@@ -1,17 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@opengovsg/oui/button'
-import { Infobox } from '@opengovsg/oui/infobox'
-import { toast } from '@opengovsg/oui/toast'
-import { Toggle } from '@opengovsg/oui/toggle'
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
+import { Info } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Button } from '~/components/ui/button'
 import {
   DataTable,
   DataTableBody,
@@ -21,6 +21,7 @@ import {
   DataTableRoot,
   DataTableRow,
 } from '~/components/ui/data-table'
+import { Switch } from '~/components/ui/switch'
 import { useTRPC } from '~/trpc/react'
 import { FeatureFlagEditor } from './feature-flag-editor'
 
@@ -93,24 +94,27 @@ export const FeatureFlagsPage = () => {
       <RegistryBreadcrumbs />
       <header className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="prose-h2 text-base-content-strong">Feature flags</h1>
-          <p className="prose-body-2 text-base-content-medium">
+          <h1 className="text-foreground text-2xl font-bold">Feature flags</h1>
+          <p className="text-muted-foreground text-sm">
             Toggle features on or off, roll them out to a percentage of users,
             or always-on for a specific allowlist. Evaluation is per-user via a
             stable SHA-256 bucket — the same user always lands in the same
             bucket for a given flag.
           </p>
         </div>
-        <Button className="shrink-0" onPress={() => setEditing('new')}>
+        <Button className="shrink-0" onClick={() => setEditing('new')}>
           New flag
         </Button>
       </header>
 
       {data.items.length === 0 ? (
-        <Infobox variant="info">
-          No feature flags yet. Create one with the &ldquo;New flag&rdquo;
-          button.
-        </Infobox>
+        <Alert variant="info">
+          <Info />
+          <AlertDescription>
+            No feature flags yet. Create one with the &ldquo;New flag&rdquo;
+            button.
+          </AlertDescription>
+        </Alert>
       ) : (
         <DataTable>
           <DataTableRoot>
@@ -128,22 +132,22 @@ export const FeatureFlagsPage = () => {
               {data.items.map((f) => (
                 <DataTableRow key={f.key}>
                   <DataTableCell>
-                    <code className="prose-body-2">{f.key}</code>
+                    <code className="text-sm">{f.key}</code>
                   </DataTableCell>
                   <DataTableCell>
                     <div className="flex flex-col">
-                      <span className="prose-label-md">{f.name}</span>
+                      <span className="font-medium">{f.name}</span>
                       {f.description && (
-                        <span className="prose-caption-2 text-base-content-medium">
+                        <span className="text-muted-foreground text-xs">
                           {f.description}
                         </span>
                       )}
                     </div>
                   </DataTableCell>
                   <DataTableCell>
-                    <Toggle
-                      isSelected={f.enabled}
-                      onChange={(next) => handleInlineToggle(f, next)}
+                    <Switch
+                      checked={f.enabled}
+                      onCheckedChange={(next) => handleInlineToggle(f, next)}
                       aria-label={`Toggle ${f.name}`}
                     />
                   </DataTableCell>
@@ -160,14 +164,14 @@ export const FeatureFlagsPage = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onPress={() => setEditing(f)}
+                        onClick={() => setEditing(f)}
                       >
                         Edit
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        onPress={() => {
+                        onClick={() => {
                           if (
                             confirm(
                               `Delete flag "${f.key}"? This cannot be undone.`,

@@ -1,16 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@opengovsg/oui/button'
-import { Infobox } from '@opengovsg/oui/infobox'
-import { toast } from '@opengovsg/oui/toast'
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
+import { AlertTriangle } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Button } from '~/components/ui/button'
 import {
   DataTable,
   DataTableBody,
@@ -61,23 +62,27 @@ export const RolesListPage = () => {
       <RegistryBreadcrumbs />
       <header className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="prose-h2 text-base-content-strong">Roles</h1>
-          <p className="prose-body-2 text-base-content-medium">
+          <h1 className="text-foreground text-2xl font-bold">Roles</h1>
+          <p className="text-muted-foreground text-sm">
             Define which users can do what. Each role grants a set of dotted
             capability codes (e.g. <code>file.upload</code>). System roles
             (Admin, User) cannot be deleted; their capability sets are still
             editable.
           </p>
         </div>
-        <Button className="shrink-0" onPress={() => setEditing('new')}>
+        <Button className="shrink-0" onClick={() => setEditing('new')}>
           New role
         </Button>
       </header>
 
       {data.items.length === 0 ? (
-        <Infobox variant="warning">
-          No roles yet — that's a problem. Re-run the RBAC seed migration.
-        </Infobox>
+        <Alert variant="warning">
+          <AlertTriangle />
+          <AlertDescription>
+            No roles yet — that&apos;s a problem. Re-run the RBAC seed
+            migration.
+          </AlertDescription>
+        </Alert>
       ) : (
         <DataTable>
           <DataTableRoot>
@@ -95,18 +100,18 @@ export const RolesListPage = () => {
                 <DataTableRow key={r.id}>
                   <DataTableCell>
                     <div className="flex flex-col">
-                      <span className="prose-label-md">{r.name}</span>
+                      <span className="font-medium">{r.name}</span>
                       {r.isSystem && (
-                        <span className="prose-caption-2 text-base-content-medium">
+                        <span className="text-muted-foreground text-xs">
                           System role
                         </span>
                       )}
                     </div>
                   </DataTableCell>
-                  <DataTableCell className="text-base-content-medium">
+                  <DataTableCell className="text-muted-foreground">
                     {r.description ?? '—'}
                   </DataTableCell>
-                  <DataTableCell className="text-base-content-medium">
+                  <DataTableCell className="text-muted-foreground">
                     {r.capabilities.length === 0
                       ? '(none)'
                       : `${r.capabilities.length} granted`}
@@ -117,7 +122,7 @@ export const RolesListPage = () => {
                       onClick={() =>
                         setUsersModalRole({ id: r.id, name: r.name })
                       }
-                      className="text-base-content-brand hover:underline"
+                      className="text-primary hover:underline"
                       aria-label={`View ${r._count.users} user${r._count.users === 1 ? '' : 's'} in role ${r.name}`}
                     >
                       {r._count.users}
@@ -128,15 +133,15 @@ export const RolesListPage = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        onPress={() => setEditing(r)}
+                        onClick={() => setEditing(r)}
                       >
                         Edit
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        isDisabled={r.isSystem || r._count.users > 0}
-                        onPress={() => {
+                        disabled={r.isSystem || r._count.users > 0}
+                        onClick={() => {
                           if (
                             confirm(
                               `Delete role "${r.name}"? This cannot be undone.`,

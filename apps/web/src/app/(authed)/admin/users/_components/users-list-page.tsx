@@ -2,21 +2,22 @@
 
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Avatar } from '@opengovsg/oui'
-import { Badge } from '@opengovsg/oui/badge'
-import { Button } from '@opengovsg/oui/button'
-import { Infobox } from '@opengovsg/oui/infobox'
-import { toast } from '@opengovsg/oui/toast'
 import {
   useMutation,
   useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
+import { Info } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { TextField } from '@acme/ui/text-field'
 
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Avatar, AvatarFallback } from '~/components/ui/avatar'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
 import {
   DataTable,
   DataTableBody,
@@ -26,6 +27,13 @@ import {
   DataTableRoot,
   DataTableRow,
 } from '~/components/ui/data-table'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select'
 import { Capability, hasCapability, SystemRoleId } from '~/lib/rbac'
 import { useTRPC } from '~/trpc/react'
 import { InviteModal } from '../../_components/invite-modal'
@@ -38,6 +46,9 @@ const formatDateTime = (d: Date | null) =>
         timeStyle: 'short',
       }).format(d)
     : '—'
+
+const initials = (name: string | null | undefined): string =>
+  name ? name.slice(0, 2).toUpperCase() : '?'
 
 interface UserRow {
   kind: 'user'
@@ -150,8 +161,6 @@ export const UsersListPage = () => {
 
   const rows: Row[] = useMemo(() => {
     const out: Row[] = []
-    // Active invites at the top so they're prominent; only when the admin
-    // isn't filtering for a specific user.
     if (canInvite && !q && invitesData) {
       const now = new Date()
       for (const i of invitesData.items) {
@@ -200,14 +209,14 @@ export const UsersListPage = () => {
       <RegistryBreadcrumbs />
       <header className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="prose-h2 text-base-content-strong">Users</h1>
-          <p className="prose-body-2 text-base-content-medium">
+          <h1 className="text-foreground text-2xl font-bold">Users</h1>
+          <p className="text-muted-foreground text-sm">
             Active accounts and pending invites. Issue an invite link, change
             roles, reset passkeys for locked-out users.
           </p>
         </div>
         {canInvite && (
-          <Button className="shrink-0" onPress={() => setInviteModalOpen(true)}>
+          <Button className="shrink-0" onClick={() => setInviteModalOpen(true)}>
             New invite
           </Button>
         )}
@@ -221,9 +230,12 @@ export const UsersListPage = () => {
       />
 
       {rows.length === 0 ? (
-        <Infobox variant="info">
-          {q ? 'No users match the search.' : 'No users or invites yet.'}
-        </Infobox>
+        <Alert variant="info">
+          <Info />
+          <AlertDescription>
+            {q ? 'No users match the search.' : 'No users or invites yet.'}
+          </AlertDescription>
+        </Alert>
       ) : (
         <DataTable>
           <DataTableRoot>
@@ -243,53 +255,49 @@ export const UsersListPage = () => {
                   <DataTableRow key={`user-${row.id}`}>
                     <DataTableCell>
                       <div className="flex items-center gap-2">
-                        <Avatar
-                          size="xs"
-                          name={row.name ?? 'Unknown'}
-                          getInitials={(name) => name.slice(0, 2).toUpperCase()}
-                        >
-                          <Avatar.Fallback />
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-xs">
+                            {initials(row.name)}
+                          </AvatarFallback>
                         </Avatar>
                         {row.name ?? '(unnamed)'}
                       </div>
                     </DataTableCell>
-                    <DataTableCell className="text-base-content-medium">
+                    <DataTableCell className="text-muted-foreground">
                       {row.email ?? '—'}
                     </DataTableCell>
                     <DataTableCell>
                       <div className="flex items-center gap-2">
-                        <select
-                          className="border-base-divider-medium bg-base-canvas-default rounded border px-2 py-1 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+                        <Select
                           value={row.roleId}
-                          onChange={(e) =>
+                          onValueChange={(value) =>
                             setRoleMutation.mutate({
                               userId: row.id,
-                              roleId: e.target.value,
+                              roleId: value,
                             })
                           }
                         >
-                          {rolesData.items.map((r) => (
-                            <option key={r.id} value={r.id}>
-                              {r.name}
-                            </option>
-                          ))}
-                        </select>
-                        <Badge variant="subtle" size="sm">
-                          {rolesData.items.find((r) => r.id === row.roleId)
-                            ?.name ?? row.roleId}
-                        </Badge>
+                          <SelectTrigger className="h-8 w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {rolesData.items.map((r) => (
+                              <SelectItem key={r.id} value={r.id}>
+                                {r.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </DataTableCell>
                     <DataTableCell>
-                      <Badge variant="subtle" size="sm" color="success">
-                        Active
-                      </Badge>
-                      <span className="prose-caption-2 text-base-content-medium ml-2">
+                      <Badge variant="success">Active</Badge>
+                      <span className="text-muted-foreground ml-2 text-xs">
                         {row.passkeyCount} passkey
                         {row.passkeyCount === 1 ? '' : 's'}
                       </span>
                     </DataTableCell>
-                    <DataTableCell className="text-base-content-medium">
+                    <DataTableCell className="text-muted-foreground">
                       {row.lastLogin ? formatDateTime(row.lastLogin) : '—'}
                     </DataTableCell>
                     <DataTableCell>
@@ -297,7 +305,7 @@ export const UsersListPage = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onPress={() =>
+                          onClick={() =>
                             setResetTarget({
                               userId: row.id,
                               name: row.name,
@@ -309,7 +317,7 @@ export const UsersListPage = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onPress={() =>
+                          onClick={() =>
                             setRoleMutation.mutate({
                               userId: row.id,
                               roleId:
@@ -327,7 +335,7 @@ export const UsersListPage = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onPress={() =>
+                            onClick={() =>
                               impersonate.mutate({ userId: row.id })
                             }
                           >
@@ -337,7 +345,7 @@ export const UsersListPage = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onPress={() => {
+                          onClick={() => {
                             if (
                               confirm(
                                 `Delete ${row.name ?? row.id}? This cannot be undone.`,
@@ -356,33 +364,27 @@ export const UsersListPage = () => {
                   <DataTableRow key={`invite-${row.id}`}>
                     <DataTableCell>
                       <div className="flex items-center gap-2">
-                        <Avatar
-                          size="xs"
-                          name={row.name ?? row.email ?? '?'}
-                          getInitials={(name) => name.slice(0, 2).toUpperCase()}
-                        >
-                          <Avatar.Fallback />
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-xs">
+                            {initials(row.name ?? row.email)}
+                          </AvatarFallback>
                         </Avatar>
                         {row.name ?? '(no name)'}
                       </div>
                     </DataTableCell>
-                    <DataTableCell className="text-base-content-medium">
+                    <DataTableCell className="text-muted-foreground">
                       {row.email ?? '—'}
                     </DataTableCell>
                     <DataTableCell>
-                      <Badge variant="subtle" size="sm">
-                        {row.roleName}
-                      </Badge>
+                      <Badge variant="secondary">{row.roleName}</Badge>
                     </DataTableCell>
                     <DataTableCell>
-                      <Badge variant="subtle" size="sm" color="warning">
-                        Invited
-                      </Badge>
-                      <span className="prose-caption-2 text-base-content-medium ml-2">
+                      <Badge variant="warning">Invited</Badge>
+                      <span className="text-muted-foreground ml-2 text-xs">
                         by {row.issuedByLabel}
                       </span>
                     </DataTableCell>
-                    <DataTableCell className="text-base-content-medium">
+                    <DataTableCell className="text-muted-foreground">
                       {row.expiresAt
                         ? `Expires ${formatDateTime(row.expiresAt)}`
                         : 'No expiry'}
@@ -392,14 +394,14 @@ export const UsersListPage = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onPress={() => copyInviteUrl(row.token)}
+                          onClick={() => copyInviteUrl(row.token)}
                         >
                           Copy URL
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          onPress={() => {
+                          onClick={() => {
                             if (
                               confirm(
                                 `Revoke invite for ${row.name ?? row.email ?? 'recipient'}? The link will stop working immediately.`,

@@ -1,22 +1,31 @@
 'use client'
 
 import { Suspense, useMemo, useState } from 'react'
-import { Button } from '@opengovsg/oui/button'
-import { Checkbox } from '@opengovsg/oui/checkbox'
-import { Infobox } from '@opengovsg/oui/infobox'
-import {
-  Modal,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from '@opengovsg/oui/modal'
-import { toast } from '@opengovsg/oui/toast'
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
+import { Info } from 'lucide-react'
+import { toast } from 'sonner'
 
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Button } from '~/components/ui/button'
+import { Checkbox } from '~/components/ui/checkbox'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '~/components/ui/select'
 import { useTRPC } from '~/trpc/react'
 
 interface RoleUsersModalProps {
@@ -26,24 +35,22 @@ interface RoleUsersModalProps {
 
 export const RoleUsersModal = ({ role, onClose }: RoleUsersModalProps) => {
   return (
-    <Modal isOpen onOpenChange={(open) => !open && onClose()}>
-      <ModalContent>
-        {() => (
-          <>
-            <ModalHeader>Users in role: {role.name}</ModalHeader>
-            <Suspense fallback={<ModalLoading />}>
-              <RoleUsersBody role={role} onClose={onClose} />
-            </Suspense>
-          </>
-        )}
-      </ModalContent>
-    </Modal>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Users in role: {role.name}</DialogTitle>
+        </DialogHeader>
+        <Suspense fallback={<ModalLoading />}>
+          <RoleUsersBody role={role} onClose={onClose} />
+        </Suspense>
+      </DialogContent>
+    </Dialog>
   )
 }
 
 const ModalLoading = () => (
-  <div className="px-6 pb-6">
-    <p className="prose-body-2 text-base-content-medium">Loading users…</p>
+  <div className="py-2">
+    <p className="text-muted-foreground text-sm">Loading users…</p>
   </div>
 )
 
@@ -63,7 +70,6 @@ const RoleUsersBody = ({ role, onClose }: RoleUsersBodyProps) => {
     trpc.admin.roles.list.queryOptions(),
   )
 
-  // Other roles available as reassignment targets — exclude the source role.
   const targetRoles = useMemo(
     () => rolesData.items.filter((r) => r.id !== role.id),
     [rolesData.items, role.id],
@@ -126,83 +132,95 @@ const RoleUsersBody = ({ role, onClose }: RoleUsersBodyProps) => {
 
   return (
     <>
-      <div className="flex flex-col gap-4 px-6 pb-2">
+      <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto py-2">
         {usersData.items.length === 0 ? (
-          <Infobox variant="info">No users are assigned to this role.</Infobox>
+          <Alert variant="info">
+            <Info />
+            <AlertDescription>
+              No users are assigned to this role.
+            </AlertDescription>
+          </Alert>
         ) : (
           <>
-            <div className="border-base-divider-medium flex flex-col gap-1 rounded-md border">
-              <div className="border-base-divider-medium border-b px-3 py-2">
+            <div className="border-border flex flex-col gap-1 rounded-md border">
+              <div className="border-border flex items-center gap-2 border-b px-3 py-2">
                 <Checkbox
-                  isSelected={allSelected}
-                  isIndeterminate={someSelected}
-                  onChange={toggleAll}
+                  checked={
+                    allSelected ? true : someSelected ? 'indeterminate' : false
+                  }
+                  onCheckedChange={(checked) => toggleAll(checked === true)}
                   aria-label="Select all users"
+                  id="select-all"
+                />
+                <label
+                  htmlFor="select-all"
+                  className="cursor-pointer text-sm font-medium"
                 >
-                  <span className="prose-label-md">
-                    Select all ({usersData.items.length})
-                  </span>
-                </Checkbox>
+                  Select all ({usersData.items.length})
+                </label>
               </div>
-              <ul className="divide-base-divider-subtle flex flex-col divide-y">
+              <ul className="divide-border flex flex-col divide-y">
                 {usersData.items.map((u) => (
-                  <li key={u.id} className="px-3 py-2">
+                  <li key={u.id} className="flex items-center gap-2 px-3 py-2">
                     <Checkbox
-                      isSelected={selected.has(u.id)}
-                      onChange={(checked) => toggleOne(u.id, checked)}
+                      id={`u-${u.id}`}
+                      checked={selected.has(u.id)}
+                      onCheckedChange={(checked) =>
+                        toggleOne(u.id, checked === true)
+                      }
                       aria-label={`Select ${u.name ?? u.email ?? u.id}`}
+                    />
+                    <label
+                      htmlFor={`u-${u.id}`}
+                      className="flex flex-1 cursor-pointer flex-col"
                     >
-                      <span className="flex flex-col">
-                        <span className="prose-body-2">
-                          {u.name ?? '(no name)'}
-                        </span>
-                        <span className="prose-caption-2 text-base-content-medium">
-                          {u.email ?? '(no email)'}
-                        </span>
+                      <span className="text-sm">{u.name ?? '(no name)'}</span>
+                      <span className="text-muted-foreground text-xs">
+                        {u.email ?? '(no email)'}
                       </span>
-                    </Checkbox>
+                    </label>
                   </li>
                 ))}
               </ul>
             </div>
 
             <div className="flex flex-col gap-1">
-              <label htmlFor="reassign-target-role" className="prose-label-md">
+              <label
+                htmlFor="reassign-target-role"
+                className="text-sm font-medium"
+              >
                 Reassign selected to…
               </label>
-              <select
-                id="reassign-target-role"
-                aria-label="Reassign selected to"
+              <Select
                 value={targetRoleId}
-                onChange={(e) => setTargetRoleId(e.target.value)}
-                className="border-base-divider-medium rounded-md border px-3 py-2 dark:border-zinc-600 dark:bg-zinc-800"
+                onValueChange={setTargetRoleId}
                 disabled={isPending}
               >
-                <option value="">Select a target role…</option>
-                {targetRoles.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id="reassign-target-role">
+                  <SelectValue placeholder="Select a target role…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {targetRoles.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </>
         )}
       </div>
-      <ModalFooter>
-        <Button variant="clear" type="button" onPress={onClose}>
+      <DialogFooter>
+        <Button variant="ghost" type="button" onClick={onClose}>
           Cancel
         </Button>
-        <Button
-          onPress={handleReassign}
-          isPending={isPending}
-          isDisabled={!canReassign}
-        >
+        <Button onClick={handleReassign} disabled={!canReassign}>
           {selected.size > 0
             ? `Reassign ${selected.size} selected`
             : 'Reassign selected'}
         </Button>
-      </ModalFooter>
+      </DialogFooter>
     </>
   )
 }

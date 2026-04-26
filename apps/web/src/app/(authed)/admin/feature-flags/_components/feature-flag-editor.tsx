@@ -1,20 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@opengovsg/oui/button'
-import {
-  Modal,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from '@opengovsg/oui/modal'
-import { NumberField } from '@opengovsg/oui/number-field'
-import { toast } from '@opengovsg/oui/toast'
-import { Toggle } from '@opengovsg/oui/toggle'
 import { useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 import { TextField } from '@acme/ui/text-field'
 
+import { Button } from '~/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog'
+import { Switch } from '~/components/ui/switch'
 import { useTRPC } from '~/trpc/react'
 import { AllowedUsersPicker } from './allowed-users-picker'
 
@@ -99,84 +99,103 @@ export const FeatureFlagEditor = ({
   }
 
   return (
-    <Modal isOpen onOpenChange={(open) => !open && onClose()}>
-      <ModalContent>
-        {() => (
-          <form onSubmit={handleSubmit}>
-            <ModalHeader>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>
               {isNew ? 'Create feature flag' : `Edit flag: ${flag.key}`}
-            </ModalHeader>
-            <div className="flex flex-col gap-4 px-6 pb-2">
-              <TextField
-                label="Key"
-                inputProps={{
-                  placeholder: 'new.checkout.flow',
-                  name: 'key',
-                  maxLength: 64,
-                }}
-                value={key}
-                onChange={setKey}
-                isRequired={isNew}
-                isDisabled={!isNew}
-                description="Lowercase, dotted slug. Immutable once created."
-              />
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-2">
+            <TextField
+              label="Key"
+              inputProps={{
+                placeholder: 'new.checkout.flow',
+                name: 'key',
+                maxLength: 64,
+              }}
+              value={key}
+              onChange={setKey}
+              isRequired={isNew}
+              isDisabled={!isNew}
+              description="Lowercase, dotted slug. Immutable once created."
+            />
 
-              <TextField
-                label="Name"
-                inputProps={{
-                  placeholder: 'New checkout flow',
-                  name: 'name',
-                  maxLength: 120,
-                }}
-                value={name}
-                onChange={setName}
-                isRequired
-              />
+            <TextField
+              label="Name"
+              inputProps={{
+                placeholder: 'New checkout flow',
+                name: 'name',
+                maxLength: 120,
+              }}
+              value={name}
+              onChange={setName}
+              isRequired
+            />
 
-              <TextField
-                label="Description (optional)"
-                inputProps={{
-                  placeholder: 'What this flag controls',
-                  name: 'description',
-                  maxLength: 500,
-                }}
-                value={description}
-                onChange={setDescription}
-              />
+            <TextField
+              label="Description (optional)"
+              inputProps={{
+                placeholder: 'What this flag controls',
+                name: 'description',
+                maxLength: 500,
+              }}
+              value={description}
+              onChange={setDescription}
+            />
 
-              <Toggle
-                isSelected={enabled}
-                onChange={setEnabled}
+            <label className="flex items-center gap-3">
+              <Switch
+                checked={enabled}
+                onCheckedChange={setEnabled}
                 aria-label="Enabled"
-              >
+              />
+              <span className="text-sm font-medium">
                 Enabled (master switch)
-              </Toggle>
+              </span>
+            </label>
 
-              <NumberField
-                label="Rollout percent"
+            <div className="flex flex-col gap-2">
+              <label htmlFor="ff-rollout" className="text-sm font-medium">
+                Rollout percent
+              </label>
+              <input
+                id="ff-rollout"
+                type="number"
+                min={0}
+                max={100}
                 value={rolloutPercent}
-                onChange={(v) => setRolloutPercent(Number.isFinite(v) ? v : 0)}
-                minValue={0}
-                maxValue={100}
-                description="Percentage of users (by stable hash) the flag is on for. Allowlisted users are always on regardless of this value."
+                onChange={(e) =>
+                  setRolloutPercent(
+                    Number.isFinite(e.target.valueAsNumber)
+                      ? e.target.valueAsNumber
+                      : 0,
+                  )
+                }
+                className="border-input bg-background ring-offset-background focus-visible:ring-ring h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               />
-
-              <AllowedUsersPicker
-                value={allowedUserIds}
-                onChange={setAllowedUserIds}
-              />
+              <p className="text-muted-foreground text-xs">
+                Percentage of users (by stable hash) the flag is on for.
+                Allowlisted users are always on regardless of this value.
+              </p>
             </div>
-            <ModalFooter>
-              <Button variant="clear" type="button" onPress={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit" isPending={upsertMutation.isPending}>
-                {isNew ? 'Create' : 'Save'}
-              </Button>
-            </ModalFooter>
-          </form>
-        )}
-      </ModalContent>
-    </Modal>
+
+            <AllowedUsersPicker
+              value={allowedUserIds}
+              onChange={setAllowedUserIds}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" type="button" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={upsertMutation.isPending}>
+              {isNew ? 'Create' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }

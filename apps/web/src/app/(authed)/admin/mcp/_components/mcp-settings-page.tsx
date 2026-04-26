@@ -1,18 +1,19 @@
 'use client'
 
 import { useSyncExternalStore } from 'react'
-import { Badge } from '@opengovsg/oui/badge'
-import { Infobox } from '@opengovsg/oui/infobox'
-import { toast } from '@opengovsg/oui/toast'
-import { Toggle } from '@opengovsg/oui/toggle'
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
+import { Info } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Badge } from '~/components/ui/badge'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
+import { Switch } from '~/components/ui/switch'
 import { useTRPC } from '~/trpc/react'
 
 const subscribeNoop = () => () => {
@@ -65,8 +66,8 @@ export const McpSettingsPage = () => {
     <div className="flex flex-1 flex-col gap-6">
       <RegistryBreadcrumbs />
       <header className="flex flex-col gap-1">
-        <h1 className="prose-h2 text-base-content-strong">MCP server</h1>
-        <p className="prose-body-2 text-base-content-medium">
+        <h1 className="text-foreground text-2xl font-bold">MCP server</h1>
+        <p className="text-muted-foreground text-sm">
           Expose a Model Context Protocol JSON-RPC endpoint at{' '}
           <code>/api/mcp</code> so users can connect their Claude / IDE
           assistants to this app via a personal API token. While disabled, the
@@ -79,26 +80,22 @@ export const McpSettingsPage = () => {
         <CardBody className="flex flex-col gap-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex flex-col gap-1">
-              <span className="prose-label-md text-base-content-strong">
+              <span className="text-foreground text-sm font-medium">
                 MCP server
               </span>
-              <span className="prose-body-2 text-base-content-medium">
+              <span className="text-muted-foreground text-sm">
                 {data.enabled
                   ? `Accepting requests at ${host}/api/mcp.`
                   : 'Disabled — /api/mcp returns 404 to all callers.'}
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <Badge
-                variant="subtle"
-                color={data.enabled ? 'success' : 'neutral'}
-                size="sm"
-              >
+              <Badge variant={data.enabled ? 'success' : 'secondary'}>
                 {data.enabled ? 'Enabled' : 'Disabled'}
               </Badge>
-              <Toggle
-                isSelected={data.enabled}
-                onChange={(next) =>
+              <Switch
+                checked={data.enabled}
+                onCheckedChange={(next) =>
                   setEnabledMutation.mutate({ enabled: next })
                 }
                 aria-label="Enable or disable the MCP server"
@@ -107,10 +104,13 @@ export const McpSettingsPage = () => {
           </div>
 
           {!data.enabled && (
-            <Infobox variant="info">
-              Turn the server on to begin accepting MCP JSON-RPC requests.
-              Per-tool toggles below take effect once the server is enabled.
-            </Infobox>
+            <Alert variant="info">
+              <Info />
+              <AlertDescription>
+                Turn the server on to begin accepting MCP JSON-RPC requests.
+                Per-tool toggles below take effect once the server is enabled.
+              </AlertDescription>
+            </Alert>
           )}
         </CardBody>
       </Card>
@@ -119,36 +119,36 @@ export const McpSettingsPage = () => {
         <CardHeader
           title="Tools"
           actions={
-            <span className="prose-caption-2 text-base-content-medium">
+            <span className="text-muted-foreground text-xs">
               {enabledToolCount} of {data.tools.length} enabled
             </span>
           }
         />
         <CardBody>
-          <p className="prose-body-2 text-base-content-medium mb-4">
+          <p className="text-muted-foreground mb-4 text-sm">
             Disabled tools are hidden from <code>tools/list</code> and reject{' '}
             <code>tools/call</code> with the same <code>method not found</code>{' '}
             error a non-existent tool would — callers can&apos;t probe which
             tools exist but are turned off.
           </p>
-          <ul className="border-base-divider-medium divide-base-divider-subtle divide-y rounded-md border">
+          <ul className="border-border divide-border divide-y rounded-md border">
             {data.tools.map((t) => (
               <li
                 key={t.name}
                 className="flex items-center justify-between gap-4 px-4 py-3"
               >
                 <div className="flex flex-col gap-1">
-                  <code className="prose-label-md text-base-content-strong">
+                  <code className="text-foreground text-sm font-medium">
                     {t.name}
                   </code>
-                  <span className="prose-body-2 text-base-content-medium">
+                  <span className="text-muted-foreground text-sm">
                     {t.description}
                   </span>
                 </div>
-                <Toggle
-                  isSelected={t.enabled}
-                  isDisabled={!data.enabled}
-                  onChange={(next) =>
+                <Switch
+                  checked={t.enabled}
+                  disabled={!data.enabled}
+                  onCheckedChange={(next) =>
                     setToolMutation.mutate({ name: t.name, enabled: next })
                   }
                   aria-label={`Toggle MCP tool ${t.name}`}
@@ -161,19 +161,19 @@ export const McpSettingsPage = () => {
 
       <Card>
         <CardHeader title="How to connect" />
-        <CardBody className="prose-body-2 text-base-content-medium flex flex-col gap-3">
+        <CardBody className="text-muted-foreground flex flex-col gap-3 text-sm">
           <p>
             Users mint a personal API token in <code>/dashboard/settings</code>,
             then register this server with the Claude CLI:
           </p>
-          <pre className="prose-caption-2 border-base-divider-subtle overflow-x-auto rounded-md border p-2 font-mono dark:border-zinc-600 dark:bg-zinc-800">
+          <pre className="border-border bg-muted/50 overflow-x-auto rounded-md border p-2 font-mono text-xs">
             {`claude mcp add vibe-stack \\
   ${host}/api/mcp \\
   -t http -s user \\
   -H "Authorization: Bearer vibe_pat_…"`}
           </pre>
           <p>Or hit it directly via JSON-RPC:</p>
-          <pre className="prose-caption-2 border-base-divider-subtle overflow-x-auto rounded-md border p-2 font-mono dark:border-zinc-600 dark:bg-zinc-800">
+          <pre className="border-border bg-muted/50 overflow-x-auto rounded-md border p-2 font-mono text-xs">
             {`curl -H "Authorization: Bearer vibe_pat_…" \\
   -H "Content-Type: application/json" \\
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' \\

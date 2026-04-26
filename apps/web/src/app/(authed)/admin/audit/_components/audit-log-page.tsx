@@ -1,14 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { Avatar } from '@opengovsg/oui'
-import { Button } from '@opengovsg/oui/button'
-import { Infobox } from '@opengovsg/oui/infobox'
 import { useSuspenseQuery } from '@tanstack/react-query'
+import { Info } from 'lucide-react'
 
 import { TextField } from '@acme/ui/text-field'
 
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
+import { Alert, AlertDescription } from '~/components/ui/alert'
+import { Avatar, AvatarFallback } from '~/components/ui/avatar'
+import { Button } from '~/components/ui/button'
 import {
   DataTable,
   DataTableBody,
@@ -21,6 +22,9 @@ import {
 import { useTRPC } from '~/trpc/react'
 import { formatAuditEvent } from '../../../_components/audit-action-labels'
 import { RelativeTime } from '../../../_components/relative-time'
+
+const initials = (name: string | null | undefined): string =>
+  name ? name.slice(0, 2).toUpperCase() : '?'
 
 export const AuditLogPage = () => {
   const trpc = useTRPC()
@@ -39,8 +43,8 @@ export const AuditLogPage = () => {
     <div className="flex flex-1 flex-col gap-6">
       <RegistryBreadcrumbs />
       <header className="flex flex-col gap-1">
-        <h1 className="prose-h2 text-base-content-strong">Audit log</h1>
-        <p className="prose-body-2 text-base-content-medium">
+        <h1 className="text-foreground text-2xl font-bold">Audit log</h1>
+        <p className="text-muted-foreground text-sm">
           Security-relevant events: passkey registrations, authentications,
           resets, role changes, and account deletions.
         </p>
@@ -68,9 +72,8 @@ export const AuditLogPage = () => {
         </div>
         <div className="flex items-end">
           <Button
-            size="md"
             variant="outline"
-            onPress={() => {
+            onClick={() => {
               setActionFilter('')
               setUserIdFilter('')
             }}
@@ -81,7 +84,12 @@ export const AuditLogPage = () => {
       </div>
 
       {data.items.length === 0 ? (
-        <Infobox variant="info">No audit entries match the filter.</Infobox>
+        <Alert variant="info">
+          <Info />
+          <AlertDescription>
+            No audit entries match the filter.
+          </AlertDescription>
+        </Alert>
       ) : (
         <DataTable>
           <DataTableRoot>
@@ -112,7 +120,7 @@ export const AuditLogPage = () => {
                           data.relatedUsers,
                         )}
                       </span>
-                      <span className="prose-caption-2 text-base-content-medium font-mono">
+                      <span className="text-muted-foreground font-mono text-xs">
                         {row.action}
                       </span>
                     </div>
@@ -120,16 +128,14 @@ export const AuditLogPage = () => {
                   <DataTableCell className="whitespace-nowrap">
                     {row.user ? (
                       <div className="flex items-center gap-2">
-                        <Avatar
-                          size="xs"
-                          name={row.user.name ?? 'Unknown'}
-                          getInitials={(name) => name.slice(0, 2).toUpperCase()}
-                        >
-                          <Avatar.Fallback />
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-xs">
+                            {initials(row.user.name)}
+                          </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
                           <span>{row.user.name ?? '(unnamed)'}</span>
-                          <span className="prose-caption-2 text-base-content-medium font-mono">
+                          <span className="text-muted-foreground font-mono text-xs">
                             {row.user.id}
                           </span>
                         </div>
@@ -138,7 +144,7 @@ export const AuditLogPage = () => {
                       '(deleted)'
                     )}
                   </DataTableCell>
-                  <DataTableCell className="text-base-content-medium font-mono whitespace-nowrap">
+                  <DataTableCell className="text-muted-foreground font-mono whitespace-nowrap">
                     {row.ip ?? '—'}
                   </DataTableCell>
                 </DataTableRow>
