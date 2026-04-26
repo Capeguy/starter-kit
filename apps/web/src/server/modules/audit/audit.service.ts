@@ -23,6 +23,7 @@ export const AuditAction = {
   UserInviteClaim: 'user.invite.claim',
   FeatureFlagUpsert: 'feature_flag.upsert',
   FeatureFlagDelete: 'feature_flag.delete',
+  SystemMessageUpdate: 'system_message.update',
   ApiTokenIssue: 'api_token.issue',
   ApiTokenRevoke: 'api_token.revoke',
 } as const

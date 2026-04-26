@@ -6,6 +6,7 @@ import { fileRouter } from '~/server/api/routers/file.router'
 import { impersonationRouter } from '~/server/api/routers/impersonation.router'
 import { meRouter } from '~/server/api/routers/me.router'
 import { notificationRouter } from '~/server/api/routers/notification.router'
+import { systemMessageRouter } from '~/server/api/routers/system-message.router'
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc'
 import { healthcheck } from '../modules/healthcheck/healthcheck.service'
 import { authRouter } from './routers/auth/auth.router'
@@ -34,6 +35,7 @@ export const appRouter = createTRPCRouter({
   impersonation: impersonationRouter,
   featureFlag: featureFlagRouter,
   apiToken: apiTokenRouter,
+  systemMessage: systemMessageRouter,
 })
 
 // export type definition of API

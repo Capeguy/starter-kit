@@ -36,6 +36,10 @@ import {
   setToolEnabled,
 } from '~/server/modules/mcp/mcp.service'
 import { broadcast } from '~/server/modules/notification/notification.service'
+import {
+  SYSTEM_MESSAGE_SEVERITIES,
+  updateSystemMessage,
+} from '~/server/modules/system-message/system-message.service'
 import { extractIpAddress } from '~/server/utils/request'
 import {
   capabilityProcedure,
@@ -560,6 +564,38 @@ export const adminRouter = createTRPCRouter({
       .mutation(async ({ input }) => {
         await setToolEnabled(input.name, input.enabled)
         return { name: input.name, enabled: input.enabled }
+      }),
+  }),
+
+  systemMessage: createTRPCRouter({
+    update: capabilityProcedure(Capability.SystemMessageManage)
+      .input(
+        z.object({
+          enabled: z.boolean(),
+          // Cap matches the textarea hint in the admin UI; banner real estate
+          // is limited so anything longer would wrap awkwardly.
+          message: z.string().max(500),
+          severity: z.enum(SYSTEM_MESSAGE_SEVERITIES),
+        }),
+      )
+      .mutation(async ({ input, ctx }) => {
+        const result = await updateSystemMessage({
+          enabled: input.enabled,
+          message: input.message,
+          severity: input.severity,
+          updatedById: ctx.user.id,
+        })
+        await recordAuditEvent({
+          userId: ctx.user.id,
+          action: AuditAction.SystemMessageUpdate,
+          metadata: {
+            enabled: input.enabled,
+            severity: input.severity,
+            messageLength: input.message.length,
+          },
+          headers: ctx.headers,
+        })
+        return result
       }),
   }),
 })

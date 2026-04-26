@@ -42,6 +42,9 @@ export const Capability = {
   // Feature flags
   FeatureFlagRead: 'feature_flag.read',
   FeatureFlagManage: 'feature_flag.manage',
+
+  // System message banner
+  SystemMessageManage: 'system.message.manage',
 } as const
 
 export type CapabilityCode = (typeof Capability)[keyof typeof Capability]
