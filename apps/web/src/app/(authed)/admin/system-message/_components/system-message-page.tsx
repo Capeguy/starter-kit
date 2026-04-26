@@ -59,7 +59,7 @@ export const SystemMessagePage = () => {
   // dirty-checked against `data` rather than tracking a separate `pristine`
   // flag — keeps the save button accurate without a useEffect loop.
   const [enabled, setEnabled] = useState(data.enabled)
-  const [severity, setSeverity] = useState<Severity>(data.severity as Severity)
+  const [severity, setSeverity] = useState<Severity>(data.severity)
   const [message, setMessage] = useState(data.message)
 
   const isDirty =
