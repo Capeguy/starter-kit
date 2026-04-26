@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
-import { Command, LogOut } from 'lucide-react'
+import { LayoutDashboard, LogOut, Shield, Sparkles } from 'lucide-react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import {
@@ -67,6 +67,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const showOtherRoot =
     otherRoot === USER_NAV ||
     visibleGroups(ADMIN_NAV.groups, me?.role.capabilities).length > 0
+  // Distinguish the two roots in the chrome: dashboard reads as a personal
+  // workspace, admin as the operator's control surface. The switch-view icon
+  // reflects the destination so it's clear at a glance which way you're going.
+  const brandSubtitle = root === ADMIN_NAV ? 'Admin panel' : 'Workspace'
+  const SwitchIcon = otherRoot === ADMIN_NAV ? Shield : LayoutDashboard
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -76,12 +81,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton asChild size="lg">
               <Link href="/dashboard">
                 <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Command className="size-4" />
+                  <Sparkles className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Starter Kit</span>
                   <span className="text-muted-foreground truncate text-xs">
-                    {root.label}
+                    {brandSubtitle}
                   </span>
                 </div>
               </Link>
@@ -126,7 +131,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip={otherRoot.label}>
                     <Link href={otherRoot.href}>
-                      <Command />
+                      <SwitchIcon />
                       <span>Open {otherRoot.label}</span>
                     </Link>
                   </SidebarMenuButton>
