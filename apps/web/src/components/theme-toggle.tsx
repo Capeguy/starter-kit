@@ -1,18 +1,23 @@
 'use client'
 
-import { Button } from '@opengovsg/oui/button'
-import { Tooltip, TooltipTrigger } from '@opengovsg/oui/tooltip'
+import { Monitor, Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import { BiDesktop, BiMoon, BiSun } from 'react-icons/bi'
+
+import { Button } from '~/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '~/components/ui/tooltip'
 
 type Theme = 'light' | 'dark' | 'system'
 
 const THEME_CYCLE: Theme[] = ['light', 'dark', 'system']
 
 const THEME_ICONS: Record<Theme, React.ReactNode> = {
-  light: <BiSun className="h-5 w-5" />,
-  dark: <BiMoon className="h-5 w-5" />,
-  system: <BiDesktop className="h-5 w-5" />,
+  light: <Sun className="size-4" />,
+  dark: <Moon className="size-4" />,
+  system: <Monitor className="size-4" />,
 }
 
 const THEME_LABELS: Record<Theme, string> = {
@@ -21,33 +26,31 @@ const THEME_LABELS: Record<Theme, string> = {
   system: 'System theme',
 }
 
-function isTheme(value: string | undefined): value is Theme {
-  return value === 'light' || value === 'dark' || value === 'system'
-}
+const isTheme = (v: string | undefined): v is Theme =>
+  v === 'light' || v === 'dark' || v === 'system'
 
 export const ThemeToggle = () => {
   const { theme, setTheme } = useTheme()
+  const current: Theme = isTheme(theme) ? theme : 'system'
 
-  const currentTheme: Theme = isTheme(theme) ? theme : 'system'
-
-  const cycleTheme = () => {
-    const currentIndex = THEME_CYCLE.indexOf(currentTheme)
-    const nextIndex = (currentIndex + 1) % THEME_CYCLE.length
-    const nextTheme = THEME_CYCLE[nextIndex]
-    if (nextTheme) setTheme(nextTheme)
+  const cycle = () => {
+    const next = THEME_CYCLE[(THEME_CYCLE.indexOf(current) + 1) % 3]
+    if (next) setTheme(next)
   }
 
   return (
-    <TooltipTrigger delay={500}>
-      <Button
-        variant="clear"
-        size="md"
-        onPress={cycleTheme}
-        aria-label={`Theme: ${THEME_LABELS[currentTheme]}, click to cycle`}
-      >
-        {THEME_ICONS[currentTheme]}
-      </Button>
-      <Tooltip>{THEME_LABELS[currentTheme]}</Tooltip>
-    </TooltipTrigger>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={cycle}
+          aria-label={`Theme: ${THEME_LABELS[current]}, click to cycle`}
+        >
+          {THEME_ICONS[current]}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{THEME_LABELS[current]}</TooltipContent>
+    </Tooltip>
   )
 }

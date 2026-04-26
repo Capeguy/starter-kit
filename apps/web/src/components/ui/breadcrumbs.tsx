@@ -1,4 +1,14 @@
-import { Breadcrumb, Breadcrumbs as OuiBreadcrumbs } from '@opengovsg/oui'
+import { Fragment } from 'react'
+import Link from 'next/link'
+
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from './breadcrumb'
 
 export interface BreadcrumbItem {
   label: string
@@ -11,18 +21,33 @@ export interface BreadcrumbsProps {
 }
 
 /**
- * Thin wrapper around `@opengovsg/oui` Breadcrumbs.
- * The last item should have no href — it represents the current page and is
- * rendered as plain text by the underlying OUI Breadcrumb component.
+ * Project breadcrumbs. Wraps shadcn `Breadcrumb` so callers pass a flat
+ * `items` array (label + optional href) and get the full chain rendered with
+ * separators. The last item is rendered as `BreadcrumbPage` (current page,
+ * not a link) regardless of whether it has an href.
  */
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
   return (
-    <OuiBreadcrumbs>
-      {items.map((item) => (
-        <Breadcrumb key={item.label} href={item.href}>
-          {item.label}
-        </Breadcrumb>
-      ))}
-    </OuiBreadcrumbs>
+    <Breadcrumb>
+      <BreadcrumbList>
+        {items.map((item, idx) => {
+          const isLast = idx === items.length - 1
+          return (
+            <Fragment key={`${item.label}-${idx}`}>
+              <BreadcrumbItem>
+                {isLast || !item.href ? (
+                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink asChild>
+                    <Link href={item.href}>{item.label}</Link>
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+              {!isLast && <BreadcrumbSeparator />}
+            </Fragment>
+          )
+        })}
+      </BreadcrumbList>
+    </Breadcrumb>
   )
 }

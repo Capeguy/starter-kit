@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import { db } from '@acme/db'
 
 import type { DynamicLayoutProps } from '~/types/nextjs'
-import { NavSidebar } from '~/components/nav-sidebar'
 import { AUTHED_ROOT_ROUTE, LOGIN_ROUTE } from '~/constants'
 import { Capability, hasCapability } from '~/lib/rbac'
 import { getSession } from '~/server/session'
@@ -12,6 +11,8 @@ export default async function AdminLayout({ children }: DynamicLayoutProps) {
   // Defense in depth: (authed)/layout already gated session, but admin pages
   // additionally require the `admin.access` capability. Source from DB so
   // capability changes take effect on the next request, not the next sign-in.
+  // Chrome (sidebar + header) lives in (authed)/layout.tsx — this layer is
+  // purely the capability gate.
   const session = await getSession()
   if (!session.userId) {
     redirect(LOGIN_ROUTE)
@@ -24,12 +25,5 @@ export default async function AdminLayout({ children }: DynamicLayoutProps) {
     redirect(AUTHED_ROOT_ROUTE)
   }
 
-  return (
-    // Stack on mobile (hamburger button above, page content below); side-by-
-    // side on md+ (sidebar left, page content right).
-    <div className="flex flex-1 flex-col gap-3 md:flex-row md:gap-0">
-      <NavSidebar navKey="admin" mobileLabel="Admin menu" />
-      <div className="min-w-0 flex-1 md:pl-4">{children}</div>
-    </div>
-  )
+  return <>{children}</>
 }
