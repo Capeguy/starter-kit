@@ -55,6 +55,8 @@ model User {
   auditLogs     AuditLog[]
   resetTokens   PasskeyResetToken[] @relation("ResetTokenSubject")
   issuedResets  PasskeyResetToken[] @relation("ResetTokenIssuer")
+  issuedInvites Invite[]            @relation("InviteIssuer")
+  claimedInvite Invite?             @relation("InviteClaimer")
 
   lastLogin DateTime? @db.Timestamptz(3)
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
@@ -77,6 +79,7 @@ model Role {
   createdAt    DateTime @default(now()) @db.Timestamptz(3)
   updatedAt    DateTime @updatedAt @db.Timestamptz(3)
   users        User[]
+  invites      Invite[]
 
   @@schema("vibe_stack")
 }
@@ -136,6 +139,35 @@ model PasskeyResetToken {
 
   @@index([userId])
   @@index([issuedById])
+  @@schema("vibe_stack")
+}
+
+/// One-time invite link issued by an admin so a recipient can self-register
+/// a passkey and land in the app under a pre-assigned role. Mirrors the
+/// PasskeyResetToken shape: token (unique), expiry, single-use consumedAt.
+/// `roleId` is the role the new user will be created with on claim. `email`
+/// and `name` are optional pre-fills shown to the issuer/recipient — the
+/// recipient picks their final account name during the passkey ceremony.
+/// `claimedByUserId` is set when the invite is consumed and FKs to the
+/// newly-created user (one-to-one).
+model Invite {
+  id              String    @id @default(cuid(2))
+  token           String    @unique
+  email           String?
+  name            String?
+  roleId          String    @map("role_id")
+  role            Role      @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  issuedById      String    @map("issued_by_id")
+  issuedBy        User      @relation("InviteIssuer", fields: [issuedById], references: [id])
+  claimedByUserId String?   @unique @map("claimed_by_user_id")
+  claimedBy       User?     @relation("InviteClaimer", fields: [claimedByUserId], references: [id], onDelete: SetNull)
+  expiresAt       DateTime? @map("expires_at") @db.Timestamptz(3)
+  consumedAt      DateTime? @map("consumed_at") @db.Timestamptz(3)
+  revokedAt       DateTime? @map("revoked_at") @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
+
+  @@index([issuedById])
+  @@index([roleId])
   @@schema("vibe_stack")
 }
 

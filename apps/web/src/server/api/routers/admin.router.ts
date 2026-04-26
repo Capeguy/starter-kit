@@ -18,6 +18,12 @@ import {
   recordAuditEvent,
 } from '~/server/modules/audit/audit.service'
 import {
+  INVITE_DEFAULT_TTL_SECONDS,
+  issueInvite,
+  listInvites,
+  revokeInvite,
+} from '~/server/modules/auth/invite.service'
+import {
   list as listFeatureFlags,
   remove as removeFeatureFlag,
   upsert as upsertFeatureFlag,
@@ -128,6 +134,77 @@ export const adminRouter = createTRPCRouter({
 
         return result
       }),
+  }),
+
+  invites: createTRPCRouter({
+    list: capabilityProcedure(Capability.UserInviteIssue)
+      .input(
+        z.object({
+          cursor: z.string().nullish(),
+          limit: z.number().int().min(1).max(100).default(50),
+        }),
+      )
+      .query(({ input }) => listInvites(input)),
+
+    issue: capabilityProcedure(Capability.UserInviteIssue)
+      .input(
+        z.object({
+          name: z.string().trim().max(50).nullish(),
+          email: z.string().trim().email().nullish().or(z.literal('')),
+          roleId: z.string(),
+          // null = no expiry; otherwise seconds. UI exposes presets.
+          expiresInSeconds: z
+            .number()
+            .int()
+            .positive()
+            .nullable()
+            .default(INVITE_DEFAULT_TTL_SECONDS),
+        }),
+      )
+      .mutation(async ({ input, ctx }) => {
+        const proto =
+          ctx.headers.get('x-forwarded-proto') ??
+          (ctx.headers.get('host')?.startsWith('localhost') ? 'http' : 'https')
+        const host =
+          ctx.headers.get('x-forwarded-host') ??
+          ctx.headers.get('host') ??
+          'localhost:3000'
+        const origin = `${proto}://${host}`
+
+        // Normalise empty string → null so downstream and audit metadata
+        // never carry the literal '' that the schema's `z.literal('')`
+        // tolerates from the form.
+        const normalisedEmail =
+          input.email && input.email.length > 0 ? input.email : null
+
+        const result = await issueInvite({
+          name: input.name ?? null,
+          email: normalisedEmail,
+          roleId: input.roleId,
+          expiresInSeconds: input.expiresInSeconds,
+          issuedById: ctx.user.id,
+          origin,
+        })
+
+        await recordAuditEvent({
+          userId: ctx.user.id,
+          action: AuditAction.UserInviteIssue,
+          metadata: {
+            inviteId: result.id,
+            roleId: input.roleId,
+            email: normalisedEmail,
+            name: input.name ?? null,
+            expiresAt: result.expiresAt?.toISOString() ?? null,
+          },
+          headers: ctx.headers,
+        })
+
+        return result
+      }),
+
+    revoke: capabilityProcedure(Capability.UserInviteIssue)
+      .input(z.object({ id: z.string() }))
+      .mutation(({ input }) => revokeInvite({ id: input.id })),
   }),
 
   files: createTRPCRouter({

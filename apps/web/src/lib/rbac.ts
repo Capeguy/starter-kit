@@ -21,6 +21,7 @@ export const Capability = {
   UserDelete: 'user.delete',
   UserRoleAssign: 'user.role.assign',
   UserImpersonate: 'user.impersonate',
+  UserInviteIssue: 'user.invite.issue',
 
   // RBAC management
   RbacRoleCreate: 'rbac.role.create',

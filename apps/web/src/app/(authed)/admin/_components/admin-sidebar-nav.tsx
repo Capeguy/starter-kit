@@ -1,11 +1,13 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { SidebarItem, SidebarRoot } from '@opengovsg/oui'
 import { useQuery } from '@tanstack/react-query'
 import {
   BiBell,
+  BiEnvelope,
   BiFile,
   BiHistory,
   BiMenu,
@@ -22,7 +24,7 @@ import { useTRPC } from '~/trpc/react'
 interface NavItem {
   href: string
   label: string
-  icon: React.ReactNode
+  icon: ReactNode
   tooltip: string
   /** Optional capability gate — item is hidden when the user lacks it. */
   requires?: CapabilityCode
@@ -34,6 +36,13 @@ const NAV_ITEMS: readonly NavItem[] = [
     label: 'Users',
     icon: <BiUser size={20} />,
     tooltip: 'Users',
+  },
+  {
+    href: '/admin/invites',
+    label: 'Invites',
+    icon: <BiEnvelope size={20} />,
+    tooltip: 'Invites',
+    requires: Capability.UserInviteIssue,
   },
   {
     href: '/admin/audit',
