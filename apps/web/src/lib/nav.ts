@@ -23,6 +23,7 @@
 import type { ComponentType, SVGProps } from 'react'
 import {
   BiBell,
+  BiBroadcast,
   BiCog,
   BiFile,
   BiFolder,
@@ -141,6 +142,13 @@ export const ADMIN_NAV: NavRoot = {
           label: 'MCP server',
           description: 'Model Context Protocol JSON-RPC endpoint',
           icon: BiCog,
+        },
+        {
+          path: '/admin/system-message',
+          label: 'System message',
+          description: 'App-wide banner shown to all signed-in users',
+          icon: BiBroadcast,
+          requires: Capability.SystemMessageManage,
         },
       ],
     },
