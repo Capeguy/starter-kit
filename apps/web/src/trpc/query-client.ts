@@ -1,4 +1,3 @@
-import { toast } from '@opengovsg/oui/toast'
 import {
   defaultShouldDehydrateQuery,
   MutationCache,
@@ -6,6 +5,7 @@ import {
   QueryClient,
 } from '@tanstack/react-query'
 import { isTRPCClientError } from '@trpc/client'
+import { toast } from 'sonner'
 import SuperJSON from 'superjson'
 
 import { SIGN_OUT_API_ROUTE } from '~/constants'

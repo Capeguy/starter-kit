@@ -5,11 +5,10 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import '~/app/globals.css'
 
-import { Toaster } from '@opengovsg/oui'
-import { cn } from '@opengovsg/oui-theme'
-
+import { Toaster } from '~/components/ui/sonner'
 import { env } from '~/env'
 import { ibmPlexMono, inter } from '~/lib/fonts'
+import { cn } from '~/lib/utils'
 import { ClientProviders } from './provider'
 
 export const metadata: Metadata = {
@@ -28,16 +27,15 @@ export default function RootLayout(props: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          'bg-base-canvas-default text-base-content-default font-sans antialiased',
+          'bg-background text-foreground font-sans antialiased',
           // Prevent unintended horizontal scrolling on mobile when nested
-          // components occasionally overflow (e.g. an OUI Navbar header
-          // expands beyond the viewport). Vertical scroll stays normal.
+          // components occasionally overflow. Vertical scroll stays normal.
           'overflow-x-clip',
           inter.variable,
           ibmPlexMono.variable,
         )}
       >
-        <NextTopLoader color="var(--color-interaction-main-default)" />
+        <NextTopLoader color="hsl(var(--primary))" />
         {/* ThemeProvider is mounted only inside the (authed) layout — public
             routes always render in light mode. See app/(authed)/layout.tsx
             and app/(public)/layout.tsx. */}
