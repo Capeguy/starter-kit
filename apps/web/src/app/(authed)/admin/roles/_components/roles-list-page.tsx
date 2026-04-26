@@ -69,7 +69,9 @@ export const RolesListPage = () => {
             editable.
           </p>
         </div>
-        <Button onPress={() => setEditing('new')}>New role</Button>
+        <Button className="shrink-0" onPress={() => setEditing('new')}>
+          New role
+        </Button>
       </header>
 
       {data.items.length === 0 ? (

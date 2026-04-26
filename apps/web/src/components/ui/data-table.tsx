@@ -18,6 +18,7 @@ export const DataTable = ({ className, ...rest }: DataTableProps) => (
   <div
     className={cn(
       'border-base-divider-medium overflow-x-auto rounded-md border',
+      'scroll-shadow-x',
       className,
     )}
     {...rest}
