@@ -59,6 +59,10 @@ pnpm storybook                # storybook on :6006
 
 Vitest global setup (`apps/web/tests/global-setup.ts`) spins up **Testcontainers** for Postgres + Redis and stashes their details in `process.env.testcontainers`. The per-file setup (`tests/db/setup.ts`) creates a fresh DB per test run, applies migrations from `packages/db/prisma/migrations/` directly via `$executeRawUnsafe`, and `vi.mock`s `@acme/db` to point at the test DB. Migrations — not `prisma db push` — are what tests see, so new schema changes require a migration to be picked up by tests.
 
+#### Always ship e2e coverage with new features
+
+Every new user-facing feature (new admin action, new authed page, new auth flow, new mutation that has UI) ships with a Playwright spec in `apps/web/tests/e2e/<feature>.spec.ts`. Don't defer it. Pattern: right after the feature commit lands and is pushed, spawn a background sub-agent (`Agent` with `run_in_background: true`) that owns only the new spec file and writes coverage. The orchestrator continues with whatever's next; push the agent's commit when it returns. Bug fixes don't need new e2e unless they expose missing coverage. Reference fixtures: `tests/e2e/setup/auth.ts` (createTestUser + signInAs), `tests/e2e/app-fixture.ts` (DB/Redis container fixtures + per-test reset).
+
 ## Architecture
 
 ### tRPC is the API contract
@@ -66,6 +70,7 @@ Vitest global setup (`apps/web/tests/global-setup.ts`) spins up **Testcontainers
 All client/server data flow goes through tRPC v11 (`apps/web/src/server/api/`). The Next.js `/api/trpc/[trpc]` route is the only HTTP API; there is no REST layer. `appRouter` in `server/api/root.ts` is the single composition point — new feature routers must be registered there.
 
 `server/api/trpc.ts` defines the middleware stack:
+
 - `loggerMiddleware` — pino logger scoped by procedure path, emits duration/status metrics.
 - `rateLimitMiddleware` — uses `modules/rate-limit` (Redis-backed `rate-limiter-flexible`). Configure per-procedure via `.meta({ rateLimitOptions: { points, duration } })`; set `rateLimitOptions: null` to disable. Skipped when `NODE_ENV === 'test'`.
 - `authMiddleware` — guards `protectedProcedure`; `publicProcedure` does not require a session.
@@ -85,6 +90,7 @@ Business logic lives in `apps/web/src/server/modules/<domain>/` (e.g. `auth`, `u
 ### App routing
 
 `apps/web/src/app` uses Next.js route groups to split auth states:
+
 - `(public)/` — unauthenticated routes (sign-in, landing).
 - `(authed)/` — requires session; has its own layout + `_components`.
 
@@ -93,6 +99,7 @@ Business logic lives in `apps/web/src/server/modules/<domain>/` (e.g. `auth`, `u
 `@acme/db` exports a single `db` singleton — a Prisma client extended with `kyselyPrismaExtension`, giving you `db.$kysely.selectFrom(...)` alongside normal Prisma calls. Use Kysely for complex SQL (joins, CTEs, aggregations); use Prisma for simple CRUD. Do **not** use `db.$kysely.transaction()` — the extension does not support it; wrap in `db.$transaction` instead.
 
 Schema changes workflow:
+
 1. Edit `packages/db/prisma/schema.prisma`.
 2. `pnpm db:migrate` to create and apply a migration (needed for tests to see the change).
 3. `pnpm -F @acme/db generate` regenerates Prisma client, Kysely types, and Zod schemas.
@@ -101,7 +108,7 @@ Generated Zod schemas are exported from `@acme/db/validators`.
 
 ### Env vars
 
-Validated with `@t3-oss/env-nextjs` in `apps/web/src/env.ts` and `packages/db/src/env.ts`. Client-exposed vars **must** be prefixed `NEXT_PUBLIC_` *and* explicitly listed in `experimental__runtimeEnv` — otherwise Next.js will tree-shake them out of the client bundle. `SKIP_ENV_VALIDATION=1` bypasses checks (used by Storybook).
+Validated with `@t3-oss/env-nextjs` in `apps/web/src/env.ts` and `packages/db/src/env.ts`. Client-exposed vars **must** be prefixed `NEXT_PUBLIC_` _and_ explicitly listed in `experimental__runtimeEnv` — otherwise Next.js will tree-shake them out of the client bundle. `SKIP_ENV_VALIDATION=1` bypasses checks (used by Storybook).
 
 ### Sessions / auth
 
