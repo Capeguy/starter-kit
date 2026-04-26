@@ -184,6 +184,24 @@
 }
 
 /*
+ * OUI Badge subtle variants for `critical` and `warning` map their text to
+ * `interaction-X-default`, but `success` uses `interaction-X-active` (the
+ * lighter variant). On dark backgrounds the medium-red / medium-amber on
+ * very-dark-red / very-dark-amber drops below 4.5:1 contrast — the
+ * "Revoked" badge looked black-on-black. Targeted overrides bump the
+ * subtle critical/warning text to the lighter `-active` shade *only* on
+ * the subtle-bg combination so other usages of `text-interaction-X-default`
+ * (e.g. outlined buttons) are untouched.
+ */
+.dark
+  .bg-interaction-critical-subtle-default.text-interaction-critical-default {
+  color: var(--color-interaction-critical-active);
+}
+.dark .bg-interaction-warning-subtle-default.text-interaction-warning-default {
+  color: var(--color-interaction-warning-active);
+}
+
+/*
  * Horizontal scroll-shadow utility (Roma Komarov technique). Apply to a
  * container with `overflow-x: auto` whose content may exceed the viewport.
  * Two `local`-attached gradients sit in front of the content and mask the
