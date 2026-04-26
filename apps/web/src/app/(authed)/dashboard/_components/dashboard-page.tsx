@@ -18,6 +18,7 @@ import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { EmptyState } from '~/components/ui/empty-state'
 import { useTRPC } from '~/trpc/react'
 import { formatAuditEvent } from '../../_components/audit-action-labels'
+import { ErrorBomb } from '../../_components/error-bomb'
 import { FilePickerButton } from '../../_components/file-picker-button'
 import { RelativeTime } from '../../_components/relative-time'
 
@@ -67,6 +68,12 @@ export const DashboardPage = () => {
 
   return (
     <div className="flex flex-1 flex-col gap-6">
+      {/*
+       * Test-only escape hatch — throws on `?_throw=1` so e2e can verify the
+       * authed ErrorBoundary fallback renders. No-ops otherwise; gated to
+       * non-prod inside ErrorBomb itself.
+       */}
+      <ErrorBomb />
       <header className="flex flex-col gap-1">
         <h1 className="prose-h2 text-base-content-strong">
           Welcome, {me.name ?? 'there'}

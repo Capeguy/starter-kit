@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { LoadingState } from '~/components/ui/loading-state'
+import { SkeletonTable } from '~/components/ui/skeleton'
 import { HydrateClient, prefetch, trpc } from '~/trpc/server'
 import { AdminFilesPage } from './_components/admin-files-page'
 
@@ -9,7 +9,7 @@ export default async function AdminFilesRoute() {
 
   return (
     <HydrateClient>
-      <Suspense fallback={<LoadingState />}>
+      <Suspense fallback={<SkeletonTable rows={6} cols={5} />}>
         <AdminFilesPage />
       </Suspense>
     </HydrateClient>
