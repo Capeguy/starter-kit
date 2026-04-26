@@ -92,6 +92,21 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/*
+ * Default the border color of every element to the design-token --border so
+ * Tailwind's `border-b` etc. don't fall back to currentColor (which would
+ * pick up the foreground text color and render as harsh white lines in
+ * dark mode). Same trick the shadcn reference + boilerplates use.
+ */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
