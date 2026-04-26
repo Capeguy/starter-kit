@@ -76,7 +76,7 @@ export function TextField({
   const inputId = id ?? inputProps?.id ?? generatedId
   const descriptionId = `${inputId}-description`
   const errorId = `${inputId}-error`
-  const hasError = isInvalid || errorMessage !== undefined
+  const hasError = isInvalid === true || errorMessage !== undefined
 
   const baseInputClasses =
     'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background ' +
