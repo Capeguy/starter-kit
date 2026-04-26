@@ -8,6 +8,7 @@ import { Skeleton, SkeletonTable } from '~/components/ui/skeleton'
 export default function AdminAuditLoading() {
   return (
     <div className="flex flex-1 flex-col gap-6">
+      <Skeleton className="h-4 w-40" />
       <PageHeader
         title="Audit log"
         description="Security-relevant events: passkey registrations, authentications, resets, role changes, and account deletions."

@@ -8,6 +8,7 @@ import { Skeleton, SkeletonTable } from '~/components/ui/skeleton'
 export default function AdminUsersLoading() {
   return (
     <div className="flex flex-1 flex-col gap-6">
+      <Skeleton className="h-4 w-32" />
       <PageHeader
         title="Users"
         description="Manage accounts, change roles, and reset passkeys for locked-out users."

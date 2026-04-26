@@ -8,6 +8,7 @@ import { Skeleton, SkeletonTable } from '~/components/ui/skeleton'
 export default function AdminFilesLoading() {
   return (
     <div className="flex flex-1 flex-col gap-6">
+      <Skeleton className="h-4 w-40" />
       <PageHeader
         title="All files"
         description="Files uploaded by all users."

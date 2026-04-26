@@ -15,6 +15,7 @@ const FieldSkeleton = ({ width = 'w-32' }: { width?: string }) => (
 export default function AdminNotificationsLoading() {
   return (
     <div className="flex flex-1 flex-col gap-6">
+      <Skeleton className="h-4 w-48" />
       <PageHeader
         title="Broadcast notification"
         description="Send an in-app notification to all users, all admins, or a single user."

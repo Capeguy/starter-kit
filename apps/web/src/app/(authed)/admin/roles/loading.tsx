@@ -8,6 +8,7 @@ import { Skeleton, SkeletonTable } from '~/components/ui/skeleton'
 export default function AdminRolesLoading() {
   return (
     <div className="flex flex-1 flex-col gap-6">
+      <Skeleton className="h-4 w-48" />
       <PageHeader
         title="Roles"
         description="Define which users can do what."

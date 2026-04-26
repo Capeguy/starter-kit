@@ -4,11 +4,12 @@
  * Overview tab — see `dashboard/_components/dashboard-page.tsx`.
  */
 import { PageHeader } from '~/components/ui/page-header'
-import { SkeletonCard, SkeletonText } from '~/components/ui/skeleton'
+import { Skeleton, SkeletonCard, SkeletonText } from '~/components/ui/skeleton'
 
 export default function DashboardLoading() {
   return (
     <div className="flex flex-1 flex-col gap-6">
+      <Skeleton className="h-4 w-24" />
       <PageHeader title="Dashboard" />
       <div className="grid gap-4 md:grid-cols-2">
         <SkeletonCard />
