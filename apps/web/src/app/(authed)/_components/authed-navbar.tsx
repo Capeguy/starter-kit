@@ -13,7 +13,7 @@ import {
   NavbarContent,
   NavbarItem,
 } from '@opengovsg/oui'
-import { BiChevronDown, BiLogOut } from 'react-icons/bi'
+import { BiChevronDown, BiLogOut, BiShield } from 'react-icons/bi'
 
 import { ThemeToggle } from '~/components/theme-toggle'
 import { ADMIN_ROOT_ROUTE, AUTHED_ROOT_ROUTE } from '~/constants'
@@ -47,7 +47,10 @@ export const AuthedNavbar = () => {
 
       <NavbarContent justify="end">
         {isAdmin && (
-          <NavbarItem>
+          // Hide on small screens to keep the navbar from overflowing the
+          // viewport — admins on mobile reach /admin via the account menu
+          // (added below) or by typing the URL directly.
+          <NavbarItem className="hidden sm:flex">
             <NextLink
               href={ADMIN_ROOT_ROUTE}
               className="prose-label-md text-base-content-strong hover:text-base-content-brand"
@@ -82,6 +85,11 @@ export const AuthedNavbar = () => {
             </Button>
             <Menu>
               <MenuSection title={displayName}>
+                {isAdmin && (
+                  <MenuItem href={ADMIN_ROOT_ROUTE} startContent={<BiShield />}>
+                    Admin
+                  </MenuItem>
+                )}
                 <MenuItem startContent={<BiLogOut />} onPress={() => logout()}>
                   Logout
                 </MenuItem>

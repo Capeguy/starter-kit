@@ -29,6 +29,10 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       <body
         className={cn(
           'bg-base-canvas-default text-base-content-default font-sans antialiased',
+          // Prevent unintended horizontal scrolling on mobile when nested
+          // components occasionally overflow (e.g. an OUI Navbar header
+          // expands beyond the viewport). Vertical scroll stays normal.
+          'overflow-x-clip',
           inter.variable,
           ibmPlexMono.variable,
         )}
