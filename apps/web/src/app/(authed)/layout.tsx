@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { ThemeProvider } from 'next-themes'
 
 import type { DynamicLayoutProps } from '~/types/nextjs'
+import { CommandPaletteProvider } from '~/components/command-palette-provider'
 import { LOGIN_ROUTE } from '~/constants'
 import { getSession } from '~/server/session'
 import { HydrateClient, prefetch, trpc } from '~/trpc/server'
@@ -24,15 +25,17 @@ export default async function AuthedLayout({ children }: DynamicLayoutProps) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <HydrateClient>
-        <main className="flex min-h-dvh flex-col">
-          <EnvBanner />
-          <VersionCheckWrapper />
-          <ImpersonationBanner />
-          <AuthedNavbar />
-          <div className="container mx-auto flex flex-col gap-4 p-4">
-            {children}
-          </div>
-        </main>
+        <CommandPaletteProvider>
+          <main className="flex min-h-dvh flex-col">
+            <EnvBanner />
+            <VersionCheckWrapper />
+            <ImpersonationBanner />
+            <AuthedNavbar />
+            <div className="container mx-auto flex flex-col gap-4 p-4">
+              {children}
+            </div>
+          </main>
+        </CommandPaletteProvider>
       </HydrateClient>
     </ThemeProvider>
   )
