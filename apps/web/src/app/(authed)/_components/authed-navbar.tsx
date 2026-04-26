@@ -70,6 +70,7 @@ export const AuthedNavbar = () => {
             <Button
               variant="clear"
               size="sm"
+              className="min-w-0 px-2 sm:min-w-20 sm:px-4"
               endContent={<BiChevronDown className="hidden h-5 w-5 sm:block" />}
             >
               <Avatar
