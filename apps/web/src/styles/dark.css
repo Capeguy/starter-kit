@@ -42,13 +42,19 @@
   --color-base-content-inverse: #18181b;
 
   /* ── Dividers (borders, rules) ────────────────────────────────────────── */
-  /* zinc-800 — hairline, barely visible */
-  --color-base-divider-subtle: #27272a;
-  /* zinc-700 — standard border between sections */
-  --color-base-divider-medium: #3f3f46;
-  /* zinc-600 — prominent separator */
-  --color-base-divider-strong: #52525b;
-  /* white — inverse divider (on dark surfaces) */
+  /* Off-white at low alpha — matches shadcn reference's --border softness.
+   * Using rgba (not oklch) for broader rendering parity with the OUI tokens
+   * that historically used hex. The whole-set ramp from subtle → strong stays
+   * monotonic so existing visual hierarchy is preserved while the lines no
+   * longer read as "bright zinc-700/600 white-ish lines" against the canvas. */
+  /* hairline, barely visible (was zinc-800 #27272a) */
+  --color-base-divider-subtle: rgba(255, 255, 255, 0.06);
+  /* standard border between sections / cards (was zinc-700 #3f3f46).
+   * Matches shadcn `--border: oklch(1 0 0 / 10%)` for consistency. */
+  --color-base-divider-medium: rgba(255, 255, 255, 0.1);
+  /* prominent separator (was zinc-600 #52525b) */
+  --color-base-divider-strong: rgba(255, 255, 255, 0.16);
+  /* near-white — inverse divider (on dark surfaces, e.g. dark chips on light) */
   --color-base-divider-inverse: #f4f4f5;
   /* brand-primary-400 — brand-coloured border */
   --color-base-divider-brand: #568df4;
