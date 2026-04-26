@@ -69,8 +69,8 @@ export const AuthedNavbar = () => {
           <MenuTrigger>
             <Button
               variant="clear"
-              size="md"
-              endContent={<BiChevronDown className="h-5 w-5" />}
+              size="sm"
+              endContent={<BiChevronDown className="hidden h-5 w-5 sm:block" />}
             >
               <Avatar
                 size="xs"
