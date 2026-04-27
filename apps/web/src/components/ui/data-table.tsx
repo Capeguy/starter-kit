@@ -39,13 +39,8 @@ export interface DataTableProps extends HTMLAttributes<HTMLDivElement> {
 export const DataTable = ({ className, children, ...rest }: DataTableProps) => {
   const { ref, edges } = useScrollEdges<HTMLDivElement>()
   return (
-    <div
-      className={cn(
-        'border-border relative overflow-hidden rounded-md border',
-        className,
-      )}
-    >
-      <div ref={ref} className="overflow-auto" {...rest}>
+    <div className={cn('border-border relative rounded-md border', className)}>
+      <div ref={ref} className="overflow-auto rounded-[inherit]" {...rest}>
         {children}
       </div>
       {/*
@@ -54,16 +49,16 @@ export const DataTable = ({ className, children, ...rest }: DataTableProps) => {
        * none` so they never intercept clicks on rows/buttons underneath.
        */}
       {edges.left && (
-        <div className="from-foreground/15 pointer-events-none absolute inset-y-0 left-0 w-4 bg-gradient-to-r to-transparent" />
+        <div className="from-foreground/15 pointer-events-none absolute inset-y-0 left-0 w-4 rounded-l-[inherit] bg-gradient-to-r to-transparent" />
       )}
       {edges.right && (
-        <div className="from-foreground/15 pointer-events-none absolute inset-y-0 right-0 w-4 bg-gradient-to-l to-transparent" />
+        <div className="from-foreground/15 pointer-events-none absolute inset-y-0 right-0 w-4 rounded-r-[inherit] bg-gradient-to-l to-transparent" />
       )}
       {edges.top && (
-        <div className="from-foreground/15 pointer-events-none absolute inset-x-0 top-0 h-4 bg-gradient-to-b to-transparent" />
+        <div className="from-foreground/15 pointer-events-none absolute inset-x-0 top-0 h-4 rounded-t-[inherit] bg-gradient-to-b to-transparent" />
       )}
       {edges.bottom && (
-        <div className="from-foreground/15 pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t to-transparent" />
+        <div className="from-foreground/15 pointer-events-none absolute inset-x-0 bottom-0 h-4 rounded-b-[inherit] bg-gradient-to-t to-transparent" />
       )}
     </div>
   )
