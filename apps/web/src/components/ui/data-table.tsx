@@ -3,10 +3,13 @@
  * the legacy `DataTable*` names that consumer pages already use. New code
  * should prefer importing the shadcn `Table*` components directly.
  *
- * The wrapper preserves the legacy `DataTableEmpty` helper and the outer
- * scrollable container (with the `scroll-shadow-x` accent) that the old
- * OUI-era component provided.
+ * The outer `DataTable` adds the project's standard scroll behavior — a
+ * rounded bordered card with horizontal/vertical scroll-shadow gradients
+ * that appear ONLY on edges where there's hidden content (driven by
+ * `useScrollEdges`).
  */
+'use client'
+
 import type {
   HTMLAttributes,
   ReactNode,
@@ -14,6 +17,7 @@ import type {
   ThHTMLAttributes,
 } from 'react'
 
+import { useScrollEdges } from '~/hooks/use-scroll-edges'
 import { cn } from '~/lib/utils'
 import {
   Table,
@@ -32,15 +36,38 @@ export interface DataTableProps extends HTMLAttributes<HTMLDivElement> {
   className?: string
 }
 
-export const DataTable = ({ className, ...rest }: DataTableProps) => (
-  <div
-    className={cn(
-      'border-border scroll-shadow-x overflow-x-auto rounded-md border',
-      className,
-    )}
-    {...rest}
-  />
-)
+export const DataTable = ({ className, children, ...rest }: DataTableProps) => {
+  const { ref, edges } = useScrollEdges<HTMLDivElement>()
+  return (
+    <div
+      className={cn(
+        'border-border relative overflow-hidden rounded-md border',
+        className,
+      )}
+    >
+      <div ref={ref} className="overflow-auto" {...rest}>
+        {children}
+      </div>
+      {/*
+       * Edge gradients sit absolutely above the scroll container and only
+       * render when that edge has more content to reveal. `pointer-events-
+       * none` so they never intercept clicks on rows/buttons underneath.
+       */}
+      {edges.left && (
+        <div className="from-foreground/15 pointer-events-none absolute inset-y-0 left-0 w-4 bg-gradient-to-r to-transparent" />
+      )}
+      {edges.right && (
+        <div className="from-foreground/15 pointer-events-none absolute inset-y-0 right-0 w-4 bg-gradient-to-l to-transparent" />
+      )}
+      {edges.top && (
+        <div className="from-foreground/15 pointer-events-none absolute inset-x-0 top-0 h-4 bg-gradient-to-b to-transparent" />
+      )}
+      {edges.bottom && (
+        <div className="from-foreground/15 pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t to-transparent" />
+      )}
+    </div>
+  )
+}
 
 // ---------------------------------------------------------------------------
 // DataTableHeader — <thead>
