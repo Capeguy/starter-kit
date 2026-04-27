@@ -24,6 +24,10 @@
     "lint:fix": "turbo run lint --continue -- --fix --cache --cache-location .cache/.eslintcache",
     "lint:ws": "pnpm dlx sherif@latest",
     "typecheck": "turbo run typecheck",
+    "bootstrap": "node scripts/bootstrap-app.mjs",
+    "bootstrap:vercel": "node scripts/bootstrap-vercel.mjs",
+    "bootstrap:sentry": "node scripts/bootstrap-sentry.mjs",
+    "bootstrap:blob": "node scripts/bootstrap-blob.mjs",
     "postinstall": "pnpm lint:ws",
     "prepare": "husky"
   },
