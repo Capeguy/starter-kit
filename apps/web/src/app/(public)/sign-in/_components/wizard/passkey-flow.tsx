@@ -7,10 +7,10 @@ import { useMutation } from '@tanstack/react-query'
 import { Info, XCircle } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 
-import { TextField } from '@acme/ui/text-field'
-
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
+import { Input } from '~/components/ui/input'
+import { Label } from '~/components/ui/label'
 import { AUTHED_ROOT_ROUTE } from '~/constants'
 import { useTRPC } from '~/trpc/react'
 
@@ -145,17 +145,13 @@ export const PasskeyFlow = () => {
 
   if (mode === 'needs_name') {
     return (
-      <form
-        noValidate
-        onSubmit={handleCreate}
-        className="flex flex-1 flex-col gap-4"
-      >
+      <form noValidate onSubmit={handleCreate} className="flex flex-col gap-4">
         <Alert variant="info">
           <Info />
           <AlertDescription>
             {reason === 'unknown_passkey'
-              ? "We don't have your details on file. Enter a name to create an account."
-              : 'Enter your name to create a new account with a passkey.'}
+              ? "We don't have your details on file. Pick a name to create an account."
+              : 'Pick a name to create a new account with a passkey.'}
           </AlertDescription>
         </Alert>
 
@@ -171,26 +167,41 @@ export const PasskeyFlow = () => {
           name="name"
           rules={{ required: 'Name is required' }}
           render={({ field, fieldState }) => (
-            <TextField
-              inputProps={{
-                placeholder: 'e.g. Jane Doe',
-                autoFocus: true,
-                name: 'name',
-              }}
-              errorMessage={fieldState.error?.message}
-              isRequired
-              isInvalid={!!fieldState.error}
-              {...field}
-              label="Your name"
-            />
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="signin-name">Your name</Label>
+              <Input
+                {...field}
+                id="signin-name"
+                placeholder="e.g. Jane Doe"
+                autoFocus
+                aria-invalid={fieldState.invalid}
+                aria-describedby={
+                  fieldState.error ? 'signin-name-error' : undefined
+                }
+              />
+              {fieldState.error && (
+                <p
+                  id="signin-name-error"
+                  className="text-destructive text-xs"
+                  role="alert"
+                >
+                  {fieldState.error.message}
+                </p>
+              )}
+            </div>
           )}
         />
 
-        <Button disabled={isRegistering} type="submit">
+        <Button disabled={isRegistering} type="submit" className="w-full">
           Create account
         </Button>
 
-        <Button variant="ghost" onClick={goBack}>
+        <Button
+          variant="ghost"
+          onClick={goBack}
+          type="button"
+          className="w-full"
+        >
           ← Back
         </Button>
       </form>
@@ -198,11 +209,7 @@ export const PasskeyFlow = () => {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4">
-      <p className="text-muted-foreground text-sm">
-        Sign in with an existing passkey, or we&apos;ll help you create one.
-      </p>
-
+    <div className="flex flex-col gap-4">
       {error && (
         <Alert variant="destructive">
           <XCircle />
@@ -210,9 +217,18 @@ export const PasskeyFlow = () => {
         </Alert>
       )}
 
-      <Button disabled={isAuthenticating} onClick={handleContinue}>
-        Continue with Passkey
+      <Button
+        disabled={isAuthenticating}
+        onClick={handleContinue}
+        className="w-full"
+        size="lg"
+      >
+        Continue with passkey
       </Button>
+
+      <p className="text-muted-foreground text-center text-xs">
+        New here? Hit continue and your browser will prompt you to create one.
+      </p>
     </div>
   )
 }
