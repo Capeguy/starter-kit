@@ -90,16 +90,21 @@ if (oldName !== pkg.name) {
   console.log(`→ root package.json name : ${oldName} → ${pkg.name}`)
 }
 
-// ── 3. generate SESSION_SECRET, store in keychain ──────────────────────
-console.log(`→ generating SESSION_SECRET, storing in claude-code:${slug}`)
-const sessionSecret = execSync('openssl rand -base64 32').toString().trim()
-execFileSync('security', [
-  'add-generic-password',
-  '-s', `claude-code:${slug}`,
-  '-a', 'SESSION_SECRET',
-  '-w', sessionSecret,
-  '-U',
-])
+// ── 3. SESSION_SECRET — reuse from keychain if it exists (idempotent) ──
+let sessionSecret = keychainOpt(`claude-code:${slug}`, 'SESSION_SECRET')
+if (sessionSecret) {
+  console.log(`→ reusing SESSION_SECRET from claude-code:${slug}`)
+} else {
+  console.log(`→ generating SESSION_SECRET, storing in claude-code:${slug}`)
+  sessionSecret = execSync('openssl rand -base64 32').toString().trim()
+  execFileSync('security', [
+    'add-generic-password',
+    '-s', `claude-code:${slug}`,
+    '-a', 'SESSION_SECRET',
+    '-w', sessionSecret,
+    '-U',
+  ])
+}
 
 // ── 4. assemble .env.local ─────────────────────────────────────────────
 console.log('→ writing .env.local from shared keychain entries')
@@ -154,6 +159,14 @@ function keychain(service, account) {
   ])
     .toString()
     .trim()
+}
+
+function keychainOpt(service, account) {
+  try {
+    return keychain(service, account)
+  } catch {
+    return null
+  }
 }
 
 function toTitle(s) {

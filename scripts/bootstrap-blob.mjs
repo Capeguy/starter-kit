@@ -7,8 +7,18 @@
  * auto-inject the BLOB_READ_WRITE_TOKEN env var on the next deploy.
  *
  * Idempotent — if the store exists, just re-runs the connect step.
+ *
+ * NB: `vercel blob create-store -y` also auto-pulls the project's development
+ * env into .env.local (no flag to skip). We back up .env.local before running
+ * and restore after so the local dev config from `pnpm bootstrap` is preserved.
  */
 import { execFileSync, execSync } from 'node:child_process'
+import {
+  existsSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import path from 'node:path'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
@@ -20,15 +30,14 @@ if (!slug) {
 }
 
 const storeName = `${slug}-files`
+const envPath = path.join(ROOT, '.env.local')
+const envBackup = existsSync(envPath) ? readFileSync(envPath, 'utf8') : null
+
 console.log(`◇ store name : ${storeName}`)
 console.log()
 
 console.log('→ creating + connecting Blob store (idempotent)')
 try {
-  // -y accepts defaults; -e production connects this store to the production
-  // env of the currently-linked project, which makes Vercel inject
-  // BLOB_READ_WRITE_TOKEN on the next deploy. Re-running just connects again
-  // (or no-ops if the store with this name already exists).
   execSync(
     `vercel blob create-store ${storeName} --access public -e production -y`,
     { cwd: ROOT, stdio: 'inherit' },
@@ -36,6 +45,16 @@ try {
 } catch (err) {
   console.error('× blob create-store failed')
   process.exit(1)
+}
+
+// Restore .env.local — the CLI's auto-pull would otherwise wipe our
+// bootstrap-app.mjs output with the project's development env (which is
+// empty for a fresh project).
+if (envBackup !== null) {
+  writeFileSync(envPath, envBackup)
+  console.log('  restored .env.local from pre-blob backup')
+} else if (existsSync(envPath)) {
+  unlinkSync(envPath)
 }
 
 console.log()
