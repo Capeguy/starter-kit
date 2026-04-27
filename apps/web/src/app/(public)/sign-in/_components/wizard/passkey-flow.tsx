@@ -115,7 +115,18 @@ export const PasskeyFlow = () => {
         // background-flow exits — silent.
         const name = errorName(err)
         if (name === 'AbortError' || name === 'NotAllowedError') return
-        if (!isAborted()) console.error('conditional passkey error:', err)
+        if (isAborted()) return
+        // Server says "we don't recognise that passkey" → show the same
+        // inline guidance as the modal flow so the user isn't left wondering
+        // why the autofill tap appeared to do nothing.
+        if (trpcErrorCode(err) === 'NOT_FOUND') {
+          setError(
+            "We don't recognise that passkey. Create a new account, or try again with a different one.",
+          )
+          return
+        }
+        console.error('conditional passkey error:', err)
+        setError(errorMessage(err))
       }
     }
     void setup()
