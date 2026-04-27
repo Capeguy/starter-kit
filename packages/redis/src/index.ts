@@ -19,6 +19,9 @@ const createRedisClient = (): Redis | null => {
     port: env.CACHE_PORT,
     username: env.CACHE_USERNAME,
     password: env.CACHE_PASSWORD,
+    // Per-project namespacing — ioredis prepends this to every key it sends.
+    // See CACHE_KEY_PREFIX docs in env.ts. Defaults to no prefix in dev.
+    keyPrefix: env.CACHE_KEY_PREFIX ? `${env.CACHE_KEY_PREFIX}:` : undefined,
     retryStrategy: (attempt) => {
       return Math.min(attempt * 100, 5000)
     },

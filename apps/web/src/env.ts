@@ -34,12 +34,13 @@ export const env = createEnv({
       .default('development'),
     NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
     // OGP-specific UI surfaces (Singapore Government banner header + 'Built
-    // by OGP' footer + landing-page references). Default true to keep
-    // current behaviour for OGP forks; set to 'false' for non-OGP forks
-    // that don't want this branding.
+    // by OGP' footer + landing-page references). Defaults OFF so spinning
+    // off this starter kit doesn't leak OGP branding into a non-OGP fork.
+    // The original vibe-stack project sets this to 'true' explicitly via
+    // its Vercel env to keep the branding on.
     NEXT_PUBLIC_SHOW_OGP_BRANDING: z
       .enum(['true', 'false'])
-      .default('true')
+      .default('false')
       .transform((v) => v === 'true'),
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
   },
