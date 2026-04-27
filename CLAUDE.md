@@ -163,8 +163,9 @@ When composing or restyling UI, mirror the reference (sidebar layout, card chrom
 This repo is a GitHub template — `Capeguy/starter-kit` is marked as one. To spin off a new product, the four `pnpm bootstrap*` scripts under `scripts/` automate the whole pipeline:
 
 ```bash
-gh repo create Capeguy/<slug> --private --template Capeguy/starter-kit
-git clone https://github.com/Capeguy/<slug>.git
+# `--clone` is load-bearing — without it, `gh` returns before the GitHub
+# template-apply finishes and the subsequent clone races against an empty repo.
+gh repo create Capeguy/<slug> --private --template Capeguy/starter-kit --clone
 cd <slug>
 pnpm install
 
@@ -172,9 +173,14 @@ pnpm bootstrap <slug>            # local: rename schema, gen SESSION_SECRET, wri
 pnpm bootstrap:vercel <slug>     # remote: link Vercel project, push env, first deploy
 pnpm bootstrap:sentry <slug>     # remote: create Sentry project, push DSN/auth/org/project
 pnpm bootstrap:blob <slug>       # remote: create Blob store, auto-injects BLOB_READ_WRITE_TOKEN
+
+# Final deploy bakes the Sentry + Blob env vars into the bundle. If this fails
+# with `P1002 Timed out trying to acquire a postgres advisory lock`, an earlier
+# implicit deploy is still holding the migrate lock — wait ~30s and retry.
+vercel deploy --prod --yes
 ```
 
-Each script is idempotent — safe to re-run. After bootstrap:blob, run `vercel deploy --prod --yes` once more to pick up the Sentry + Blob env vars. The result: a live deploy at `https://<slug>.vercel.app` with healthcheck green, isolated Postgres schema, prefixed Redis keyspace, dedicated Sentry project, and a connected Blob store.
+Each script is idempotent — safe to re-run. End-to-end ~5 minutes of wall-clock (~3 min of which is the Vercel build itself). The result: a live deploy at `https://<slug>.vercel.app` with healthcheck green, isolated Postgres schema, prefixed Redis keyspace, dedicated Sentry project, and a connected Blob store.
 
 **What "isolated" means here.** The starter kit shares one Neon DB and one Redis Cloud DB across all spin-offs (per `~/.claude/CLAUDE.md`'s shared-resource convention). Isolation is enforced via:
 
