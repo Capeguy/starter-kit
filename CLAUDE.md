@@ -173,14 +173,10 @@ pnpm bootstrap <slug>            # local: rename schema, gen SESSION_SECRET, wri
 pnpm bootstrap:vercel <slug>     # remote: link Vercel project, push env, first deploy
 pnpm bootstrap:sentry <slug>     # remote: create Sentry project, push DSN/auth/org/project
 pnpm bootstrap:blob <slug>       # remote: create Blob store, auto-injects BLOB_READ_WRITE_TOKEN
-
-# Final deploy bakes the Sentry + Blob env vars into the bundle. If this fails
-# with `P1002 Timed out trying to acquire a postgres advisory lock`, an earlier
-# implicit deploy is still holding the migrate lock — wait ~30s and retry.
-vercel deploy --prod --yes
+pnpm bootstrap:deploy            # final deploy with P1002 retry, bakes Sentry + Blob into bundle
 ```
 
-Each script is idempotent — safe to re-run. End-to-end ~5 minutes of wall-clock (~3 min of which is the Vercel build itself). The result: a live deploy at `https://<slug>.vercel.app` with healthcheck green, isolated Postgres schema, prefixed Redis keyspace, dedicated Sentry project, and a connected Blob store.
+Each script is idempotent — safe to re-run. End-to-end ~5 minutes of wall-clock (~3 min of which is the Vercel build itself). The `bootstrap:deploy` step auto-retries on Prisma's `P1002 advisory lock timeout`, which fires deterministically when the env-var pushes from the prior steps have triggered competing background preview deploys. The result: a live deploy at `https://<slug>.vercel.app` with healthcheck green, isolated Postgres schema, prefixed Redis keyspace, dedicated Sentry project, and a connected Blob store.
 
 **What "isolated" means here.** The starter kit shares one Neon DB and one Redis Cloud DB across all spin-offs (per `~/.claude/CLAUDE.md`'s shared-resource convention). Isolation is enforced via:
 

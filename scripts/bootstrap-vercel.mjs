@@ -13,6 +13,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import path from 'node:path'
 
+import { deployWithRetry } from './_lib/deploy-with-retry.mjs'
+
 const ROOT = path.resolve(import.meta.dirname, '..')
 const TEAM_ID = 'team_AqUirRbmqVkSV9bgzAXk1r0r' // capeguys-projects
 
@@ -111,23 +113,11 @@ for (const [name, value] of envVars) {
 }
 console.log(`  ${pushed}/${envVars.length} env vars pushed`)
 
-// ── 4. first prod deploy ───────────────────────────────────────────────
+// ── 4. first prod deploy (with P1002 retry) ────────────────────────────
 if (skipDeploy) {
   console.log('→ skipping deploy (--no-deploy)')
 } else {
-  console.log('→ deploying to production')
-  try {
-    const out = execSync('vercel deploy --prod --yes', {
-      cwd: ROOT,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'inherit'],
-    })
-    const urlMatch = out.match(/https:\/\/[a-z0-9.-]+/)?.[0]
-    console.log(`  ${urlMatch ?? '(deploy URL not parsed)'}`)
-  } catch (err) {
-    console.error('× deploy failed')
-    process.exit(1)
-  }
+  await deployWithRetry({ cwd: ROOT })
 }
 
 console.log()

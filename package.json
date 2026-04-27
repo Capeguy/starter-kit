@@ -28,6 +28,7 @@
     "bootstrap:vercel": "node scripts/bootstrap-vercel.mjs",
     "bootstrap:sentry": "node scripts/bootstrap-sentry.mjs",
     "bootstrap:blob": "node scripts/bootstrap-blob.mjs",
+    "bootstrap:deploy": "node scripts/bootstrap-deploy.mjs",
     "postinstall": "pnpm lint:ws",
     "prepare": "husky"
   },
