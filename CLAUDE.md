@@ -162,16 +162,24 @@ When composing or restyling UI, mirror the reference (sidebar layout, card chrom
 
 This repo is a GitHub template — `Capeguy/starter-kit` is marked as one. To spin off a new product, the four `pnpm bootstrap*` scripts under `scripts/` automate the whole pipeline:
 
+### One-liner (recommended)
+
+```bash
+bash <(curl -sSL https://raw.githubusercontent.com/Capeguy/starter-kit/main/scripts/spin-off.sh) "Acme App" acme-app
+```
+
+Wraps everything below into a single command. Pre-flight checks gh/vercel/pnpm are installed + authed and the three shared keychain entries exist before doing any work. Total wall-clock ~5 min (~3 min of which is the Vercel build itself). Idempotent — re-running resumes after any partial failure.
+
+### Or step-by-step
+
 ```bash
 # `--clone` is load-bearing — without it, `gh` returns before the GitHub
 # template-apply finishes and the subsequent clone races against an empty repo.
 gh repo create Capeguy/<slug> --private --template Capeguy/starter-kit --clone
 cd <slug>
 pnpm install
-pnpm bootstrap:all <slug>        # one-shot: local + Vercel + Sentry + Blob + final deploy
+pnpm bootstrap:all <slug>        # local + Vercel + Sentry + Blob + final deploy
 ```
-
-Three commands after `cd`; everything from local rename through live deploy is in `bootstrap:all`. Total wall-clock ~5 minutes (~3 min of which is the Vercel build itself). Each phase is idempotent — re-running the same `bootstrap:all` resumes from where any partial failure left off.
 
 If you need finer control (skip Sentry, pause to verify between phases, etc.), the underlying phases are also exposed individually:
 
