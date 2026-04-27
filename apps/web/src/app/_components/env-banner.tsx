@@ -50,7 +50,10 @@ export function EnvBanner() {
       role="status"
       aria-live="polite"
       className={cn(
-        'rounded-none border-0 border-b px-4 py-2 [&>svg]:top-2.5',
+        // Banner-shaped Alert — full width, square corners, only a bottom
+        // border. Vertical centering is handled by the Alert primitive's
+        // grid layout (items-center), so no svg-positioning override here.
+        'rounded-none border-0 border-b px-4 py-2',
         variantClass,
       )}
     >

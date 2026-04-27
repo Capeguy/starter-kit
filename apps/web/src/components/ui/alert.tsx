@@ -4,8 +4,20 @@ import { cva } from 'class-variance-authority'
 
 import { cn } from '~/lib/utils'
 
+/**
+ * Grid layout (icon column + content column) with `items-center` so the icon
+ * stays vertically centered with the text block — including when the message
+ * wraps to multiple lines on narrow viewports. Replaces the older
+ * absolute-positioned svg pattern from shadcn's first-gen Alert, which pinned
+ * the icon to the top-left of the box and produced a visible misalignment
+ * once content wrapped past one line.
+ */
 const alertVariants = cva(
-  '[&>svg]:text-foreground relative w-full rounded-lg border p-4 [&>svg]:absolute [&>svg]:top-4 [&>svg]:left-4 [&>svg+div]:translate-y-[-3px] [&>svg~*]:pl-7',
+  cn(
+    'relative grid w-full grid-cols-[0_1fr] items-center gap-y-0.5 rounded-lg border p-4 text-sm',
+    'has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] has-[>svg]:gap-x-3',
+    '[&>svg]:size-4 [&>svg]:text-current',
+  ),
   {
     variants: {
       variant: {
@@ -44,7 +56,10 @@ const AlertTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <h5
     ref={ref}
-    className={cn('mb-1 leading-none font-medium tracking-tight', className)}
+    className={cn(
+      'col-start-2 mb-1 leading-none font-medium tracking-tight',
+      className,
+    )}
     {...props}
   />
 ))
@@ -56,7 +71,7 @@ const AlertDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('text-sm [&_p]:leading-relaxed', className)}
+    className={cn('col-start-2 text-sm [&_p]:leading-relaxed', className)}
     {...props}
   />
 ))
