@@ -7,7 +7,10 @@ function Card({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="card"
       className={cn(
-        'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
+        // Mirrors next-shadcn-admin-dashboard: ring-1 (subtle outline) +
+        // overflow-hidden (clean rounded corners on inner content), no
+        // border + no shadow — those combine to a halo on dark backgrounds.
+        'bg-card text-card-foreground ring-foreground/10 flex flex-col gap-6 overflow-hidden rounded-xl py-6 ring-1',
         className,
       )}
       {...props}
