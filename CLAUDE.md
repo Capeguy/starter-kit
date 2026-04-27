@@ -158,6 +158,33 @@ When composing or restyling UI, mirror the reference (sidebar layout, card chrom
 
 **Legacy OUI footprint (residual).** `globals.css` keeps `@import '@opengovsg/oui-theme/tailwind.css'` so the gated `@acme/ui/restricted-footer` (behind `NEXT_PUBLIC_SHOW_OGP_BRANDING`) still resolves its OUI tokens. No JS file in `apps/web/src` or `packages/ui/src` imports from `@opengovsg/oui` anymore.
 
+## Spinning off a new app from this template
+
+This repo is a GitHub template — `Capeguy/starter-kit` is marked as one. To spin off a new product, the four `pnpm bootstrap*` scripts under `scripts/` automate the whole pipeline:
+
+```bash
+gh repo create Capeguy/<slug> --private --template Capeguy/starter-kit
+git clone https://github.com/Capeguy/<slug>.git
+cd <slug>
+pnpm install
+
+pnpm bootstrap <slug>            # local: rename schema, gen SESSION_SECRET, write .env.local
+pnpm bootstrap:vercel <slug>     # remote: link Vercel project, push env, first deploy
+pnpm bootstrap:sentry <slug>     # remote: create Sentry project, push DSN/auth/org/project
+pnpm bootstrap:blob <slug>       # remote: create Blob store, auto-injects BLOB_READ_WRITE_TOKEN
+```
+
+Each script is idempotent — safe to re-run. After bootstrap:blob, run `vercel deploy --prod --yes` once more to pick up the Sentry + Blob env vars. The result: a live deploy at `https://<slug>.vercel.app` with healthcheck green, isolated Postgres schema, prefixed Redis keyspace, dedicated Sentry project, and a connected Blob store.
+
+**What "isolated" means here.** The starter kit shares one Neon DB and one Redis Cloud DB across all spin-offs (per `~/.claude/CLAUDE.md`'s shared-resource convention). Isolation is enforced via:
+
+- Postgres: each app has its own `?schema=<slug_underscored>` and only ever queries its own schema (every Prisma model carries `@@schema(...)`).
+- Redis: each app sets `CACHE_KEY_PREFIX=<slug>` so ioredis prepends every key with `<slug>:`.
+- Sessions: each app has its own `SESSION_SECRET` in keychain at `claude-code:<slug>` so iron-session cookies don't cross apps.
+- Sentry / Blob: per-app project + store.
+
+When a project moves beyond pre-launch and starts holding real user data, fork it onto a dedicated Neon project + Redis instance. The shared resources are an early-stage convenience.
+
 ## Conventions to be aware of
 
 - Node `>=24.13.0`, pnpm `>=10.17.1` (see `.nvmrc` and `package.json` engines).
