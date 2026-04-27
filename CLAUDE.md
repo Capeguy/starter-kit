@@ -114,20 +114,49 @@ Validated with `@t3-oss/env-nextjs` in `apps/web/src/env.ts` and `packages/db/sr
 
 `iron-session` (`src/lib/auth.ts`, `src/server/session.ts`) backs the cookie. Auth is **WebAuthn passkeys** (`@simplewebauthn/server` + `/browser`); see `src/server/modules/auth/passkey.service.ts`. Session shape is `{ userId }`.
 
+#### Sign-in flow architecture (`(public)/sign-in`)
+
+Two principles that the wizard at `apps/web/src/app/(public)/sign-in/_components/wizard/passkey-flow.tsx` is built around — both deliberate, both load-bearing:
+
+1. **Never auto-fork to registration on `NotAllowedError`.** WebAuthn collapses cancel / no-credential / biometric-fail / timeout into one error code. Registration only happens when the user explicitly clicks "Create new account". On any failure (modal or conditional), stay on the same screen with an inline retry hint.
+2. **Conditional UI runs in the background.** On mount, `startAuthentication({ useBrowserAutofill: true })` waits for the user to pick a passkey from the browser's autofill dropdown (the name input has `autocomplete="username webauthn"`). Before any modal flow starts, call `WebAuthnAbortService.cancelCeremony()` so the two ceremonies don't race. The conditional flow's `catch` block must mirror the modal flow's — surfacing `NOT_FOUND` (orphan passkey from a wiped DB) inline; otherwise the user picks a passkey from autofill, gets a silent 404, and nothing happens.
+
+#### Authed chrome (`(authed)/layout.tsx`)
+
+The whole authed shell is one shadcn `SidebarProvider` + `AppSidebar` + `SidebarInset(SiteHeader + children)` mounted in `(authed)/layout.tsx`. Both `/dashboard/*` and `/admin/*` share it; per-section layouts only carry capability gates.
+
+- `apps/web/src/components/app-sidebar.tsx` — picks `USER_NAV` or `ADMIN_NAV` from pathname (via `rootForPathname`), uses `variant="inset"` + `collapsible="icon"`, footer holds the user dropdown + logout. Don't pass NavRoot objects across the RSC boundary; pass a string key (`navKey="admin"|"user"`) and look up the nav inside the client.
+- `apps/web/src/components/site-header.tsx` — sticky top bar with `SidebarTrigger` + ⌘K search chip + `ThemeToggle` + `NotificationBell`.
+- `apps/web/src/lib/nav.ts` — single source of truth. Adding a sidebar item here surfaces it in (a) the sidebar, (b) the Cmd+K palette, (c) the breadcrumb chain. Capability-gate via `requires`; sub-routes (`/admin/users/[id]`) match their parent via `matches: RegExp[]`.
+- `apps/web/src/components/registry-breadcrumbs.tsx` — call `<RegistryBreadcrumbs />` at the top of every authed page. Pass `trailing="..."` for dynamic-segment pages so the leaf crumb gets the right label.
+
+#### Admin-settable system banner
+
+`/admin/system-message` (capability `system.message.manage`) edits a singleton `SystemMessage` row. The `EnvBanner` at the top of every authed page reads `systemMessage.get` via TanStack Query and renders nothing when `enabled === false` (the default). Use it for maintenance notices, incident updates, dev-environment warnings.
+
 ### UI components — shadcn/ui via the next-shadcn-admin-dashboard reference
 
-This project's design language follows **next-shadcn-admin-dashboard**:
+Design language follows **next-shadcn-admin-dashboard**:
 
 - Source: https://github.com/arhamkhnz/next-shadcn-admin-dashboard
-- Live preview (use as the visual + structural reference): https://next-shadcn-admin-dashboard.vercel.app/dashboard/default
+- Live preview (visual + structural reference): https://next-shadcn-admin-dashboard.vercel.app/dashboard/default
 
-When composing or restyling UI, look at how the reference does it (sidebar layout, card chrome, header, breadcrumbs, navigation density, mobile drawer, dark-mode treatment) and mirror it. Reach for shadcn/ui primitives before building one yourself.
+When composing or restyling UI, mirror the reference (sidebar layout, card chrome, header, breadcrumbs, mobile drawer, dark-mode treatment). Reach for shadcn primitives before building one yourself.
 
-**Migration in progress.** Historically this repo used `@opengovsg/oui` and the codebase still imports from `@opengovsg/oui/*` heavily. As pages get touched, migrate them to shadcn/ui patterns. Don't introduce _new_ OUI usage — when adding a primitive that's not yet in the project, install/copy from shadcn/ui rather than reaching for OUI.
+**Tokens.** `apps/web/src/app/globals.css` defines the full neutral palette in `:root` + `.dark` plus an `@layer base { * { @apply border-border outline-ring/50 } }` rule that defaults every element's border-color to `--border`. **Don't remove that rule** — without it, `border-b` (used in the shadcn `Table`, `CardFooter`, etc.) falls back to `currentColor` and renders as harsh white text-coloured lines in dark mode.
 
-**Project's own UI package:** `packages/ui` historically wrapped OUI primitives (e.g. `@acme/ui/text-field`). Existing wrappers can stay until their consumer pages are migrated; new wrappers should sit on shadcn/ui.
+**Project conventions on top of vanilla shadcn:**
 
-**What to avoid:** raw `<button className="...">`, `<div className="rounded-md bg-red-50…">` style alert boxes, hand-rolled headings/cards. Use design-system primitives. Tailwind utility classes are still fine for layout (`flex`, `gap-*`, `grid`, spacing) and one-off positioning, but not as a substitute for components.
+- `Card` uses `ring-1 ring-foreground/10` + `overflow-hidden` instead of the default `border + shadow-sm` (the default combination produces a halo on dark backgrounds — see `~/components/ui/_card-primitives.tsx`).
+- `Sidebar` is mounted with `variant="inset"` so the main content floats as a rounded card inside the sidebar-coloured background, matching the reference.
+- `Table` is wrapped by `~/components/ui/data-table.tsx`, which owns the scroll container and renders edge-aware scroll-shadow gradients via `useScrollEdges`. The shadcn `Table` primitive itself has had its built-in `<div className="...overflow-auto">` wrapper removed so the wrapper is the single scroll container.
+- After `pnpm dlx shadcn@latest add <primitive>`, **always sweep the new file** for Tailwind v3 arbitrary syntax that breaks under our v4 setup: `w-[--var]` → `w-(length:--var)` (or `w-[var(--var)]` for non-length types), `theme(spacing.X)` → `var(--spacing-X)`, `origin-[--var]` → `origin-[var(--var)]`. Verify with `grep -nE 'w-\[--|h-\[--|theme\(' apps/web/src/components/ui/<file>.tsx` returning nothing.
+
+**Project's own UI package:** `packages/ui` (`@acme/ui/text-field`, `@acme/ui/link-button`, `@acme/ui/infobox`, `@acme/ui/empty-placeholder`) wraps shadcn primitives with project-specific defaults. Prefer the wrapper when one exists; otherwise import the shadcn primitive directly from `~/components/ui/*`.
+
+**What to avoid:** raw `<button className="...">`, `<div className="rounded-md bg-red-50…">` style alert boxes, hand-rolled headings/cards. Use design-system primitives. Tailwind utility classes are still fine for layout (`flex`, `gap-*`, `grid`, spacing) but not as a substitute for components.
+
+**Legacy OUI footprint (residual).** `globals.css` keeps `@import '@opengovsg/oui-theme/tailwind.css'` so the gated `@acme/ui/restricted-footer` (behind `NEXT_PUBLIC_SHOW_OGP_BRANDING`) still resolves its OUI tokens. No JS file in `apps/web/src` or `packages/ui/src` imports from `@opengovsg/oui` anymore.
 
 ## Conventions to be aware of
 
