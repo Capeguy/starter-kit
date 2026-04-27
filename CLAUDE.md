@@ -168,15 +168,24 @@ This repo is a GitHub template — `Capeguy/starter-kit` is marked as one. To sp
 gh repo create Capeguy/<slug> --private --template Capeguy/starter-kit --clone
 cd <slug>
 pnpm install
+pnpm bootstrap:all <slug>        # one-shot: local + Vercel + Sentry + Blob + final deploy
+```
 
+Three commands after `cd`; everything from local rename through live deploy is in `bootstrap:all`. Total wall-clock ~5 minutes (~3 min of which is the Vercel build itself). Each phase is idempotent — re-running the same `bootstrap:all` resumes from where any partial failure left off.
+
+If you need finer control (skip Sentry, pause to verify between phases, etc.), the underlying phases are also exposed individually:
+
+```bash
 pnpm bootstrap <slug>            # local: rename schema, gen SESSION_SECRET, write .env.local
 pnpm bootstrap:vercel <slug>     # remote: link Vercel project, push env, first deploy
 pnpm bootstrap:sentry <slug>     # remote: create Sentry project, push DSN/auth/org/project
 pnpm bootstrap:blob <slug>       # remote: create Blob store, auto-injects BLOB_READ_WRITE_TOKEN
 pnpm bootstrap:deploy            # final deploy with P1002 retry, bakes Sentry + Blob into bundle
+
+# bootstrap:all also takes --no-sentry / --no-blob to skip those phases.
 ```
 
-Each script is idempotent — safe to re-run. End-to-end ~5 minutes of wall-clock (~3 min of which is the Vercel build itself). The `bootstrap:deploy` step auto-retries on Prisma's `P1002 advisory lock timeout`, which fires deterministically when the env-var pushes from the prior steps have triggered competing background preview deploys. The result: a live deploy at `https://<slug>.vercel.app` with healthcheck green, isolated Postgres schema, prefixed Redis keyspace, dedicated Sentry project, and a connected Blob store.
+The `bootstrap:deploy` step auto-retries on Prisma's `P1002 advisory lock timeout`, which fires deterministically when the env-var pushes from the prior steps have triggered competing background preview deploys. The result: a live deploy at `https://<slug>.vercel.app` with healthcheck green, isolated Postgres schema, prefixed Redis keyspace, dedicated Sentry project, and a connected Blob store.
 
 **What "isolated" means here.** The starter kit shares one Neon DB and one Redis Cloud DB across all spin-offs (per `~/.claude/CLAUDE.md`'s shared-resource convention). Isolation is enforced via:
 

@@ -29,6 +29,7 @@
     "bootstrap:sentry": "node scripts/bootstrap-sentry.mjs",
     "bootstrap:blob": "node scripts/bootstrap-blob.mjs",
     "bootstrap:deploy": "node scripts/bootstrap-deploy.mjs",
+    "bootstrap:all": "node scripts/bootstrap-all.mjs",
     "postinstall": "pnpm lint:ws",
     "prepare": "husky"
   },
