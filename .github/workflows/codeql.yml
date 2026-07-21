@@ -1,0 +1,52 @@
+name: CodeQL
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+  schedule:
+    - cron: '0 10 * * *'
+
+jobs:
+  analyze:
+    name: Analyze (${{matrix.language}})
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      # Required for all workflows
+      security-events: write
+
+      # Required to fetch internal or private CodeQL packs
+      packages: read
+
+      # Only required for workflows in private repositories
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: javascript-typescript
+            build-mode: none
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # Initializes the CodeQL tools for scanning.
+      #
+      # Upstream points `config-file` at opengovsg/codeql-config@prod. This fork
+      # deliberately uses CodeQL's default query suite instead: the OGP config is
+      # tuned for their estate and pinning to another org's `prod` branch means a
+      # change there silently changes our scan.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{matrix.language}}
+          build-mode: ${{matrix.build-mode}}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: '/language:${{matrix.language}}'
