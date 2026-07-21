@@ -6,10 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Turborepo + pnpm workspace using the `@acme/*` scope. The workspace scope is renameable via the `sed` recipe in `README.md`.
 
-- `apps/web` — Next.js 15 / React 19 app with tRPC v11, the single deployable.
-- `packages/db` — Prisma client + Kysely extension + generated Zod schemas (PostgreSQL).
+- `apps/web` — Next.js 16 / React 19 app with tRPC v11, the single deployable.
+- `packages/db` — Prisma client + Kysely extension (PostgreSQL). No Zod generation: upstream dropped `prisma-zod-generator`, so there is no `@acme/db/validators` export. Hand-write input schemas in `packages/validators` or alongside the router.
 - `packages/{common,logging,redis,ui,validators}` — shared workspace packages consumed by `apps/web`.
-- `tooling/{eslint,prettier,tailwind,typescript,storybook,github}` — shared config presets.
+- `tooling/{oxlint,tailwind,typescript,storybook,github}` — shared config presets.
 
 Dependency versions are pinned via pnpm **catalog:** (e.g. `catalog:react`, `catalog:trpc`) in `pnpm-workspace.yaml`. When bumping versions, update the catalog, not individual `package.json` files. `minimumReleaseAge: 1440` enforces a 24h hold before new versions can be installed.
 
@@ -22,23 +22,23 @@ Run from repo root unless noted:
 pnpm i
 cp .env.example .env
 docker compose up -d          # Postgres on :54321, Redis on :63791
-pnpm db:push                  # push Prisma schema to the dev DB
+pnpm db:deploy                # apply migrations to the dev DB (see db:push warning below)
 
 # Dev
 pnpm dev                      # all packages in watch mode
 pnpm dev:next                 # only @acme/web and its deps
 
 # DB
-pnpm db:push                  # prisma db push (dev only; no migration file)
-pnpm db:migrate               # prisma migrate dev (creates migration)
-pnpm db:deploy                # prisma migrate deploy (prod)
+pnpm db:deploy                # prisma migrate deploy — use this for setup and prod
+pnpm db:migrate               # prisma migrate dev (creates a migration; prompts for a name)
 pnpm db:studio                # Prisma Studio on :5556
+pnpm db:push                  # AVOID — see below
 
 # Quality gates
-pnpm lint                     # ESLint (cached)
+pnpm lint                     # oxlint (cached)
 pnpm lint:fix
 pnpm typecheck                # tsc --noEmit across workspaces
-pnpm format / pnpm format:fix # Prettier (cached)
+pnpm format / pnpm format:fix # oxfmt (cached)
 pnpm lint:ws                  # sherif workspace sanity check (also runs postinstall)
 ```
 
@@ -102,9 +102,16 @@ Schema changes workflow:
 
 1. Edit `packages/db/prisma/schema.prisma`.
 2. `pnpm db:migrate` to create and apply a migration (needed for tests to see the change).
-3. `pnpm -F @acme/db generate` regenerates Prisma client, Kysely types, and Zod schemas.
+3. `pnpm -F @acme/db generate` regenerates the Prisma client and Kysely types.
 
-Generated Zod schemas are exported from `@acme/db/validators`.
+**Never use `pnpm db:push` in this repo.** `File.searchable` is a Postgres
+`GENERATED ALWAYS AS (to_tsvector('english', "filename")) STORED` column added by
+`20260425094744_file_searchable_tsvector`. Prisma cannot model generated columns —
+`schema.prisma` only says `Unsupported("tsvector")` — so `db push` creates
+`searchable` as a plain column Postgres never fills, and file search silently
+returns nothing. Against a migrated DB it errors instead ("column ... is a
+generated column"). Use `pnpm db:deploy` for setup and `pnpm db:migrate` for
+changes; those are also what the tests and Vercel run.
 
 ### Env vars
 
@@ -206,8 +213,9 @@ When a project moves beyond pre-launch and starts holding real user data, fork i
 
 ## Conventions to be aware of
 
-- Node `>=24.13.0`, pnpm `>=10.17.1` (see `.nvmrc` and `package.json` engines).
-- Prettier config is `@acme/prettier-config`; ESLint configs are flat-config files re-exported from `tooling/eslint`.
-- `pnpm.publicHoistPattern` hoists Prettier/ESLint plugins, OUI, Prisma, and `pg` — don't `import { Prisma } from '@prisma/client'` directly in app code; go through `@acme/db`.
+- Node `>=24.13.0`, pnpm `>=11.0.0` (see `package.json` `engines` / `devEngines`).
+- Formatting is **oxfmt**, linting is **oxlint** (`tooling/oxlint/shared.json`, per-package `.oxlintrc.json`). Prettier and ESLint were removed in the 2026-07 upstream merge — `tooling/eslint` and `tooling/prettier` no longer exist.
+- Any dependency with a build script must appear in `allowBuilds` in `pnpm-workspace.yaml` as `true` or `false`. pnpm appends a `set this to true or false` placeholder for new ones, and a placeholder counts as unlisted — install then exits 1 and takes every `pnpm -F` command and the Vercel build down with it.
+- `pnpm.publicHoistPattern` hoists oxfmt, OUI, Prisma, and `pg` — don't `import { Prisma } from '@prisma/client'` directly in app code; go through `@acme/db`.
 - `@img/sharp-libvips-darwin-arm64` is overridden to `-` in `pnpm-workspace.yaml` to avoid pulling a copyleft-licensed binary — don't remove.
 - Vercel build runs `@acme/db#generate` → `@acme/db#migrate:deploy` → `^vercel-build` (see `turbo.json`). Deploys apply migrations automatically.
