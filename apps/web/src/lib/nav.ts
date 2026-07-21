@@ -100,6 +100,7 @@ export const ADMIN_NAV: NavRoot = {
           label: 'Roles & capabilities',
           description: 'RBAC roles and their granted capabilities',
           icon: BiShield,
+          requires: Capability.RbacRoleUpdate,
         },
       ],
     },
@@ -130,6 +131,7 @@ export const ADMIN_NAV: NavRoot = {
           label: 'Audit log',
           description: 'Security-relevant events across the app',
           icon: BiHistory,
+          requires: Capability.AuditRead,
         },
         {
           path: '/admin/feature-flags',
@@ -143,6 +145,7 @@ export const ADMIN_NAV: NavRoot = {
           label: 'MCP server',
           description: 'Model Context Protocol JSON-RPC endpoint',
           icon: BiCog,
+          requires: Capability.AdminAccess,
         },
         {
           path: '/admin/system-message',
