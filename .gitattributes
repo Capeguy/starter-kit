@@ -1,0 +1,32 @@
+# ---------------------------------------------------------------------------
+# Upstream merge policy (fork of opengovsg/starter-kit)
+#
+# This repo tracks `upstream/main` and merges it periodically. Paths listed
+# with `merge=ours` are subsystems we have REPLACED outright — upstream's
+# version is dead code to us, so its changes are dropped automatically.
+#
+# Requires (once per clone):
+#     git config merge.ours.driver true
+#     git config rerere.enabled true
+#
+# WARNING: `merge=ours` silently discards upstream changes to these paths,
+# INCLUDING security fixes. Only list a path here when we own the subsystem
+# end-to-end. For files we merely tweaked, leave them out and merge by hand.
+# Note it resolves *content* conflicts only — modify/delete still needs a
+# manual `git rm`.
+# ---------------------------------------------------------------------------
+
+# Auth: upstream is email-OTP + PKCE; we are WebAuthn passkeys end-to-end.
+apps/web/src/lib/auth.ts                                merge=ours
+apps/web/src/lib/pkce/**                                merge=ours
+apps/web/src/server/session.ts                          merge=ours
+apps/web/src/server/modules/auth/**                     merge=ours
+apps/web/src/server/api/routers/auth/**                 merge=ours
+apps/web/src/app/(public)/sign-in/**                    merge=ours
+apps/web/src/stories/pages/sign-in.stories.tsx          merge=ours
+
+# Landing page: fully rewritten on shadcn, no OGP chrome.
+apps/web/src/app/(public)/_components/landing-page/**   merge=ours
+
+# Lockfile: never hand-merge. Keep ours, then re-run `pnpm install`.
+pnpm-lock.yaml                                          merge=ours
