@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import NextTopLoader from 'nextjs-toploader'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
@@ -32,7 +33,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           // components occasionally overflow. Vertical scroll stays normal.
           'overflow-x-clip',
           inter.variable,
-          ibmPlexMono.variable,
+          ibmPlexMono.variable
         )}
       >
         <NextTopLoader color="hsl(var(--primary))" />

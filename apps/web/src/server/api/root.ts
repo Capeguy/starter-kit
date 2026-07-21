@@ -1,3 +1,6 @@
+import { healthcheck } from '../modules/healthcheck/healthcheck.service'
+import { authRouter } from './routers/auth/auth.router'
+
 import { adminRouter } from '~/server/api/routers/admin.router'
 import { apiTokenRouter } from '~/server/api/routers/api-token.router'
 import { auditRouter } from '~/server/api/routers/audit.router'
@@ -8,8 +11,6 @@ import { meRouter } from '~/server/api/routers/me.router'
 import { notificationRouter } from '~/server/api/routers/notification.router'
 import { systemMessageRouter } from '~/server/api/routers/system-message.router'
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc'
-import { healthcheck } from '../modules/healthcheck/healthcheck.service'
-import { authRouter } from './routers/auth/auth.router'
 
 /**
  * This is the primary router for your server.

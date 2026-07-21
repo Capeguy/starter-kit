@@ -28,5 +28,23 @@ apps/web/src/stories/pages/sign-in.stories.tsx          merge=ours
 # Landing page: fully rewritten on shadcn, no OGP chrome.
 apps/web/src/app/(public)/_components/landing-page/**   merge=ours
 
+# UI primitives: upstream tracks @opengovsg/oui + react-aria; we rebuilt these
+# on shadcn/lucide. Every upstream edit is an OUI edit, i.e. dead code to us.
+packages/ui/src/infobox/**                              merge=ours
+packages/ui/src/link-button.tsx                         merge=ours
+packages/ui/src/text-field.tsx                          merge=ours
+packages/ui/src/empty-placeholder.tsx                   merge=ours
+apps/web/src/app/_components/back-button.tsx            merge=ours
+apps/web/src/app/_components/version-check-wrapper.tsx  merge=ours
+
+# README documents OUR spin-off workflow, not upstream's starter.
+README.md                                               merge=ours
+
+# NOT listed on purpose — we want upstream's fixes here, so these stay real
+# merges: app/layout.tsx, (authed)/layout.tsx, _components/errors/**,
+# server/api/{root,trpc}.ts, packages/{db,redis,logging}/**, turbo.json.
+# The 2026-07 merge inherited a genuine SSR/hydration fix via error-card.tsx
+# precisely because it was not pinned to ours.
+
 # Lockfile: never hand-merge. Keep ours, then re-run `pnpm install`.
 pnpm-lock.yaml                                          merge=ours

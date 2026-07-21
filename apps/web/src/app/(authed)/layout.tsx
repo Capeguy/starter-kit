@@ -2,7 +2,10 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { ThemeProvider } from 'next-themes'
 
-import type { DynamicLayoutProps } from '~/types/nextjs'
+import { EnvBanner } from '../_components/env-banner'
+import { VersionCheckWrapper } from '../_components/version-check-wrapper'
+import { ImpersonationBanner } from './_components/impersonation-banner'
+
 import { AppSidebar } from '~/components/app-sidebar'
 import { CommandPaletteProvider } from '~/components/command-palette-provider'
 import { ErrorBoundary } from '~/components/error-boundary'
@@ -11,9 +14,7 @@ import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar'
 import { LOGIN_ROUTE } from '~/constants'
 import { getSession } from '~/server/session'
 import { HydrateClient, prefetch, trpc } from '~/trpc/server'
-import { EnvBanner } from '../_components/env-banner'
-import { VersionCheckWrapper } from '../_components/version-check-wrapper'
-import { ImpersonationBanner } from './_components/impersonation-banner'
+import type { DynamicLayoutProps } from '~/types/nextjs'
 
 export default async function AuthedLayout({ children }: DynamicLayoutProps) {
   // DO NOT SKIP AUTHENTICATION CHECKS IN YOUR PROCEDURES.

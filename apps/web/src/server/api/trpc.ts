@@ -12,22 +12,22 @@ import { RateLimiterRes } from 'rate-limiter-flexible'
 import superjson from 'superjson'
 import z, { ZodError } from 'zod'
 
-import type { Logger, ScopedLogger } from '@acme/logging'
 import { db } from '@acme/db'
 
-import type { RateLimiterConfig } from '../modules/rate-limit/types'
-import type { CapabilityCode } from '~/lib/rbac'
-import { env } from '~/env'
-import { createLogger } from '~/lib/logger'
-import { Capability, hasCapability } from '~/lib/rbac'
 import { verifyAndTouch } from '../modules/api-token/api-token.service'
 import { extractBearerToken } from '../modules/api-token/bearer-header'
 import {
   checkRateLimit,
   createRateLimitFingerprint,
 } from '../modules/rate-limit/rate-limit.service'
+import type { RateLimiterConfig } from '../modules/rate-limit/types'
 import { getSession } from '../session'
 import { extractIpAddress } from '../utils/request'
+
+import type { CapabilityCode } from '~/lib/rbac'
+import { env } from '~/env'
+import { createLogger } from '~/lib/logger'
+import { Capability, hasCapability } from '~/lib/rbac'
 
 /**
  * 1. CONTEXT
@@ -77,7 +77,7 @@ export const createTRPCContext = async ({
   }
 
   return {
-    logger: logger as Logger | ScopedLogger,
+    logger,
     headers,
     session,
     resHeaders,
@@ -142,7 +142,17 @@ export const createTRPCRouter = t.router
 
 const loggerMiddleware = t.middleware(async ({ ctx, next, path }) => {
   const start = performance.now()
-  const logger = ctx.logger.createScopedLogger({ action: path })
+  // Rebuild the logger so the procedure path lands in the root `path` field
+  // (not the action) and the session is surfaced as user_id / correlation_id.
+  const logger = createLogger({
+    path,
+    headers: ctx.headers,
+    userId: ctx.session.userId,
+    // NOTE: upstream threads a `sessionId` here (starter-kitty-logging's
+    // session-audit API) to populate `correlation_id`. Our SessionData has no
+    // such field — minting one would mean changing passkey sign-in to persist
+    // it. Left unset deliberately; `createLogger` treats it as optional.
+  }).scope({ action: 'request' })
 
   const result = await next({
     ctx: { logger },
@@ -153,8 +163,8 @@ const loggerMiddleware = t.middleware(async ({ ctx, next, path }) => {
   const durationInMs = Math.round(end - start)
 
   if (result.ok) {
-    logger.debug({
-      message: `${path} took ${durationInMs}ms to execute`,
+    logger.info({
+      message: 'Request OK',
       merged: {
         durationInMs,
         statusCode: 200,
@@ -162,13 +172,15 @@ const loggerMiddleware = t.middleware(async ({ ctx, next, path }) => {
     })
   } else {
     const statusCode = getHTTPStatusCodeFromError(result.error)
+    // Keep the message stable for aggregation; the error (and its message)
+    // travel in the `error` field.
     const logPayload = {
+      message: 'Request failed',
       merged: {
         durationInMs,
         statusCode,
       },
       error: result.error,
-      message: result.error.message,
     }
 
     if (statusCode >= 500) {
@@ -207,16 +219,16 @@ const rateLimitMiddleware = t.middleware(async ({ ctx, next, meta, path }) => {
     if (error instanceof RateLimiterRes) {
       ctx.resHeaders?.set(
         'Retry-After',
-        String(Math.ceil(error.msBeforeNext / 1000)),
+        String(Math.ceil(error.msBeforeNext / 1000))
       )
       ctx.resHeaders?.set(
         'X-RateLimit-Reset',
-        String(Math.ceil((Date.now() + error.msBeforeNext) / 1000)),
+        String(Math.ceil((Date.now() + error.msBeforeNext) / 1000))
       )
       throw new TRPCError({
         code: 'TOO_MANY_REQUESTS',
         message: `Rate limit exceeded. Try again in ${Math.ceil(
-          error.msBeforeNext / 1000,
+          error.msBeforeNext / 1000
         )} seconds.`,
       })
     }

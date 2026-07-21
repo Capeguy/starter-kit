@@ -1,5 +1,3 @@
-/* eslint-disable no-restricted-properties */
-/* eslint-disable turbo/no-undeclared-env-vars */
 /**
  * Test Redis Setup
  *
@@ -7,30 +5,30 @@
  * It mocks the Redis client to use the test Redis instance.
  */
 
-import { parse } from 'superjson'
+import {
+  getContainer,
+  getRedisUrl,
+} from '@opengovsg/starter-kitty-testcontainers'
+import { getWorkerDatabaseIndex } from '@opengovsg/starter-kitty-testcontainers/vitest'
 
 import { Redis } from '@acme/redis/testing'
 
-import { CONTAINER_INFORMATION_SCHEMA } from '../common'
+// Keep in sync with `redis({ databases })` in global-setup.ts.
+const REDIS_DATABASES = 256
 
-const parsed = CONTAINER_INFORMATION_SCHEMA.parse(
-  parse(process.env.testcontainers ?? ''),
-)
-const redisContainer = parsed.find((c) => c.configuration.name === 'redis')
-
-if (!redisContainer) {
-  console.log('cannot find redis container')
-  throw new Error('Cannot find redis container')
-}
-
-const { host: redisHost, ports: redisPorts } = redisContainer
-const redisPort = redisPorts.get(6379) ?? 6379
-
-// Set up Redis URL for tests
-const redisUrl = `redis://${redisHost}:${redisPort}`
+const redisUrl = getRedisUrl(getContainer('redis'))
 
 export const redis = new Redis(redisUrl)
 
 vi.mock('@acme/redis', () => ({
   redis,
 }))
+
+// Give each test worker its own logical DB (the container is started with more
+// DBs than there are workers); flushing it before each test isolates tests
+// within a file.
+await redis.select(getWorkerDatabaseIndex(REDIS_DATABASES))
+
+beforeEach(async () => {
+  await redis.flushdb()
+})

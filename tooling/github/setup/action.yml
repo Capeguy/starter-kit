@@ -4,14 +4,20 @@ description: 'Common setup steps for Actions'
 runs:
   using: composite
   steps:
-    - uses: pnpm/action-setup@v4
-    - uses: actions/setup-node@v5
+    - uses: pnpm/action-setup@v6
+    - uses: actions/setup-node@v7
       with:
-        node-version-file: '.nvmrc'
+        node-version-file: 'package.json'
         cache: 'pnpm'
 
-    - shell: bash
-      run: pnpm add -g turbo
+    - name: Cache turbo build setup
+      uses: actions/cache@v6
+      with:
+        path: .turbo
+        # strategy.job-index prevents matrix jobs (e.g. concurrent vitest shards) sharing the same job name from clashing over one cache entry
+        key: ${{ runner.os }}-turbo-${{ github.job }}-${{ strategy.job-index }}-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-turbo-${{ github.job }}-${{ strategy.job-index }}-
 
     - shell: bash
       run: pnpm install

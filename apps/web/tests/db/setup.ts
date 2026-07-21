@@ -1,5 +1,3 @@
-/* eslint-disable no-restricted-properties */
-/* eslint-disable turbo/no-undeclared-env-vars */
 /**
  * Test Database Setup
  *
@@ -19,35 +17,25 @@ import { randomUUID } from 'crypto'
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
+
+import {
+  getContainer,
+  getPostgresConnectionString,
+} from '@opengovsg/starter-kitty-testcontainers'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { parse } from 'superjson'
 import { vi } from 'vitest'
 
 import { PrismaClient } from '@acme/db/client'
 import { kyselyPrismaExtension } from '@acme/db/extensions'
 
-import { CONTAINER_INFORMATION_SCHEMA } from '../common'
+const container = getContainer('postgres')
 
-const parsed = CONTAINER_INFORMATION_SCHEMA.parse(
-  parse(process.env.testcontainers ?? ''),
-)
-const container = parsed.find((c) => c.configuration.name === 'database')
-
-if (!container) {
-  console.log('cannot find container')
-  throw new Error('Cannot find container')
-}
-
-const { host, ports, configuration } = container
-const port = ports.get(5432) ?? 5432
-const username = configuration.environment?.POSTGRES_USER ?? 'root'
-const password = configuration.environment?.POSTGRES_PASSWORD ?? 'root'
-const databaseId = configuration.environment?.POSTGRES_DB ?? 'test'
-
-const originalConnectionString = `postgresql://${username}:${password}@${host}:${port}/${databaseId}?sslmode=disable`
+const originalConnectionString = getPostgresConnectionString(container)
 
 const testSpecificDb = randomUUID()
-const connectionString = `postgresql://${username}:${password}@${host}:${port}/${testSpecificDb}?sslmode=disable`
+const connectionString = getPostgresConnectionString(container, {
+  database: testSpecificDb,
+})
 
 const setupTestClient = async () => {
   const _pool = new PrismaPg({ connectionString: originalConnectionString })
@@ -73,7 +61,7 @@ const prismaMigrationDir = join(
   'packages',
   'db',
   'prisma',
-  'migrations',
+  'migrations'
 )
 
 // Running migrations manually; if using `dd-trace`, it intercepts `exec` usage and prevents runs
