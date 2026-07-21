@@ -101,7 +101,15 @@ allowBuilds:
   protobufjs: false
   sharp: false
   ssh2: false
-  '@sentry/cli': set this to true or false
+  # This fork's own dependency (via @sentry/nextjs), so upstream never had to
+  # decide it — pnpm left a "set this to true or false" placeholder here, which
+  # counts as unlisted and failed every CI job at the install step.
+  #
+  # `true`: its postinstall resolves the sentry-cli binary, no-op'ing when the
+  # platform package (@sentry/cli-<os>) already supplies it. Chosen over `false`
+  # because a missing binary breaks Sentry sourcemap upload silently at deploy
+  # time, and every spin-off inherits this file.
+  '@sentry/cli': true
 
 overrides:
   '@types/minimatch': 5.1.2
@@ -124,23 +132,6 @@ overrides:
   'lodash@4': '^4.17.24'
   # Pinned by next@16.2.7 which still ships postcss 8.4.31:
   'postcss@8': '^8.5.10'
-
-# Upstream dropped this key; we keep it. Prisma's engines run a postinstall,
-# and pnpm 11 refuses to execute build scripts that are not approved here.
-onlyBuiltDependencies:
-  - '@prisma/client'
-  - '@prisma/engines'
-  - esbuild
-  - prisma
-
-# @sentry/cli's postinstall downloads a binary we already get from the
-# @sentry/cli-darwin platform package, so skipping it is correct. It must be
-# acknowledged explicitly: pnpm 11 exits 1 on ANY unapproved build script, and
-# that failure surfaces through the deps-status check that runs before every
-# `pnpm -F <pkg> <script>` — so leaving it unlisted breaks every workspace
-# script (and the Vercel build) on a clean install, not just the install.
-ignoredBuiltDependencies:
-  - '@sentry/cli'
 
 publicHoistPattern:
   - '*oxfmt*'
