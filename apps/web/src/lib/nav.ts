@@ -21,6 +21,7 @@
  * user's name — that the registry can't know).
  */
 import type { ComponentType, SVGProps } from 'react'
+
 import {
   BiBell,
   BiBroadcast,
@@ -99,6 +100,7 @@ export const ADMIN_NAV: NavRoot = {
           label: 'Roles & capabilities',
           description: 'RBAC roles and their granted capabilities',
           icon: BiShield,
+          requires: Capability.RbacRoleUpdate,
         },
       ],
     },
@@ -129,6 +131,7 @@ export const ADMIN_NAV: NavRoot = {
           label: 'Audit log',
           description: 'Security-relevant events across the app',
           icon: BiHistory,
+          requires: Capability.AuditRead,
         },
         {
           path: '/admin/feature-flags',
@@ -142,6 +145,7 @@ export const ADMIN_NAV: NavRoot = {
           label: 'MCP server',
           description: 'Model Context Protocol JSON-RPC endpoint',
           icon: BiCog,
+          requires: Capability.AdminAccess,
         },
         {
           path: '/admin/system-message',
@@ -205,12 +209,12 @@ export const USER_NAV: NavRoot = {
  */
 export function visibleGroups(
   groups: readonly NavGroup[],
-  capabilities: readonly string[] | undefined,
+  capabilities: readonly string[] | undefined
 ): NavGroup[] {
   const out: NavGroup[] = []
   for (const g of groups) {
     const items = g.items.filter(
-      (it) => !it.requires || hasCapability(capabilities, it.requires),
+      (it) => !it.requires || hasCapability(capabilities, it.requires)
     )
     if (items.length > 0) out.push({ label: g.label, items })
   }
@@ -227,7 +231,7 @@ export function visibleGroups(
  */
 export function findActiveItem(
   pathname: string,
-  root: NavRoot,
+  root: NavRoot
 ): { group: NavGroup; item: NavItem } | null {
   let best: { group: NavGroup; item: NavItem; score: number } | null = null
   for (const g of root.groups) {
@@ -277,7 +281,7 @@ export interface BreadcrumbCrumb {
 
 export function resolveBreadcrumbs(
   pathname: string,
-  trailing?: string,
+  trailing?: string
 ): BreadcrumbCrumb[] {
   const root = rootForPathname(pathname)
   const crumbs: BreadcrumbCrumb[] = [{ label: root.label, href: root.href }]

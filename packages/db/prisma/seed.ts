@@ -35,8 +35,8 @@ async function main() {
         where: { name },
         update: {},
         create: { name, roleId: ROLE_USER },
-      }),
-    ),
+      })
+    )
   )
 
   // Welcome notifications for everyone — only insert if absent.
@@ -56,7 +56,7 @@ async function main() {
           },
         })
       }
-    }),
+    })
   )
 
   // Audit log entries (a sign-in trail per seeded user). Only insert if absent.
@@ -87,7 +87,7 @@ async function main() {
   })
 
   console.log(
-    `Seeded: 1 admin (${admin.name}), ${users.length} users (${users.map((u) => u.name).join(', ')})`,
+    `Seeded: 1 admin (${admin.name}), ${users.length} users (${users.map((u) => u.name).join(', ')})`
   )
 }
 

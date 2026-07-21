@@ -1,10 +1,23 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { resetTables } from '~tests/db/utils'
-import { beforeEach, describe, expect, it } from 'vitest'
+
+import type { Logger } from '@acme/logging'
 
 import { db } from '@acme/db'
 
 import { AccountProvider } from '../../auth/auth.constants'
 import { getUserById, loginUserByEmail } from '../user.service'
+
+// Minimal Logger stub capturing the self-signup audit call.
+const makeAuditLoggerStub = () => {
+  const accountCreated = vi.fn<(input: { targetUserId: string }) => void>()
+  const logger = {
+    withBindings: () => ({
+      audit: { userManagement: { accountCreated } },
+    }),
+  } as unknown as Logger
+  return { logger, accountCreated }
+}
 
 describe('user.service', () => {
   beforeEach(async () => {
@@ -37,6 +50,19 @@ describe('user.service', () => {
       })
       expect(account).toBeDefined()
       expect(account?.providerAccountId).toBe(email)
+    })
+
+    it('should emit accountCreated audit only for a first-time (new) user', async () => {
+      const email = 'signup@example.com'
+      const { logger, accountCreated } = makeAuditLoggerStub()
+
+      const user = await loginUserByEmail(email, logger)
+      expect(accountCreated).toHaveBeenCalledTimes(1)
+      expect(accountCreated).toHaveBeenCalledWith({ targetUserId: user.id })
+
+      // A returning login must not re-emit the signup event.
+      await loginUserByEmail(email, logger)
+      expect(accountCreated).toHaveBeenCalledTimes(1)
     })
 
     it('should parse and store the name from email address', async () => {
@@ -92,7 +118,7 @@ describe('user.service', () => {
       const invalidEmail = 'not-an-email'
 
       await expect(loginUserByEmail(invalidEmail)).rejects.toThrow(
-        'Invalid email address',
+        'Invalid email address'
       )
     })
 
@@ -100,7 +126,7 @@ describe('user.service', () => {
       const groupEmail = 'Group Name: user1@example.com, user2@example.com;'
 
       await expect(loginUserByEmail(groupEmail)).rejects.toThrow(
-        'Invalid email address',
+        'Invalid email address'
       )
     })
 
@@ -159,7 +185,7 @@ describe('user.service', () => {
       ]
 
       const users = await Promise.all(
-        emails.map((email) => loginUserByEmail(email)),
+        emails.map((email) => loginUserByEmail(email))
       )
 
       // All users should have unique IDs

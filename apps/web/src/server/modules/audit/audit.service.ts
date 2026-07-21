@@ -1,6 +1,6 @@
 import { db } from '@acme/db'
-import { Prisma } from '@acme/db/client'
 
+import { Prisma } from '@acme/db/client'
 import { extractIpAddress } from '~/server/utils/request'
 
 /**

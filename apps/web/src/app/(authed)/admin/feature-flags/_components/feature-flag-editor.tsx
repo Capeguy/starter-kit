@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { TextField } from '@acme/ui/text-field'
+import { AllowedUsersPicker } from './allowed-users-picker'
 
+import { TextField } from '@acme/ui/text-field'
 import { Button } from '~/components/ui/button'
 import {
   Dialog,
@@ -16,7 +18,6 @@ import {
 } from '~/components/ui/dialog'
 import { Switch } from '~/components/ui/switch'
 import { useTRPC } from '~/trpc/react'
-import { AllowedUsersPicker } from './allowed-users-picker'
 
 interface FeatureFlagInput {
   key: string
@@ -48,10 +49,10 @@ export const FeatureFlagEditor = ({
   const [description, setDescription] = useState(flag?.description ?? '')
   const [enabled, setEnabled] = useState(flag?.enabled ?? false)
   const [rolloutPercent, setRolloutPercent] = useState<number>(
-    flag?.rolloutPercent ?? 0,
+    flag?.rolloutPercent ?? 0
   )
   const [allowedUserIds, setAllowedUserIds] = useState<string[]>(
-    flag?.allowedUserIds ?? [],
+    flag?.allowedUserIds ?? []
   )
 
   const upsertMutation = useMutation(
@@ -61,7 +62,7 @@ export const FeatureFlagEditor = ({
         await onSaved()
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -75,7 +76,7 @@ export const FeatureFlagEditor = ({
     }
     if (!KEY_PATTERN.test(trimmedKey)) {
       toast.error(
-        'Key must be lowercase letters, digits, dots, underscores, or hyphens.',
+        'Key must be lowercase letters, digits, dots, underscores, or hyphens.'
       )
       return
     }
@@ -170,7 +171,7 @@ export const FeatureFlagEditor = ({
                   setRolloutPercent(
                     Number.isFinite(e.target.valueAsNumber)
                       ? e.target.valueAsNumber
-                      : 0,
+                      : 0
                   )
                 }
                 className="border-input bg-background ring-offset-background focus-visible:ring-ring h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"

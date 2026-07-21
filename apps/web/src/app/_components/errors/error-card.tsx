@@ -1,10 +1,6 @@
-'use client'
-
-import { useRouter } from 'next/navigation'
+import { GoBackButton } from './go-back-button'
 
 import { ErrorSvg } from '@acme/ui/svgs'
-
-import { Button } from '~/components/ui/button'
 import { cn } from '~/lib/utils'
 
 interface ErrorCardProps {
@@ -22,23 +18,11 @@ export const ErrorCard = ({
   message,
   svg = DEFAULT_ERROR_SVG,
 }: ErrorCardProps) => {
-  const router = useRouter()
-
-  const canGoBack = typeof window !== 'undefined' && window.history.length > 0
-  const handleBack = () => {
-    if (typeof window === 'undefined') return
-    if (canGoBack) {
-      router.back()
-    } else {
-      router.push('/')
-    }
-  }
-
   return (
     <div
       className={cn(
         'flex w-full flex-col items-center justify-center',
-        fullscreen ? 'gap-8 p-8' : 'gap-0 p-0',
+        fullscreen ? 'gap-8 p-8' : 'gap-0 p-0'
       )}
     >
       {svg}
@@ -48,11 +32,7 @@ export const ErrorCard = ({
         <p className="text-muted-foreground text-base">{message}</p>
       </div>
 
-      {canGoBack && (
-        <Button onClick={handleBack} variant="secondary">
-          Go Back
-        </Button>
-      )}
+      <GoBackButton />
     </div>
   )
 }

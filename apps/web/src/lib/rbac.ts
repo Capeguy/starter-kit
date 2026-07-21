@@ -73,5 +73,5 @@ export type SystemRoleIdValue = (typeof SystemRoleId)[keyof typeof SystemRoleId]
  */
 export const hasCapability = (
   capabilities: readonly string[] | null | undefined,
-  cap: CapabilityCode,
+  cap: CapabilityCode
 ): boolean => !!capabilities && capabilities.includes(cap)

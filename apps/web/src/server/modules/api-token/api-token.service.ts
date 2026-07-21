@@ -117,7 +117,7 @@ export interface VerifiedToken {
  * update (and we batch the user load via the same join) — that's it.
  */
 export const verifyAndTouch = async (
-  plaintext: string,
+  plaintext: string
 ): Promise<VerifiedToken | null> => {
   if (!plaintext.startsWith(TOKEN_PREFIX)) return null
 

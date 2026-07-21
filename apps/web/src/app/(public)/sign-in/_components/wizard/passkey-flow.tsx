@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import { useRouter } from 'next/navigation'
+
 import {
   browserSupportsWebAuthnAutofill,
   startAuthentication,
@@ -65,16 +67,16 @@ export const PasskeyFlow = () => {
   const typedName = watch('name')
 
   const authStart = useMutation(
-    trpc.auth.passkey.generateAuthenticationOptions.mutationOptions(),
+    trpc.auth.passkey.generateAuthenticationOptions.mutationOptions()
   )
   const authVerify = useMutation(
-    trpc.auth.passkey.verifyAuthentication.mutationOptions(),
+    trpc.auth.passkey.verifyAuthentication.mutationOptions()
   )
   const regStart = useMutation(
-    trpc.auth.passkey.generateRegistrationOptions.mutationOptions(),
+    trpc.auth.passkey.generateRegistrationOptions.mutationOptions()
   )
   const regVerify = useMutation(
-    trpc.auth.passkey.verifyRegistration.mutationOptions(),
+    trpc.auth.passkey.verifyRegistration.mutationOptions()
   )
 
   const isBusy =
@@ -121,7 +123,7 @@ export const PasskeyFlow = () => {
         // why the autofill tap appeared to do nothing.
         if (trpcErrorCode(err) === 'NOT_FOUND') {
           setError(
-            "We don't recognise that passkey. Create a new account, or try again with a different one.",
+            "We don't recognise that passkey. Create a new account, or try again with a different one."
           )
           return
         }
@@ -157,7 +159,7 @@ export const PasskeyFlow = () => {
           // with a neutral message so the user can retry or pick the explicit
           // "Create new account" path.
           setError(
-            "Sign-in didn't complete. Try again, or create a new account if this is your first visit.",
+            "Sign-in didn't complete. Try again, or create a new account if this is your first visit."
           )
           return
         }
@@ -176,7 +178,7 @@ export const PasskeyFlow = () => {
           // user knows their passkey best, they can pick "Create new account"
           // if they meant to register.
           setError(
-            "We don't recognise that passkey. Create a new account, or try again with a different one.",
+            "We don't recognise that passkey. Create a new account, or try again with a different one."
           )
           return
         }

@@ -51,7 +51,7 @@ async function main() {
   })
 
   console.log(
-    `Promoted user "${updated.name}" (${updated.id}) → ${updated.role.name}.`,
+    `Promoted user "${updated.name}" (${updated.id}) → ${updated.role.name}.`
   )
 }
 

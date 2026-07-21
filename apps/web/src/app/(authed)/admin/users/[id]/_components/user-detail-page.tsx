@@ -29,7 +29,7 @@ interface UserDetailPageProps {
 export function UserDetailPage({ userId }: UserDetailPageProps) {
   const trpc = useTRPC()
   const { data: user } = useSuspenseQuery(
-    trpc.admin.users.get.queryOptions({ userId }),
+    trpc.admin.users.get.queryOptions({ userId })
   )
 
   return (

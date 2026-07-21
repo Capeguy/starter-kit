@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+
 import {
   useMutation,
   useQueryClient,
@@ -8,6 +9,9 @@ import {
 } from '@tanstack/react-query'
 import { AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
+
+import { RoleEditor } from './role-editor'
+import { RoleUsersModal } from './role-users-modal'
 
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { Alert, AlertDescription } from '~/components/ui/alert'
@@ -22,8 +26,6 @@ import {
   DataTableRow,
 } from '~/components/ui/data-table'
 import { useTRPC } from '~/trpc/react'
-import { RoleEditor } from './role-editor'
-import { RoleUsersModal } from './role-users-modal'
 
 interface RoleSummary {
   id: string
@@ -54,7 +56,7 @@ export const RolesListPage = () => {
         })
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   return (
@@ -144,7 +146,7 @@ export const RolesListPage = () => {
                         onClick={() => {
                           if (
                             confirm(
-                              `Delete role "${r.name}"? This cannot be undone.`,
+                              `Delete role "${r.name}"? This cannot be undone.`
                             )
                           ) {
                             deleteMutation.mutate({ id: r.id })

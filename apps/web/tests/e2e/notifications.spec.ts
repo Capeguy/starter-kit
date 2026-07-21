@@ -43,7 +43,7 @@ test.describe('Admin broadcast notifications', () => {
           db.notification.count({
             where: { userId: recipient.id, title: 'Hello from e2e' },
           }),
-        { timeout: 5_000 },
+        { timeout: 5_000 }
       )
       .toBe(1)
 

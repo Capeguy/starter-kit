@@ -7,6 +7,7 @@
  * keyed by the same action codes.
  */
 import type { ReactNode } from 'react'
+
 import NextLink from 'next/link'
 
 export type AuditPerspective = 'self' | 'admin'
@@ -37,7 +38,7 @@ const getMetaString = (meta: unknown, key: string): string | undefined => {
 
 const userLabel = (
   id: string,
-  related: AuditRelatedUsers | undefined,
+  related: AuditRelatedUsers | undefined
 ): string => {
   const u = related?.[id]
   return u?.name ?? u?.email ?? `user ${id}`
@@ -71,7 +72,7 @@ const UserRef = ({
 export const formatAuditEvent = (
   row: AuditEventRow,
   perspective: AuditPerspective = 'admin',
-  relatedUsers?: AuditRelatedUsers,
+  relatedUsers?: AuditRelatedUsers
 ): ReactNode => {
   const isSelf = perspective === 'self'
   const subject = subjectLabel(row.user)

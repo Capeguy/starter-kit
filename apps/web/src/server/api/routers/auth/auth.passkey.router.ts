@@ -1,6 +1,8 @@
 import type { RegistrationResponseJSON } from '@simplewebauthn/server'
 import z from 'zod'
 
+import { createTRPCRouter, publicProcedure } from '../../trpc'
+
 import {
   finishResetWithToken,
   startResetWithToken,
@@ -24,7 +26,6 @@ import {
   passkeyRegistrationOptionsSchema,
   passkeyRegistrationVerificationSchema,
 } from '~/validators/passkey'
-import { createTRPCRouter, publicProcedure } from '../../trpc'
 
 export const passkeyAuthRouter = createTRPCRouter({
   generateRegistrationOptions: publicProcedure
@@ -33,7 +34,7 @@ export const passkeyAuthRouter = createTRPCRouter({
       generatePasskeyRegistrationOptions({
         name: input.name,
         headers: ctx.headers,
-      }),
+      })
     ),
 
   verifyRegistration: publicProcedure
@@ -60,7 +61,7 @@ export const passkeyAuthRouter = createTRPCRouter({
     }),
 
   generateAuthenticationOptions: publicProcedure.mutation(({ ctx }) =>
-    generatePasskeyAuthenticationOptions({ headers: ctx.headers }),
+    generatePasskeyAuthenticationOptions({ headers: ctx.headers })
   ),
 
   verifyAuthentication: publicProcedure
@@ -89,7 +90,7 @@ export const passkeyAuthRouter = createTRPCRouter({
     start: publicProcedure
       .input(z.object({ token: z.string() }))
       .mutation(({ input, ctx }) =>
-        startResetWithToken({ token: input.token, headers: ctx.headers }),
+        startResetWithToken({ token: input.token, headers: ctx.headers })
       ),
 
     finish: publicProcedure
@@ -98,7 +99,7 @@ export const passkeyAuthRouter = createTRPCRouter({
           token: z.string(),
           response: z.any() as z.ZodType<RegistrationResponseJSON>,
           expectedChallenge: z.string(),
-        }),
+        })
       )
       .mutation(async ({ input, ctx }) => {
         const result = await finishResetWithToken({
@@ -131,14 +132,14 @@ export const passkeyAuthRouter = createTRPCRouter({
         z.object({
           token: z.string(),
           name: z.string().trim().min(1, 'Name is required').max(50),
-        }),
+        })
       )
       .mutation(({ input, ctx }) =>
         startInviteWithToken({
           token: input.token,
           name: input.name,
           headers: ctx.headers,
-        }),
+        })
       ),
 
     finish: publicProcedure
@@ -148,7 +149,7 @@ export const passkeyAuthRouter = createTRPCRouter({
           name: z.string().trim().min(1, 'Name is required').max(50),
           response: z.any() as z.ZodType<RegistrationResponseJSON>,
           expectedChallenge: z.string(),
-        }),
+        })
       )
       .mutation(async ({ input, ctx }) => {
         const result = await finishInviteWithToken({

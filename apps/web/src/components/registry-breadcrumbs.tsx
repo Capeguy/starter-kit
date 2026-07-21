@@ -2,8 +2,9 @@
 
 import { usePathname } from 'next/navigation'
 
-import { resolveBreadcrumbs } from '~/lib/nav'
 import { Breadcrumbs } from './ui/breadcrumbs'
+
+import { resolveBreadcrumbs } from '~/lib/nav'
 
 interface RegistryBreadcrumbsProps {
   /**

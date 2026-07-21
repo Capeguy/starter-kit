@@ -1,5 +1,6 @@
-import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { BroadcastForm } from './_components/broadcast-form'
+
+import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 
 export default function AdminNotificationsRoute() {
   return (

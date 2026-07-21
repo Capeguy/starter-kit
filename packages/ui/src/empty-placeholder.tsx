@@ -24,13 +24,13 @@ export const EmptyPlaceholder = ({
     <div
       className={cn(
         'flex w-full flex-col items-center justify-center gap-2 py-12',
-        className,
+        className
       )}
     >
       <p
         className={cn(
           'text-foreground font-semibold',
-          size === 'sm' ? 'text-base' : 'text-lg',
+          size === 'sm' ? 'text-base' : 'text-lg'
         )}
       >
         {title ?? 'No Records'}
@@ -39,7 +39,7 @@ export const EmptyPlaceholder = ({
         <p
           className={cn(
             'text-muted-foreground',
-            size === 'sm' ? 'text-sm' : 'text-base',
+            size === 'sm' ? 'text-sm' : 'text-base'
           )}
         >
           {description}

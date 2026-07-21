@@ -24,7 +24,7 @@ async function trpcPost(page: Page, path: string, input: unknown) {
       const body = (await res.json()) as unknown
       return { status: res.status, body }
     },
-    [path, input] as [string, unknown],
+    [path, input] as [string, unknown]
   )
 }
 
@@ -144,10 +144,12 @@ test.describe('Role bulk reassign', () => {
       .getByRole('checkbox', { name: new RegExp(`Select ${bobName}`) })
       .click({ force: true })
 
-    // Pick Admin as the target.
-    await dialog
-      .getByLabel('Reassign selected to')
-      .selectOption({ label: 'Admin' })
+    // Pick Admin as the target. This is a Radix/shadcn `Select`, not a native
+    // <select>, so `selectOption` does not apply — open the trigger, then pick
+    // the option. Radix portals the listbox to the body, so the option is
+    // scoped to `page`, not to `dialog`.
+    await dialog.getByLabel('Reassign selected to').click()
+    await page.getByRole('option', { name: 'Admin', exact: true }).click()
 
     await dialog.getByRole('button', { name: /^Reassign 2 selected$/ }).click()
 
@@ -189,7 +191,7 @@ test.describe('Role bulk reassign', () => {
     await expect(
       updatedRow.getByRole('button', {
         name: new RegExp(`View 1 user in role ${role.name}`),
-      }),
+      })
     ).toBeVisible()
 
     await ctx.close()

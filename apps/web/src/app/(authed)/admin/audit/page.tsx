@@ -1,8 +1,9 @@
 import { Suspense } from 'react'
 
+import { AuditLogPage } from './_components/audit-log-page'
+
 import { SkeletonTable } from '~/components/ui/skeleton'
 import { HydrateClient, prefetch, trpc } from '~/trpc/server'
-import { AuditLogPage } from './_components/audit-log-page'
 
 export default async function AdminAuditRoute() {
   await prefetch(
@@ -10,7 +11,7 @@ export default async function AdminAuditRoute() {
       limit: 50,
       action: null,
       userId: null,
-    }),
+    })
   )
 
   return (

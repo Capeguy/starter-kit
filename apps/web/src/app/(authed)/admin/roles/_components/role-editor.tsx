@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { TextField } from '@acme/ui/text-field'
-
 import { Button } from '~/components/ui/button'
 import {
   Dialog,
@@ -43,7 +43,7 @@ export const RoleEditor = ({
   const [name, setName] = useState(role?.name ?? '')
   const [description, setDescription] = useState(role?.description ?? '')
   const [capabilities, setCapabilities] = useState<Set<string>>(
-    new Set(role?.capabilities ?? []),
+    new Set(role?.capabilities ?? [])
   )
 
   const createMutation = useMutation(
@@ -53,7 +53,7 @@ export const RoleEditor = ({
         await onSaved()
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const updateMutation = useMutation(
@@ -63,7 +63,7 @@ export const RoleEditor = ({
         await onSaved()
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const toggleCap = (cap: string) => {

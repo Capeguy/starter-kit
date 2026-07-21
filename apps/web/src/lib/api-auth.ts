@@ -22,7 +22,7 @@ export interface AuthenticatedRequestUser {
 }
 
 export const authenticateApiRequest = async (
-  request: Request,
+  request: Request
 ): Promise<AuthenticatedRequestUser | null> => {
   const token = extractBearerToken(request.headers)
   if (!token) return null

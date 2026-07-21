@@ -1,5 +1,7 @@
 import z from 'zod'
 
+import { createTRPCRouter, protectedProcedure } from '../trpc'
+
 import {
   issue,
   listMine,
@@ -9,7 +11,6 @@ import {
   AuditAction,
   recordAuditEvent,
 } from '~/server/modules/audit/audit.service'
-import { createTRPCRouter, protectedProcedure } from '../trpc'
 
 const issueInput = z.object({
   name: z
@@ -61,7 +62,7 @@ export const apiTokenRouter = createTRPCRouter({
     }),
 
   listMine: protectedProcedure.query(({ ctx }) =>
-    listMine({ userId: ctx.user.id }),
+    listMine({ userId: ctx.user.id })
   ),
 
   revoke: protectedProcedure

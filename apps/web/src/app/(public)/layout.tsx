@@ -1,13 +1,15 @@
 import { Landmark } from 'lucide-react'
 
-import type { DynamicLayoutProps } from '~/types/nextjs'
-import { env } from '~/env'
 import { VersionCheckWrapper } from '../_components/version-check-wrapper'
+
+import { env } from '~/env'
+import type { DynamicLayoutProps } from '~/types/nextjs'
 
 // Public/logged-out pages always render in light mode. ThemeProvider is
 // scoped to (authed) routes only — without it on public pages, no
 // `html.class="dark"` is ever applied and tokens stay in light mode.
 // The user's stored preference is untouched.
+
 export default function PublicLayout({ children }: DynamicLayoutProps) {
   return (
     <main className="flex min-h-dvh flex-col">

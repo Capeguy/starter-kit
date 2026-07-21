@@ -6,13 +6,13 @@ A production-ready Next.js boilerplate for shipping web apps fast. Spin off a ne
 
 - **Auth** — WebAuthn passkey-only sign-in with conditional-UI autofill, iron-session cookies. No passwords, no SMS, no email-magic-link.
 - **API contract** — tRPC v11 end-to-end typesafe; per-procedure rate limiting via Redis; capability-based access control on every procedure.
-- **Database** — Prisma + Kysely on Postgres with multi-schema isolation (so spin-offs can share a single Neon instance without colliding). Generated Zod validators.
+- **Database** — Prisma + Kysely on Postgres with multi-schema isolation (so spin-offs can share a single Neon instance without colliding).
 - **UI chrome** — shadcn/ui sidebar + header + breadcrumbs + ⌘K command palette, modelled on [next-shadcn-admin-dashboard](https://next-shadcn-admin-dashboard.vercel.app). Tailwind v4. Dark mode. Mobile-friendly.
 - **Admin panel** — user management + invite flow + passkey reset for locked-out users + audit log + RBAC role/capability editor + feature flags + admin-settable system banner + broadcast notifications + global file oversight.
 - **REST API + MCP server** — `/api/v1/*` and `/api/mcp` gated by per-user personal API tokens, with admin-toggleable per-tool gates for the MCP endpoint.
 - **File uploads** — Vercel Blob via direct-client uploads (avatar + generic Files page).
 - **Observability** — Sentry, structured pino logs, audit-log viewer for security-relevant events.
-- **CI** — GitHub Actions: ESLint, tsc, Vitest unit, Playwright e2e, Storybook visual regression.
+- **CI** — GitHub Actions: oxlint, oxfmt, tsc, Vitest unit, Playwright e2e, `next build`, plus CodeQL and grouped Dependabot updates.
 - **Bootstrap automation** — `pnpm bootstrap*` scripts that take a fresh template clone to a live deploy in five minutes (one curl-pipe-bash command).
 
 ## Spin off a new app
@@ -67,11 +67,21 @@ pnpm bootstrap:deploy            # final deploy with P1002 retry, bakes Sentry +
 pnpm install
 cp .env.example .env
 docker compose up -d            # Postgres on :54321, Redis on :63791
-pnpm db:push                    # apply Prisma schema to dev DB
+pnpm db:deploy                  # apply migrations to the dev DB (NOT db:push — see below)
 pnpm dev                        # all packages in watch mode
 ```
 
 Then open http://localhost:3000.
+
+> **Use `db:deploy`, not `db:push`.** `File.searchable` is a Postgres
+> `GENERATED ALWAYS AS (to_tsvector(...)) STORED` column, created by
+> `20260425094744_file_searchable_tsvector`. Prisma cannot express generated
+> columns — `schema.prisma` only carries `Unsupported("tsvector")` — so
+> `prisma db push` creates `searchable` as a plain column that Postgres never
+> populates, and file search silently returns nothing. Against a DB already
+> built from migrations it fails outright ("column ... is a generated
+> column"). Migrations are also what the test suite and Vercel apply, so
+> `db:deploy` keeps dev, test and prod identical.
 
 ### Common commands
 
@@ -103,7 +113,7 @@ Validation lives in `apps/web/src/env.ts` (web app) + `packages/db/src/env.ts` +
 ## Project structure
 
 ```
-apps/web              Next.js 15 / React 19 / tRPC v11 / shadcn-ui — the deployable
+apps/web              Next.js 16 / React 19 / tRPC v11 / shadcn-ui — the deployable
 packages/
   ├─ db               Prisma client + Kysely extension + generated Zod schemas
   ├─ ui               shared @acme/ui wrappers (text-field, link-button, infobox)
@@ -125,7 +135,7 @@ grep -rl '@acme' --exclude='*.md' --exclude-dir=node_modules . \
 
 ## Stack
 
-- Next.js 15 App Router, React 19, Tailwind CSS v4
+- Next.js 16 App Router, React 19, Tailwind CSS v4
 - tRPC v11 (single `/api/trpc/[trpc]` entry point — no REST shims)
 - Prisma + Kysely on Postgres
 - Redis Cloud for rate limiting + BullMQ

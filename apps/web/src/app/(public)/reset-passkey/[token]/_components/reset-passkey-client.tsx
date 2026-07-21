@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+
 import { useRouter } from 'next/navigation'
+
 import { startRegistration } from '@simplewebauthn/browser'
 import { useMutation } from '@tanstack/react-query'
 import { CheckCircle2, XCircle } from 'lucide-react'
@@ -28,10 +30,10 @@ export const ResetPasskeyClient = ({ token }: Props) => {
   const [done, setDone] = useState(false)
 
   const startMutation = useMutation(
-    trpc.auth.passkey.resetWithToken.start.mutationOptions(),
+    trpc.auth.passkey.resetWithToken.start.mutationOptions()
   )
   const finishMutation = useMutation(
-    trpc.auth.passkey.resetWithToken.finish.mutationOptions(),
+    trpc.auth.passkey.resetWithToken.finish.mutationOptions()
   )
 
   const isPending = startMutation.isPending || finishMutation.isPending

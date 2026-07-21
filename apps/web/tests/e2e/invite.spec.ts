@@ -61,8 +61,11 @@ test.describe('Admin invite flow', () => {
     await signInAs(adminCtx, admin.id)
     const adminPage = await adminCtx.newPage()
     await adminPage.goto('/admin/users')
+    // There is no "Invites" heading — pending invites are interleaved into the
+    // users table, and the only invite-specific affordance is the button below.
+    // Gate on the page's own heading instead.
     await expect(
-      adminPage.getByRole('heading', { name: 'Invites' }),
+      adminPage.getByRole('heading', { name: 'Users', level: 1 })
     ).toBeVisible()
 
     await adminPage.getByRole('button', { name: 'New invite' }).click()
@@ -70,7 +73,13 @@ test.describe('Admin invite flow', () => {
     const dialog = adminPage.getByRole('dialog', { name: /New invite/ })
     await dialog.getByLabel('Name (optional)').fill('Invited User')
     await dialog.getByLabel('Email (optional)').fill('invited@example.com')
-    await dialog.getByLabel('Role').selectOption(customRoleId)
+    // Radix/shadcn `Select`, not a native <select>: open the trigger and click
+    // the option (by visible name, since Radix exposes no value attribute).
+    // The listbox is portalled to the body, hence `adminPage`, not `dialog`.
+    await dialog.getByLabel('Role').click()
+    await adminPage
+      .getByRole('option', { name: customRoleName, exact: true })
+      .click()
     await dialog.getByRole('button', { name: 'Generate invite link' }).click()
 
     // Wait for the URL to render in the success view.
@@ -107,7 +116,7 @@ test.describe('Admin invite flow', () => {
           db.auditLog.count({
             where: { userId: admin.id, action: 'user.invite.issue' },
           }),
-        { timeout: 5_000 },
+        { timeout: 5_000 }
       )
       .toBe(1)
 
@@ -132,7 +141,7 @@ test.describe('Admin invite flow', () => {
 
     await recipientPage.goto(inviteUrl)
     await expect(
-      recipientPage.getByRole('heading', { name: /Accept your invite/ }),
+      recipientPage.getByRole('heading', { name: /Accept your invite/ })
     ).toBeVisible()
 
     const recipientName = `RecipientUser-${tag}`
@@ -175,7 +184,7 @@ test.describe('Admin invite flow', () => {
           db.auditLog.count({
             where: { userId: claimedUser?.id, action: 'user.invite.claim' },
           }),
-        { timeout: 5_000 },
+        { timeout: 5_000 }
       )
       .toBe(1)
 
@@ -222,7 +231,7 @@ test.describe('Admin invite flow', () => {
         async () =>
           (await db.invite.findUnique({ where: { id: invite.id } }))
             ?.revokedAt !== null,
-        { timeout: 5_000 },
+        { timeout: 5_000 }
       )
       .toBe(true)
 
@@ -239,7 +248,7 @@ test.describe('Admin invite flow', () => {
       .click()
 
     await expect(
-      recipientPage.getByText(/invalid|already been used/i),
+      recipientPage.getByText(/invalid|already been used/i)
     ).toBeVisible({ timeout: 10_000 })
 
     // No new user was created for the revoked invite.

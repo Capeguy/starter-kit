@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ['*']
+    types: [opened, reopened, synchronize]
+  push:
+    branches: ['main']
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  FORCE_COLOR: 3
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup
+        uses: ./tooling/github/setup
+
+      - name: Copy env
+        shell: bash
+        run: cp .env.example .env
+
+      - name: Lint
+        run: pnpm lint && pnpm lint:ws
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup
+        uses: ./tooling/github/setup
+
+      - name: Format
+        run: pnpm format
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup
+        uses: ./tooling/github/setup
+
+      - name: Copy env
+        shell: bash
+        run: cp .env.example .env
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup
+        uses: ./tooling/github/setup
+
+      - name: Copy env
+        shell: bash
+        run: cp .env.example .env
+
+      # Vitest boots Postgres + Redis via Testcontainers; ubuntu-latest ships a
+      # working Docker daemon at the default socket, so no DOCKER_HOST needed.
+      - name: Run tests
+        run: pnpm test:ci
+
+  # Not in upstream's CI. Worth the minutes: `next build` is the only gate that
+  # catches build-time-only errors — a Server Component using
+  # `dynamic({ ssr: false })` typechecks and passes tests, then fails the
+  # Vercel deploy. Since Vercel builds on push, a red build here beats a red
+  # deploy.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup
+        uses: ./tooling/github/setup
+
+      - name: Copy env
+        shell: bash
+        run: cp .env.example .env
+
+      - name: Build
+        run: pnpm build
+
+  e2e:
+    runs-on: ubuntu-latest
+    # The suite runs single-worker against a fixed-port container (see
+    # playwright.config.ts), so it is the long pole. Cap it rather than let a
+    # hung browser burn the full 6h default.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup
+        uses: ./tooling/github/setup
+
+      # Playwright's own env comes from the committed apps/web/.env.e2e, but the
+      # workspace packages still validate their schemas at import time.
+      - name: Copy env
+        shell: bash
+        run: cp .env.example .env
+
+      - name: Install Playwright browsers
+        run: pnpm -F @acme/web exec playwright install --with-deps chromium
+
+      - name: Run e2e
+        run: pnpm -F @acme/web e2e
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/tests/e2e/test-results
+          retention-days: 7
+          if-no-files-found: ignore

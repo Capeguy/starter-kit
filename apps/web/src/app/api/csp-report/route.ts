@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   const logger = createLogger({
     path: 'csp-report',
     headers: req.headers,
-  }).createScopedLogger({ action: 'POST' })
+  }).scope({ action: 'POST' })
 
   try {
     const text = await req.text()

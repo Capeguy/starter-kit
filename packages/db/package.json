@@ -26,10 +26,6 @@
       "types": "./dist/src/enums.d.ts",
       "default": "./src/enums.ts"
     },
-    "./validators": {
-      "types": "./dist/src/generated/zod/schemas/index.d.ts",
-      "default": "./src/generated/zod/schemas/index.ts"
-    },
     "./kysely": {
       "types": "./dist/src/kysely.d.ts",
       "default": "./src/kysely.ts"
@@ -38,16 +34,16 @@
   "scripts": {
     "build": "tsc",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "format": "oxfmt --ignore-path ../../.gitignore .",
     "generate": "pnpm with-env prisma generate",
-    "format": "prettier --check . --ignore-path ../../.gitignore",
-    "lint": "eslint",
-    "push": "pnpm with-env prisma db push",
-    "studio": "pnpm with-env prisma studio --port 5556",
-    "migrate:dev": "pnpm with-env prisma migrate dev",
+    "lint": "oxlint .",
     "migrate:deploy": "pnpm with-env prisma migrate deploy",
+    "migrate:dev": "pnpm with-env prisma migrate dev",
+    "promote-admin": "pnpm with-env tsx prisma/promote-admin.ts",
+    "push": "pnpm with-env prisma db push",
     "reset": "pnpm with-env prisma migrate reset",
     "seed": "pnpm with-env prisma db seed",
-    "promote-admin": "pnpm with-env tsx prisma/promote-admin.ts",
+    "studio": "pnpm with-env prisma studio --port 5556",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "with-env": "dotenv -e ../../.env --"
   },
@@ -55,25 +51,22 @@
     "@prisma/adapter-pg": "catalog:prisma",
     "@prisma/client": "catalog:prisma",
     "@t3-oss/env-core": "catalog:t3-env",
-    "kysely": "^0.28.14",
+    "kysely": "^0.28.17",
     "lodash-es": "^4.18.1",
     "pg": "^8.16.3",
     "prisma-extension-kysely": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@acme/eslint-config": "workspace:*",
-    "@acme/prettier-config": "workspace:*",
     "@acme/tsconfig": "workspace:*",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "catalog:",
     "dotenv-cli": "catalog:",
-    "eslint": "catalog:",
-    "prettier": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
     "prisma": "catalog:prisma",
     "prisma-kysely": "catalog:",
-    "prisma-zod-generator": "^2.1.2",
     "typescript": "catalog:"
-  },
-  "prettier": "@acme/prettier-config"
+  }
 }

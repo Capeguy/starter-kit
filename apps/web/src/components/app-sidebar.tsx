@@ -1,8 +1,10 @@
 'use client'
 
 import { useMemo } from 'react'
+
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+
 import { useQuery } from '@tanstack/react-query'
 import { LayoutDashboard, LogOut, Shield, Sparkles } from 'lucide-react'
 
@@ -58,7 +60,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const root = rootForPathname(pathname)
   const groups = useMemo(
     () => visibleGroups(root.groups, me?.role.capabilities),
-    [root, me?.role.capabilities],
+    [root, me?.role.capabilities]
   )
   const active = findActiveItem(pathname, root)
   // When the user is admin and currently on the dashboard, surface a quick
@@ -72,6 +74,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   // reflects the destination so it's clear at a glance which way you're going.
   const brandSubtitle = root === ADMIN_NAV ? 'Admin panel' : 'Workspace'
   const SwitchIcon = otherRoot === ADMIN_NAV ? Shield : LayoutDashboard
+  // Names the nav landmark below. One component serves both roots, so without
+  // a label assistive tech (and the e2e specs) cannot tell the admin sidebar
+  // from the dashboard one.
+  const navLabel =
+    root === ADMIN_NAV ? 'Admin navigation' : 'Dashboard navigation'
 
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
@@ -95,51 +102,56 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {groups.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => {
-                  const Icon = item.icon
-                  const isActive = active?.item.path === item.path
-                  return (
-                    <SidebarMenuItem key={item.path}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        tooltip={item.label}
-                      >
-                        <Link href={item.path}>
-                          <Icon />
-                          <span>{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        {/* A real <nav> rather than role="navigation" on the SidebarContent
+            div. It carries SidebarContent's flex layout so the "Switch view"
+            group's `mt-auto` still has a flex parent to push against. */}
+        <nav aria-label={navLabel} className="flex flex-1 flex-col gap-2">
+          {groups.map((group) => (
+            <SidebarGroup key={group.label}>
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {group.items.map((item) => {
+                    const Icon = item.icon
+                    const isActive = active?.item.path === item.path
+                    return (
+                      <SidebarMenuItem key={item.path}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive}
+                          tooltip={item.label}
+                        >
+                          <Link href={item.path}>
+                            <Icon />
+                            <span>{item.label}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
 
-        {showOtherRoot && (
-          <SidebarGroup className="mt-auto">
-            <SidebarGroupLabel>Switch view</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip={otherRoot.label}>
-                    <Link href={otherRoot.href}>
-                      <SwitchIcon />
-                      <span>Open {otherRoot.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
+          {showOtherRoot && (
+            <SidebarGroup className="mt-auto">
+              <SidebarGroupLabel>Switch view</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild tooltip={otherRoot.label}>
+                      <Link href={otherRoot.href}>
+                        <SwitchIcon />
+                        <span>Open {otherRoot.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
+        </nav>
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

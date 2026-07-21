@@ -1,6 +1,7 @@
 'use client'
 
 import { useSyncExternalStore } from 'react'
+
 import { Search } from 'lucide-react'
 
 import { NotificationBell } from '~/app/(authed)/_components/notification-bell'
@@ -22,7 +23,7 @@ const usePlatformShortcut = (): string =>
       /Mac|iPhone|iPad|iPod/.test(navigator.platform)
         ? '⌘K'
         : 'Ctrl K',
-    () => '⌘K',
+    () => '⌘K'
   )
 
 /**

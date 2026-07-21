@@ -1,6 +1,7 @@
 import crypto from 'crypto'
-import { resetTables } from '~tests/db/utils'
+
 import { beforeEach, describe, expect, it } from 'vitest'
+import { resetTables } from '~tests/db/utils'
 
 import { db } from '@acme/db'
 
@@ -24,7 +25,7 @@ const bucketFor = (key: string, userId: string): number => {
 
 const findUserIdInBucket = (
   key: string,
-  predicate: (bucket: number) => boolean,
+  predicate: (bucket: number) => boolean
 ): string => {
   // Brute-force search; the keyspace is huge so we'll find a match in a few
   // iterations. Cap to avoid an infinite loop in pathological cases.
@@ -71,13 +72,13 @@ describe('feature-flag.service', () => {
         },
       })
       expect(
-        await isEnabled({ key: 'allowlist.flag', userId: 'allowed-user-1' }),
+        await isEnabled({ key: 'allowlist.flag', userId: 'allowed-user-1' })
       ).toBe(true)
       expect(
-        await isEnabled({ key: 'allowlist.flag', userId: 'allowed-user-2' }),
+        await isEnabled({ key: 'allowlist.flag', userId: 'allowed-user-2' })
       ).toBe(true)
       expect(
-        await isEnabled({ key: 'allowlist.flag', userId: 'someone-else' }),
+        await isEnabled({ key: 'allowlist.flag', userId: 'someone-else' })
       ).toBe(false)
     })
 
@@ -93,7 +94,7 @@ describe('feature-flag.service', () => {
       })
       expect(await isEnabled({ key: 'full.rollout' })).toBe(true)
       expect(await isEnabled({ key: 'full.rollout', userId: 'anyone' })).toBe(
-        true,
+        true
       )
     })
 
@@ -229,7 +230,7 @@ describe('feature-flag.service', () => {
           enabled: true,
           rolloutPercent: 101,
           allowedUserIds: [],
-        }),
+        })
       ).rejects.toThrow(/0 and 100/)
     })
   })
@@ -247,7 +248,7 @@ describe('feature-flag.service', () => {
       })
       await remove({ key: 'delete.me' })
       expect(
-        await db.featureFlag.findUnique({ where: { key: 'delete.me' } }),
+        await db.featureFlag.findUnique({ where: { key: 'delete.me' } })
       ).toBeNull()
     })
 

@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { resetTables } from '~tests/db/utils'
 import { createTestCaller, createTestContext } from '~tests/trpc'
-import { beforeEach, describe, expect, it } from 'vitest'
 
 import { db } from '@acme/db'
 
@@ -49,7 +49,7 @@ describe('systemMessage routers', () => {
     it('returns the empty default when no row exists', async () => {
       const user = await createUserWithRole('AnyUser', SystemRoleId.User)
       const caller = createTestCaller(
-        createTestContext({ session: { userId: user.id } }),
+        createTestContext({ session: { userId: user.id } })
       )
 
       const result = await caller.systemMessage.get()
@@ -71,7 +71,7 @@ describe('systemMessage routers', () => {
         },
       })
       const caller = createTestCaller(
-        createTestContext({ session: { userId: user.id } }),
+        createTestContext({ session: { userId: user.id } })
       )
 
       const result = await caller.systemMessage.get()
@@ -94,7 +94,7 @@ describe('systemMessage routers', () => {
     it('upserts the singleton, stamps updatedById, and writes an audit row', async () => {
       const admin = await createUserWithRole('AdminCaller', SystemRoleId.Admin)
       const caller = createTestCaller(
-        createTestContext({ session: { userId: admin.id } }),
+        createTestContext({ session: { userId: admin.id } })
       )
 
       const result = await caller.admin.systemMessage.update({
@@ -132,7 +132,7 @@ describe('systemMessage routers', () => {
     it('rejects callers without the system.message.manage capability', async () => {
       const userOnly = await createUserWithRole('PlainUser', SystemRoleId.User)
       const caller = createTestCaller(
-        createTestContext({ session: { userId: userOnly.id } }),
+        createTestContext({ session: { userId: userOnly.id } })
       )
 
       try {
@@ -151,7 +151,7 @@ describe('systemMessage routers', () => {
     it('rejects messages longer than 500 chars', async () => {
       const admin = await createUserWithRole('AdminCaller', SystemRoleId.Admin)
       const caller = createTestCaller(
-        createTestContext({ session: { userId: admin.id } }),
+        createTestContext({ session: { userId: admin.id } })
       )
 
       await expect(
@@ -159,7 +159,7 @@ describe('systemMessage routers', () => {
           enabled: true,
           message: 'x'.repeat(501),
           severity: 'INFO',
-        }),
+        })
       ).rejects.toMatchObject({ code: 'BAD_REQUEST' })
     })
   })

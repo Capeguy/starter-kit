@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -18,7 +19,7 @@ export const useAuth = () => {
         toast.success('Successfully logged out.')
         router.refresh()
       },
-    }),
+    })
   )
 
   return { user, logout: logoutMutation.mutate }

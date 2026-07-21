@@ -1,10 +1,11 @@
 import z from 'zod'
 
+import { createTRPCRouter, protectedProcedure } from '../trpc'
+
 import {
   isEnabled,
   isEnabledBulk,
 } from '~/server/modules/feature-flag/feature-flag.service'
-import { createTRPCRouter, protectedProcedure } from '../trpc'
 
 /**
  * Client-facing flag evaluation. Both procedures are `protectedProcedure` —
@@ -21,7 +22,7 @@ export const featureFlagRouter = createTRPCRouter({
     .input(
       z.object({
         key: z.string().min(1).max(64),
-      }),
+      })
     )
     .query(async ({ input, ctx }) => ({
       enabled: await isEnabled({ key: input.key, userId: ctx.user.id }),
@@ -31,7 +32,7 @@ export const featureFlagRouter = createTRPCRouter({
     .input(
       z.object({
         keys: z.array(z.string().min(1).max(64)).max(50),
-      }),
+      })
     )
     .query(async ({ input, ctx }) => ({
       results: await isEnabledBulk({

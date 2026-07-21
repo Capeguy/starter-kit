@@ -1,10 +1,12 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import type { FallbackProps } from 'react-error-boundary'
+
 import { useEffect } from 'react'
+
 import * as Sentry from '@sentry/nextjs'
 import { AlertTriangle } from 'lucide-react'
+import type { FallbackProps } from 'react-error-boundary'
 import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary'
 
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'

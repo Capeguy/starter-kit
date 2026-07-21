@@ -1,11 +1,11 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { Info } from 'lucide-react'
 
 import { TextField } from '@acme/ui/text-field'
-
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Avatar, AvatarFallback } from '~/components/ui/avatar'
 import { useTRPC } from '~/trpc/react'
@@ -34,18 +34,18 @@ export const AllowedUsersPicker = ({
   const { data: searchResults, isFetching } = useQuery(
     trpc.admin.users.list.queryOptions(
       { q: q.trim() || null, limit: 10 },
-      { enabled: q.trim().length > 0 },
-    ),
+      { enabled: q.trim().length > 0 }
+    )
   )
 
   const selectedQueries = useQueries({
     queries: value.map((id) =>
-      trpc.admin.users.get.queryOptions({ userId: id }, { staleTime: 60_000 }),
+      trpc.admin.users.get.queryOptions({ userId: id }, { staleTime: 60_000 })
     ),
   })
   const selectedUsers = useMemo(
     () => value.map((id, i) => ({ id, data: selectedQueries[i]?.data })),
-    [value, selectedQueries],
+    [value, selectedQueries]
   )
 
   const addUser = (id: string) => {

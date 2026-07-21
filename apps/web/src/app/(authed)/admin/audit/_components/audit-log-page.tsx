@@ -1,11 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Info } from 'lucide-react'
 
-import { TextField } from '@acme/ui/text-field'
+import { formatAuditEvent } from '../../../_components/audit-action-labels'
+import { RelativeTime } from '../../../_components/relative-time'
 
+import { TextField } from '@acme/ui/text-field'
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Avatar, AvatarFallback } from '~/components/ui/avatar'
@@ -20,8 +23,6 @@ import {
   DataTableRow,
 } from '~/components/ui/data-table'
 import { useTRPC } from '~/trpc/react'
-import { formatAuditEvent } from '../../../_components/audit-action-labels'
-import { RelativeTime } from '../../../_components/relative-time'
 
 const initials = (name: string | null | undefined): string =>
   name ? name.slice(0, 2).toUpperCase() : '?'
@@ -36,7 +37,7 @@ export const AuditLogPage = () => {
       limit: 50,
       action: actionFilter || null,
       userId: userIdFilter || null,
-    }),
+    })
   )
 
   return (
@@ -117,7 +118,7 @@ export const AuditLogPage = () => {
                             user: row.user,
                           },
                           'admin',
-                          data.relatedUsers,
+                          data.relatedUsers
                         )}
                       </span>
                       <span className="text-muted-foreground font-mono text-xs">

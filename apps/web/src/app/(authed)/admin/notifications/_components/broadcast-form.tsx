@@ -1,17 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+
 import { useMutation } from '@tanstack/react-query'
 import { Info } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { TextField } from '@acme/ui/text-field'
+import { UserPicker } from './user-picker'
 
+import { TextField } from '@acme/ui/text-field'
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import { SystemRoleId } from '~/lib/rbac'
 import { useTRPC } from '~/trpc/react'
-import { UserPicker } from './user-picker'
 
 type AudienceKind = 'all' | 'role:admin' | 'role:user' | 'user'
 
@@ -38,7 +39,7 @@ export const BroadcastForm = () => {
         setHref('')
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const audience =

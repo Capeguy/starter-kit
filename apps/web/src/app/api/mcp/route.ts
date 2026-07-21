@@ -48,11 +48,11 @@ const err = (
   id: JsonRpcRequest['id'] | undefined,
   code: number,
   message: string,
-  status = 200,
+  status = 200
 ) =>
   Response.json(
     { jsonrpc: '2.0', id: id ?? null, error: { code, message } },
-    { status },
+    { status }
   )
 
 // Tool registry. Defines `inputSchema` for `tools/list`; the registry
@@ -82,7 +82,7 @@ const clampLimit = (raw: unknown): number => {
 const dispatchTool = async (
   name: string,
   args: Record<string, unknown>,
-  auth: AuthenticatedRequestUser,
+  auth: AuthenticatedRequestUser
 ): Promise<unknown> => {
   switch (name) {
     case 'get_my_profile': {
@@ -176,7 +176,7 @@ export async function POST(request: Request) {
         MCP_TOOLS.map(async (t) => ({
           tool: t,
           on: await isToolEnabled(t.name),
-        })),
+        }))
       )
       const tools = enabled
         .filter((e) => e.on)
@@ -216,7 +216,7 @@ export async function POST(request: Request) {
         return err(
           id,
           -32603,
-          `Internal error: ${e instanceof Error ? e.message : 'unknown'}`,
+          `Internal error: ${e instanceof Error ? e.message : 'unknown'}`
         )
       }
     }

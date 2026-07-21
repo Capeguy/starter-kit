@@ -1,14 +1,16 @@
 import { Suspense } from 'react'
+
 import { redirect } from 'next/navigation'
 
 import { db } from '@acme/db'
+
+import { FeatureFlagsPage } from './_components/feature-flags-page'
 
 import { LoadingState } from '~/components/ui/loading-state'
 import { AUTHED_ROOT_ROUTE, LOGIN_ROUTE } from '~/constants'
 import { Capability, hasCapability } from '~/lib/rbac'
 import { getSession } from '~/server/session'
 import { HydrateClient, prefetch, trpc } from '~/trpc/server'
-import { FeatureFlagsPage } from './_components/feature-flags-page'
 
 export default async function AdminFeatureFlagsRoute() {
   // Defense in depth: the admin layout already gates `admin.access`, but

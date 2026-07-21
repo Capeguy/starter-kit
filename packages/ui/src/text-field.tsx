@@ -1,6 +1,7 @@
 'use client'
 
 import type { InputHTMLAttributes, ReactNode } from 'react'
+
 import { useId } from 'react'
 
 import { cn } from './utils'
@@ -88,7 +89,7 @@ export function TextField({
     <div
       className={cn(
         'flex w-full flex-col gap-2',
-        className ?? classNames?.base,
+        className ?? classNames?.base
       )}
     >
       {label !== undefined && (
@@ -96,7 +97,7 @@ export function TextField({
           htmlFor={inputId}
           className={cn(
             'text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
-            classNames?.label,
+            classNames?.label
           )}
         >
           {label}
@@ -110,7 +111,7 @@ export function TextField({
         <div
           className={cn(
             'relative flex w-full items-stretch',
-            classNames?.inputGroup,
+            classNames?.inputGroup
           )}
         >
           {startContent !== undefined && (
@@ -141,7 +142,7 @@ export function TextField({
               startContent !== undefined && 'pl-10',
               endContent !== undefined && 'pr-10',
               hasError && 'border-destructive focus-visible:ring-destructive',
-              classNames?.input,
+              classNames?.input
             )}
             {...inputProps}
           />
@@ -173,7 +174,7 @@ export function TextField({
           className={cn(
             baseInputClasses,
             hasError && 'border-destructive focus-visible:ring-destructive',
-            classNames?.input,
+            classNames?.input
           )}
           {...inputProps}
         />
@@ -184,7 +185,7 @@ export function TextField({
           id={descriptionId}
           className={cn(
             'text-muted-foreground text-sm',
-            classNames?.description,
+            classNames?.description
           )}
         >
           {description}

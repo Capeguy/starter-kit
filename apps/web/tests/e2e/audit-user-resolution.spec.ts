@@ -75,15 +75,15 @@ test.describe('Audit log resolves metadata user-ids to clickable names', () => {
               },
             },
           }),
-        { timeout: 5_000 },
+        { timeout: 5_000 }
       )
       .toBe(2)
 
-    // Visit the dashboard and switch to the Activity tab.
-    await page.goto('/dashboard')
-    await page.getByRole('tab', { name: 'Activity' }).click()
+    // Activity is its own route (USER_NAV -> /dashboard/activity); the
+    // dashboard has no tabs, so go straight there.
+    await page.goto('/dashboard/activity')
 
-    const activityPanel = page.getByRole('tabpanel', { name: 'Activity' })
+    const activityPanel = page.getByRole('list', { name: 'Your activity' })
 
     // Stop event ("You stopped impersonating <name>"). The literal "user <id>"
     // fallback must NOT appear — the resolution should have produced the name.
@@ -136,7 +136,7 @@ test.describe('Audit log resolves metadata user-ids to clickable names', () => {
           db.auditLog.count({
             where: { userId: admin.id, action: 'user.impersonate.stop' },
           }),
-        { timeout: 5_000 },
+        { timeout: 5_000 }
       )
       .toBe(1)
 
@@ -181,9 +181,8 @@ test.describe('Audit log resolves metadata user-ids to clickable names', () => {
     await signInAs(ctx, admin.id)
     const page = await ctx.newPage()
 
-    await page.goto('/dashboard')
-    await page.getByRole('tab', { name: 'Activity' }).click()
-    const activityPanel = page.getByRole('tabpanel', { name: 'Activity' })
+    await page.goto('/dashboard/activity')
+    const activityPanel = page.getByRole('list', { name: 'Your activity' })
 
     // Page renders without crashing and contains the literal "user <id>"
     // fallback text — proving graceful handling of unresolved refs.

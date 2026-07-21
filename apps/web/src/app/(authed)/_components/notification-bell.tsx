@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+
 import NextLink from 'next/link'
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bell } from 'lucide-react'
 
@@ -24,11 +26,11 @@ export const NotificationBell = () => {
     trpc.notification.unreadCount.queryOptions(undefined, {
       refetchInterval: POLL_INTERVAL_MS,
       refetchIntervalInBackground: false,
-    }),
+    })
   )
 
   const { data: list } = useQuery(
-    trpc.notification.list.queryOptions({ limit: 10 }),
+    trpc.notification.list.queryOptions({ limit: 10 })
   )
 
   const markRead = useMutation(
@@ -41,7 +43,7 @@ export const NotificationBell = () => {
           queryKey: trpc.notification.list.queryKey(),
         })
       },
-    }),
+    })
   )
 
   const handleOpenChange = (open: boolean) => {

@@ -31,7 +31,7 @@ async function trpcGet(page: Page, path: string, input: unknown) {
       const body = (await res.json()) as unknown
       return { status: res.status, body }
     },
-    [path, input] as [string, unknown],
+    [path, input] as [string, unknown]
   )
 }
 
@@ -101,7 +101,7 @@ test.describe('/admin/feature-flags', () => {
           db.featureFlag
             .findUnique({ where: { key: flagKey } })
             .then((f) => f?.enabled),
-        { timeout: 5_000 },
+        { timeout: 5_000 }
       )
       .toBe(true)
 
@@ -230,7 +230,7 @@ test.describe('/admin/feature-flags', () => {
           db.featureFlag
             .findUnique({ where: { key: flagKey } })
             .then((f) => f === null),
-        { timeout: 5_000 },
+        { timeout: 5_000 }
       )
       .toBe(true)
     await expect(row).toBeHidden()

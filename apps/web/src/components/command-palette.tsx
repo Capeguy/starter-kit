@@ -1,8 +1,11 @@
 'use client'
 
 import type { ComponentProps } from 'react'
+
 import { useMemo, useState } from 'react'
+
 import { useRouter } from 'next/navigation'
+
 import { useQuery } from '@tanstack/react-query'
 import { Command } from 'cmdk'
 import { useTheme } from 'next-themes'
@@ -73,11 +76,11 @@ export const CommandPalette = ({ isOpen, onClose }: CommandPaletteProps) => {
         .map((root) => ({
           label: root.label,
           items: visibleGroups(root.groups, capabilities).flatMap(
-            (g) => g.items,
+            (g) => g.items
           ),
         }))
         .filter((section) => section.items.length > 0),
-    [capabilities],
+    [capabilities]
   )
 
   const isAdminUserSearcher = hasCapability(capabilities, Capability.UserList)
@@ -87,15 +90,15 @@ export const CommandPalette = ({ isOpen, onClose }: CommandPaletteProps) => {
   const usersQuery = useQuery(
     trpc.admin.users.list.queryOptions(
       { q: debouncedSearchTrimmed || null, limit: 8 },
-      { enabled: enableLiveSearch && isAdminUserSearcher },
-    ),
+      { enabled: enableLiveSearch && isAdminUserSearcher }
+    )
   )
 
   const filesQuery = useQuery(
     trpc.file.search.queryOptions(
       { query: debouncedSearchTrimmed, limit: 8 },
-      { enabled: enableLiveSearch },
-    ),
+      { enabled: enableLiveSearch }
+    )
   )
 
   const handleSelect = (run: () => void | Promise<void>) => {

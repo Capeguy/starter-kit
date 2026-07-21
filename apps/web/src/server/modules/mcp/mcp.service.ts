@@ -110,7 +110,7 @@ export const setMcpEnabled = async (enabled: boolean): Promise<void> => {
 
 export const setToolEnabled = async (
   name: string,
-  enabled: boolean,
+  enabled: boolean
 ): Promise<void> => {
   const tool = MCP_TOOLS.find((t) => t.name === name)
   if (!tool) throw new Error(`Unknown MCP tool: ${name}`)

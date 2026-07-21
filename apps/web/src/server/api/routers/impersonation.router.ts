@@ -3,17 +3,18 @@ import z from 'zod'
 
 import { db } from '@acme/db'
 
+import {
+  capabilityProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+} from '../trpc'
+
 import { Capability } from '~/lib/rbac'
 import {
   AuditAction,
   recordAuditEvent,
 } from '~/server/modules/audit/audit.service'
 import { getSession } from '~/server/session'
-import {
-  capabilityProcedure,
-  createTRPCRouter,
-  protectedProcedure,
-} from '../trpc'
 
 export const impersonationRouter = createTRPCRouter({
   /**

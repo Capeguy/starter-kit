@@ -35,7 +35,7 @@ const collectRelatedUserIds = (rows: { metadata: unknown }[]): string[] => {
 }
 
 const fetchRelatedUsers = async (
-  rows: { metadata: unknown }[],
+  rows: { metadata: unknown }[]
 ): Promise<
   Record<string, { id: string; name: string | null; email: string | null }>
 > => {
@@ -80,7 +80,7 @@ export const auditRouter = createTRPCRouter({
       z.object({
         cursor: z.string().nullish(),
         limit: z.number().int().min(1).max(50).default(20),
-      }),
+      })
     )
     .query(async ({ input, ctx }) => {
       const items = await db.auditLog.findMany({

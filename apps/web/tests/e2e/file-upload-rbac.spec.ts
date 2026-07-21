@@ -21,7 +21,7 @@ test.describe('file.upload capability gating', () => {
     // The upload picker uses the FilePickerButton which renders a "Upload a
     // file" button. Without the capability, it should not be present.
     await expect(
-      page.getByRole('button', { name: /Upload a file/i }),
+      page.getByRole('button', { name: /Upload a file/i })
     ).toHaveCount(0)
     // The explanatory infobox is shown instead.
     await expect(page.getByText(/file\.upload.*capability/i)).toBeVisible()
@@ -50,7 +50,7 @@ test.describe('file.upload capability gating', () => {
     await page.goto('/dashboard/files')
 
     await expect(
-      page.getByRole('button', { name: /Upload a file/i }),
+      page.getByRole('button', { name: /Upload a file/i })
     ).toBeVisible()
     // Infobox should NOT be present when we can upload.
     await expect(page.getByText(/file\.upload.*capability/i)).toHaveCount(0)
@@ -103,7 +103,7 @@ test.describe('file.upload capability gating', () => {
     await page.goto('/dashboard/files')
 
     await expect(
-      page.getByRole('button', { name: /Upload a file/i }),
+      page.getByRole('button', { name: /Upload a file/i })
     ).toBeVisible()
 
     await ctx.close()

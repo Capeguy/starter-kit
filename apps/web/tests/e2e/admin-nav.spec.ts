@@ -24,11 +24,11 @@ test.describe('Admin navigation + role gating', () => {
     await expect(nav.getByRole('link', { name: /Users/ })).toBeVisible()
     await expect(nav.getByRole('link', { name: /Audit log/ })).toBeVisible()
     await expect(
-      nav.getByRole('link', { name: /Send notification/ }),
+      nav.getByRole('link', { name: /Send notification/ })
     ).toBeVisible()
     await expect(nav.getByRole('link', { name: /All files/ })).toBeVisible()
     await expect(
-      nav.getByRole('link', { name: /Roles.*capabilities/ }),
+      nav.getByRole('link', { name: /Roles.*capabilities/ })
     ).toBeVisible()
 
     await ctx.close()
@@ -85,8 +85,10 @@ test.describe('Admin navigation + role gating', () => {
     await signInAs(adminCtx, admin.id)
     const adminPage = await adminCtx.newPage()
     await adminPage.goto('/dashboard')
+    // The sidebar's "Switch view" pivot renders `Open {otherRoot.label}`, so
+    // from /dashboard the admin link reads "Open Admin", not "Admin".
     await expect(
-      adminPage.getByRole('link', { name: 'Admin', exact: true }),
+      adminPage.getByRole('link', { name: 'Open Admin', exact: true })
     ).toBeVisible()
     await adminCtx.close()
 
@@ -96,7 +98,7 @@ test.describe('Admin navigation + role gating', () => {
     const userPage = await userCtx.newPage()
     await userPage.goto('/dashboard')
     await expect(
-      userPage.getByRole('link', { name: 'Admin', exact: true }),
+      userPage.getByRole('link', { name: 'Open Admin', exact: true })
     ).toHaveCount(0)
     await userCtx.close()
   })

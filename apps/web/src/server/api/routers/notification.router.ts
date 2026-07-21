@@ -1,11 +1,12 @@
 import z from 'zod'
 
+import { createTRPCRouter, protectedProcedure } from '../trpc'
+
 import {
   listMine,
   markRead,
   unreadCount,
 } from '~/server/modules/notification/notification.service'
-import { createTRPCRouter, protectedProcedure } from '../trpc'
 
 export const notificationRouter = createTRPCRouter({
   list: protectedProcedure
@@ -13,14 +14,14 @@ export const notificationRouter = createTRPCRouter({
       z.object({
         cursor: z.string().nullish(),
         limit: z.number().int().min(1).max(50).default(20),
-      }),
+      })
     )
     .query(({ input, ctx }) =>
       listMine({
         userId: ctx.user.id,
         cursor: input.cursor,
         limit: input.limit,
-      }),
+      })
     ),
 
   unreadCount: protectedProcedure
@@ -32,6 +33,6 @@ export const notificationRouter = createTRPCRouter({
   markRead: protectedProcedure
     .input(z.object({ ids: z.array(z.string()).optional() }))
     .mutation(({ input, ctx }) =>
-      markRead({ userId: ctx.user.id, ids: input.ids }),
+      markRead({ userId: ctx.user.id, ids: input.ids })
     ),
 })
