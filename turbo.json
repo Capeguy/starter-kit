@@ -65,7 +65,18 @@
       // env vars and NODE_OPTIONS preloads. Strict env mode strips them from
       // the task, leaving dd-trace half-initialized inside Vitest, which then
       // silently collects zero test files. Pass them through explicitly.
-      "passThroughEnv": ["DD_*", "NODE_OPTIONS"],
+      //
+      // DOCKER_HOST / TESTCONTAINERS_* are the same class of problem for local
+      // runs: the Vitest global setup boots Testcontainers, and on a non-default
+      // Docker daemon (colima, Rancher, a remote host) those vars are the only
+      // way it finds the socket. Stripped, the containers never start and the
+      // run dies with the same misleading "No test files found".
+      "passThroughEnv": [
+        "DD_*",
+        "NODE_OPTIONS",
+        "DOCKER_HOST",
+        "TESTCONTAINERS_*"
+      ],
       // Coverage reports must survive cache replays so the Datadog coverage
       // upload step still finds them on cache-hit runs.
       "outputs": ["coverage/**"]
