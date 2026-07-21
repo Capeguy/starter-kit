@@ -1,16 +1,7 @@
-import dynamic from 'next/dynamic'
+import { GoBackButton } from './go-back-button'
 
 import { ErrorSvg } from '@acme/ui/svgs'
 import { cn } from '~/lib/utils'
-
-// Loaded client-only: GoBackButton reads `window.history`, which would
-// otherwise differ between the server and client render and trip a
-// hydration mismatch.
-const GoBackButton = dynamic(
-  () =>
-    import('./go-back-button').then((mod) => ({ default: mod.GoBackButton })),
-  { ssr: false }
-)
 
 interface ErrorCardProps {
   fullscreen?: boolean
