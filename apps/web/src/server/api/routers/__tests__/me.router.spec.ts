@@ -1,5 +1,4 @@
 import { TRPCError } from '@trpc/server'
-
 import { resetTables } from '~tests/db/utils'
 import { createTestCaller, createTestContext } from '~tests/trpc'
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useSyncExternalStore } from 'react'
+
 import {
   useMutation,
   useQueryClient,
@@ -23,7 +24,7 @@ const useOrigin = () =>
   useSyncExternalStore(
     subscribeNoop,
     () => window.location.origin,
-    () => '',
+    () => ''
   )
 
 export const McpSettingsPage = () => {
@@ -43,21 +44,21 @@ export const McpSettingsPage = () => {
         })
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const setToolMutation = useMutation(
     trpc.admin.mcp.setToolEnabled.mutationOptions({
       onSuccess: async (res) => {
         toast.success(
-          `Tool ${res.name} ${res.enabled ? 'enabled' : 'disabled'}`,
+          `Tool ${res.name} ${res.enabled ? 'enabled' : 'disabled'}`
         )
         await queryClient.invalidateQueries({
           queryKey: trpc.admin.mcp.getSettings.queryKey(),
         })
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const enabledToolCount = data.tools.filter((t) => t.enabled).length

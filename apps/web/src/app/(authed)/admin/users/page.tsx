@@ -1,8 +1,9 @@
 import { Suspense } from 'react'
 
+import { UsersListPage } from './_components/users-list-page'
+
 import { SkeletonTable } from '~/components/ui/skeleton'
 import { HydrateClient, prefetch, trpc } from '~/trpc/server'
-import { UsersListPage } from './_components/users-list-page'
 
 export default async function AdminUsersRoute() {
   // Match the client component's query key exactly — including q:null —

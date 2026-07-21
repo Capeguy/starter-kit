@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+
 import {
   useMutation,
   useQueryClient,
@@ -8,6 +9,8 @@ import {
 } from '@tanstack/react-query'
 import { Info } from 'lucide-react'
 import { toast } from 'sonner'
+
+import { FilePickerButton } from '../../../_components/file-picker-button'
 
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { Alert, AlertDescription } from '~/components/ui/alert'
@@ -23,7 +26,6 @@ import {
 } from '~/components/ui/data-table'
 import { Capability, hasCapability } from '~/lib/rbac'
 import { useTRPC } from '~/trpc/react'
-import { FilePickerButton } from '../../../_components/file-picker-button'
 
 const formatBytes = (n: number): string => {
   if (n < 1024) return `${n} B`
@@ -37,7 +39,7 @@ export const MyFilesPage = () => {
   const [uploading, setUploading] = useState(false)
 
   const { data } = useSuspenseQuery(
-    trpc.file.listMine.queryOptions({ limit: 50 }),
+    trpc.file.listMine.queryOptions({ limit: 50 })
   )
   const { data: me } = useSuspenseQuery(trpc.me.get.queryOptions())
   const canUpload = hasCapability(me?.role.capabilities, Capability.FileUpload)
@@ -51,7 +53,7 @@ export const MyFilesPage = () => {
         })
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const handleUpload = async (file: File) => {

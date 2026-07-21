@@ -49,7 +49,7 @@ export const applyMigrations = async (container: DatabaseContainer) => {
       `SELECT EXISTS (
          SELECT 1 FROM information_schema.tables
          WHERE table_schema = 'vibe_stack' AND table_name = 'User'
-       ) AS exists`,
+       ) AS exists`
     )
     .catch(() => [{ exists: false }])
   if (existing[0]?.exists) {
@@ -106,7 +106,7 @@ export const applyMigrations = async (container: DatabaseContainer) => {
  * shipped together — the grant uses `DISTINCT unnest` to remain idempotent.
  */
 const ensureBranchSpecificTables = async (
-  client: PrismaClient,
+  client: PrismaClient
 ): Promise<{ applied: number }> => {
   const prismaMigrationDir = join(
     fileURLToPath(dirname(import.meta.url)),
@@ -118,7 +118,7 @@ const ensureBranchSpecificTables = async (
     'packages',
     'db',
     'prisma',
-    'migrations',
+    'migrations'
   )
   let applied = 0
   let startApplyingFromIndex = -1
@@ -131,10 +131,10 @@ const ensureBranchSpecificTables = async (
     if (!file) continue
     const sql = readFileSync(
       `${prismaMigrationDir}/${file}/migration.sql`,
-      'utf8',
+      'utf8'
     )
     const tableMatches = Array.from(
-      sql.matchAll(/CREATE TABLE\s+"vibe_stack"\."([^"]+)"/gi),
+      sql.matchAll(/CREATE TABLE\s+"vibe_stack"\."([^"]+)"/gi)
     )
       .map((m) => m[1])
       .filter((s): s is string => typeof s === 'string')
@@ -147,10 +147,10 @@ const ensureBranchSpecificTables = async (
              SELECT 1 FROM information_schema.tables
              WHERE table_schema='vibe_stack' AND table_name=$1
            ) AS exists`,
-          t,
+          t
         )
         return r[0]?.exists ?? false
-      }),
+      })
     )
     if (!checks.every(Boolean)) {
       startApplyingFromIndex = i
@@ -165,7 +165,7 @@ const ensureBranchSpecificTables = async (
     if (!file) continue
     const sql = readFileSync(
       `${prismaMigrationDir}/${file}/migration.sql`,
-      'utf8',
+      'utf8'
     )
     try {
       await client.$executeRawUnsafe(sql)
@@ -181,12 +181,12 @@ const ensureBranchSpecificTables = async (
         /relation .* already exists/i.test(msg)
       ) {
         console.log(
-          `Skipped already-applied branch migration: ${file} (${msg.split('\n')[0]})`,
+          `Skipped already-applied branch migration: ${file} (${msg.split('\n')[0]})`
         )
         continue
       }
       console.warn(
-        `ensureBranchSpecificTables: ${file} failed: ${msg.split('\n')[0]}`,
+        `ensureBranchSpecificTables: ${file} failed: ${msg.split('\n')[0]}`
       )
       // Don't throw — keep going so subsequent migrations can apply.
     }
@@ -216,7 +216,7 @@ export async function clearTransactionalData(container: DatabaseContainer) {
         internal: true,
       })} -c 'TRUNCATE TABLE vibe_stack."Account", vibe_stack."AuditLog", vibe_stack."FeatureFlag", vibe_stack."File", vibe_stack."Notification", vibe_stack."Passkey", vibe_stack."PasskeyChallenge", vibe_stack."PasskeyResetToken", vibe_stack."User", vibe_stack."VerificationToken" RESTART IDENTITY CASCADE;'`,
     ],
-    { user: 'root' },
+    { user: 'root' }
   )
   if (result.exitCode !== 0) {
     console.error('Failed to clear transactional data', result)

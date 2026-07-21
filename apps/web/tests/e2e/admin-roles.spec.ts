@@ -137,7 +137,7 @@ test.describe('/admin/roles CRUD', () => {
     // The seeded "Admin" row's Delete button is disabled.
     const adminRow = page.getByRole('row').filter({ hasText: /^Admin/ })
     await expect(
-      adminRow.getByRole('button', { name: 'Delete' }),
+      adminRow.getByRole('button', { name: 'Delete' })
     ).toBeDisabled()
 
     await ctx.close()

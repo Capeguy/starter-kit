@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   if (!(file instanceof File)) {
     return NextResponse.json(
       { error: 'expected multipart field "file"' },
-      { status: 400 },
+      { status: 400 }
     )
   }
 
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       {
         error: error instanceof Error ? error.message : 'upload failed',
       },
-      { status: 400 },
+      { status: 400 }
     )
   }
 }

@@ -30,7 +30,7 @@ async function trpcPost(page: Page, path: string, input: unknown) {
       const body = (await res.json()) as unknown
       return { status: res.status, body }
     },
-    [path, input] as [string, unknown],
+    [path, input] as [string, unknown]
   )
 }
 
@@ -121,7 +121,7 @@ test.describe('User impersonation', () => {
 
     // No Impersonate button anywhere in the table.
     await expect(page.getByRole('button', { name: 'Impersonate' })).toHaveCount(
-      0,
+      0
     )
 
     await ctx.close()
@@ -180,7 +180,7 @@ test.describe('User impersonation', () => {
 
     expect(result.status).toBe(400)
     expect(extractErrorMessage(result.body)).toMatch(
-      /cannot impersonate yourself/i,
+      /cannot impersonate yourself/i
     )
 
     await ctx.close()
@@ -242,7 +242,7 @@ test.describe('User impersonation', () => {
 
     expect(result.status).toBe(400)
     expect(extractErrorMessage(result.body)).toMatch(
-      /not currently impersonating/i,
+      /not currently impersonating/i
     )
 
     await ctx.close()

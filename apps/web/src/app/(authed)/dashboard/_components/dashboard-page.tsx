@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+
 import NextLink from 'next/link'
+
 import {
   useQuery,
   useQueryClient,
@@ -9,18 +11,18 @@ import {
 } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-import { LinkButton } from '@acme/ui/link-button'
+import { formatAuditEvent } from '../../_components/audit-action-labels'
+import { ErrorBomb } from '../../_components/error-bomb'
+import { FilePickerButton } from '../../_components/file-picker-button'
+import { RelativeTime } from '../../_components/relative-time'
 
+import { LinkButton } from '@acme/ui/link-button'
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Badge } from '~/components/ui/badge'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
 import { EmptyState } from '~/components/ui/empty-state'
 import { useTRPC } from '~/trpc/react'
-import { formatAuditEvent } from '../../_components/audit-action-labels'
-import { ErrorBomb } from '../../_components/error-bomb'
-import { FilePickerButton } from '../../_components/file-picker-button'
-import { RelativeTime } from '../../_components/relative-time'
 
 const formatDate = (date: Date): string =>
   new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' }).format(date)
@@ -37,10 +39,10 @@ export const DashboardPage = () => {
 
   const { data: me } = useSuspenseQuery(trpc.me.get.queryOptions())
   const { data: filesData } = useQuery(
-    trpc.file.listMine.queryOptions({ limit: 5 }),
+    trpc.file.listMine.queryOptions({ limit: 5 })
   )
   const { data: activityData } = useQuery(
-    trpc.audit.listMine.queryOptions({ limit: 5 }),
+    trpc.audit.listMine.queryOptions({ limit: 5 })
   )
 
   if (!me) return null
@@ -228,7 +230,7 @@ export const DashboardPage = () => {
                       {formatAuditEvent(
                         { action: a.action, metadata: a.metadata },
                         'self',
-                        activityData.relatedUsers,
+                        activityData.relatedUsers
                       )}
                     </span>
                     <RelativeTime

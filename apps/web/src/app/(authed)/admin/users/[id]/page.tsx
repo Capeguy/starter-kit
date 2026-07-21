@@ -1,5 +1,6 @@
-import { HydrateClient, prefetch, trpc } from '~/trpc/server'
 import { UserDetailPage } from './_components/user-detail-page'
+
+import { HydrateClient, prefetch, trpc } from '~/trpc/server'
 
 export default async function AdminUserDetailRoute({
   params,

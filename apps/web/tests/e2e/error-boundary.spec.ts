@@ -42,15 +42,15 @@ test.describe('Authed error boundary', () => {
     //    render with the "Something went wrong" copy + Try again + Reload
     //    buttons. We accept either test id.
     const friendlyFallback = page.locator(
-      '[data-testid="error-boundary-fallback"], [data-testid="authed-segment-error"]',
+      '[data-testid="error-boundary-fallback"], [data-testid="authed-segment-error"]'
     )
     await expect(friendlyFallback).toBeVisible()
     await expect(friendlyFallback).toContainText(/Something went wrong/i)
     await expect(
-      friendlyFallback.getByRole('button', { name: 'Try again' }),
+      friendlyFallback.getByRole('button', { name: 'Try again' })
     ).toBeVisible()
     await expect(
-      friendlyFallback.getByRole('button', { name: 'Reload page' }),
+      friendlyFallback.getByRole('button', { name: 'Reload page' })
     ).toBeVisible()
 
     // 3. Click "Try again" — the boundary resets and re-renders. Because

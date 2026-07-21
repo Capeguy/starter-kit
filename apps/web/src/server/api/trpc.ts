@@ -24,9 +24,9 @@ import type { RateLimiterConfig } from '../modules/rate-limit/types'
 import { getSession } from '../session'
 import { extractIpAddress } from '../utils/request'
 
-import type { CapabilityCode } from '~/lib/rbac'
 import { env } from '~/env'
 import { createLogger } from '~/lib/logger'
+import type { CapabilityCode } from '~/lib/rbac'
 import { Capability, hasCapability } from '~/lib/rbac'
 
 /**

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+
 import { useMutation } from '@tanstack/react-query'
 import { CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -46,7 +47,7 @@ export const ResetPasskeyModal = ({
     trpc.admin.users.issuePasskeyReset.mutationOptions({
       onSuccess: (result) => setIssued(result),
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const handleIssue = () => {

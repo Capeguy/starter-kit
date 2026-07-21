@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+
 import {
   useMutation,
   useQueryClient,
@@ -10,7 +11,6 @@ import { Info } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { TextField } from '@acme/ui/text-field'
-
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
@@ -37,7 +37,7 @@ export const AdminFilesPage = () => {
   const [q, setQ] = useState('')
 
   const { data } = useSuspenseQuery(
-    trpc.admin.files.list.queryOptions({ q: q || null, limit: 50 }),
+    trpc.admin.files.list.queryOptions({ q: q || null, limit: 50 })
   )
 
   const deleteFile = useMutation(
@@ -49,7 +49,7 @@ export const AdminFilesPage = () => {
         })
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   return (

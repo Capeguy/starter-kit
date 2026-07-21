@@ -9,7 +9,9 @@
  * back to the dashboard explicitly.
  */
 import { useEffect } from 'react'
+
 import NextLink from 'next/link'
+
 import * as Sentry from '@sentry/nextjs'
 import { AlertTriangle } from 'lucide-react'
 

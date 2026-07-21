@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useMemo, useState } from 'react'
+
 import {
   useMutation,
   useQueryClient,
@@ -64,15 +65,15 @@ const RoleUsersBody = ({ role, onClose }: RoleUsersBodyProps) => {
   const queryClient = useQueryClient()
 
   const { data: usersData } = useSuspenseQuery(
-    trpc.admin.roles.listUsers.queryOptions({ roleId: role.id }),
+    trpc.admin.roles.listUsers.queryOptions({ roleId: role.id })
   )
   const { data: rolesData } = useSuspenseQuery(
-    trpc.admin.roles.list.queryOptions(),
+    trpc.admin.roles.list.queryOptions()
   )
 
   const targetRoles = useMemo(
     () => rolesData.items.filter((r) => r.id !== role.id),
-    [rolesData.items, role.id],
+    [rolesData.items, role.id]
   )
 
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -82,7 +83,7 @@ const RoleUsersBody = ({ role, onClose }: RoleUsersBodyProps) => {
     trpc.admin.roles.reassignUsers.mutationOptions({
       onSuccess: async (result) => {
         toast.success(
-          `Reassigned ${result.count} user${result.count === 1 ? '' : 's'}`,
+          `Reassigned ${result.count} user${result.count === 1 ? '' : 's'}`
         )
         await Promise.all([
           queryClient.invalidateQueries({
@@ -95,7 +96,7 @@ const RoleUsersBody = ({ role, onClose }: RoleUsersBodyProps) => {
         onClose()
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const allIds = usersData.items.map((u) => u.id)

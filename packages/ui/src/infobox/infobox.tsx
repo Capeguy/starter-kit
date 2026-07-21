@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react'
+
 import { useMemo } from 'react'
+
 import { CheckCircle2, Info, XCircle } from 'lucide-react'
 
-import type { InfoboxSlots, InfoboxVariantProps } from './infobox.styles'
 import { cn } from '../utils'
+import type { InfoboxSlots, InfoboxVariantProps } from './infobox.styles'
 import { infoboxBase, infoboxIcon } from './infobox.styles'
 
 interface InfoboxProps extends InfoboxVariantProps {
@@ -49,7 +51,7 @@ export const Infobox = ({
     <div
       className={cn(
         infoboxBase({ variant, size }),
-        className ?? classNames?.base,
+        className ?? classNames?.base
       )}
     >
       {renderedIcon}

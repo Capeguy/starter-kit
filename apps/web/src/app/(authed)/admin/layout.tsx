@@ -2,10 +2,10 @@ import { redirect } from 'next/navigation'
 
 import { db } from '@acme/db'
 
-import type { DynamicLayoutProps } from '~/types/nextjs'
 import { AUTHED_ROOT_ROUTE, LOGIN_ROUTE } from '~/constants'
 import { Capability, hasCapability } from '~/lib/rbac'
 import { getSession } from '~/server/session'
+import type { DynamicLayoutProps } from '~/types/nextjs'
 
 export default async function AdminLayout({ children }: DynamicLayoutProps) {
   // Defense in depth: (authed)/layout already gated session, but admin pages

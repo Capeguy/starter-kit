@@ -1,8 +1,9 @@
 'use client'
 
+import { ApiTokensSection } from './api-tokens-section'
+
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { Card, CardBody, CardHeader } from '~/components/ui/card'
-import { ApiTokensSection } from './api-tokens-section'
 
 export const SettingsPage = () => {
   return (

@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { TextField } from '@acme/ui/text-field'
-
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import {
@@ -40,7 +40,7 @@ interface InviteModalProps {
 export const InviteModal = ({ onClose, onIssued }: InviteModalProps) => {
   const trpc = useTRPC()
   const { data: rolesData } = useSuspenseQuery(
-    trpc.admin.roles.list.queryOptions(),
+    trpc.admin.roles.list.queryOptions()
   )
 
   const [name, setName] = useState('')
@@ -70,7 +70,7 @@ export const InviteModal = ({ onClose, onIssued }: InviteModalProps) => {
         await onIssued()
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const handleIssue = (e: React.FormEvent) => {

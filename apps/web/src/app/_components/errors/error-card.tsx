@@ -1,7 +1,6 @@
 import dynamic from 'next/dynamic'
 
 import { ErrorSvg } from '@acme/ui/svgs'
-
 import { cn } from '~/lib/utils'
 
 // Loaded client-only: GoBackButton reads `window.history`, which would

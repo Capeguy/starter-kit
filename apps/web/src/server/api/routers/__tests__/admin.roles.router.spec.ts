@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { resetTables } from '~tests/db/utils'
 import { createTestCaller, createTestContext } from '~tests/trpc'
-import { beforeEach, describe, expect, it } from 'vitest'
 
 import { db } from '@acme/db'
 
@@ -58,12 +58,12 @@ describe('admin.roles router', () => {
       })
       const movees = await Promise.all(
         Array.from({ length: 5 }, (_, i) =>
-          createUserWithRole(`Movee${i}`, customRole.id),
-        ),
+          createUserWithRole(`Movee${i}`, customRole.id)
+        )
       )
 
       const caller = createTestCaller(
-        createTestContext({ session: { userId: admin.id } }),
+        createTestContext({ session: { userId: admin.id } })
       )
 
       const result = await caller.admin.roles.reassignUsers({
@@ -102,15 +102,15 @@ describe('admin.roles router', () => {
       // Two admins exist; reassigning both must fail.
       const adminCaller = await createUserWithRole(
         'AdminCaller2',
-        SystemRoleId.Admin,
+        SystemRoleId.Admin
       )
       const otherAdmin = await createUserWithRole(
         'OtherAdmin',
-        SystemRoleId.Admin,
+        SystemRoleId.Admin
       )
 
       const caller = createTestCaller(
-        createTestContext({ session: { userId: adminCaller.id } }),
+        createTestContext({ session: { userId: adminCaller.id } })
       )
 
       await expect(
@@ -118,7 +118,7 @@ describe('admin.roles router', () => {
           fromRoleId: SystemRoleId.Admin,
           toRoleId: SystemRoleId.User,
           userIds: [adminCaller.id, otherAdmin.id],
-        }),
+        })
       ).rejects.toThrowError(/at least one Admin/i)
 
       // Roles unchanged — full transactional rollback.
@@ -152,7 +152,7 @@ describe('admin.roles router', () => {
       const u2 = await createUserWithRole('StaleU2', SystemRoleId.User)
 
       const caller = createTestCaller(
-        createTestContext({ session: { userId: admin.id } }),
+        createTestContext({ session: { userId: admin.id } })
       )
 
       await expect(
@@ -160,7 +160,7 @@ describe('admin.roles router', () => {
           fromRoleId: customRole.id,
           toRoleId: SystemRoleId.User,
           userIds: [u1.id, u2.id],
-        }),
+        })
       ).rejects.toThrowError(/no longer belong/i)
 
       // u1 is still in customRole — the rejection rolled back any partial moves.
@@ -182,7 +182,7 @@ describe('admin.roles router', () => {
       const u1 = await createUserWithRole('NoOpUser', SystemRoleId.User)
 
       const caller = createTestCaller(
-        createTestContext({ session: { userId: admin.id } }),
+        createTestContext({ session: { userId: admin.id } })
       )
 
       await expect(
@@ -190,7 +190,7 @@ describe('admin.roles router', () => {
           fromRoleId: SystemRoleId.User,
           toRoleId: SystemRoleId.User,
           userIds: [u1.id],
-        }),
+        })
       ).rejects.toThrowError(TRPCError)
     })
 
@@ -199,7 +199,7 @@ describe('admin.roles router', () => {
       const u1 = await createUserWithRole('Target', SystemRoleId.User)
 
       const caller = createTestCaller(
-        createTestContext({ session: { userId: plainUser.id } }),
+        createTestContext({ session: { userId: plainUser.id } })
       )
 
       await expect(
@@ -207,7 +207,7 @@ describe('admin.roles router', () => {
           fromRoleId: SystemRoleId.User,
           toRoleId: SystemRoleId.Admin,
           userIds: [u1.id],
-        }),
+        })
       ).rejects.toThrow(/FORBIDDEN|Missing capability/i)
     })
   })
@@ -216,7 +216,7 @@ describe('admin.roles router', () => {
     it('returns users in a role ordered by name', async () => {
       const admin = await createUserWithRole(
         'ListUsersCaller',
-        SystemRoleId.Admin,
+        SystemRoleId.Admin
       )
       const role = await db.role.create({
         data: {
@@ -231,7 +231,7 @@ describe('admin.roles router', () => {
       await createUserWithRole('Bob', role.id)
 
       const caller = createTestCaller(
-        createTestContext({ session: { userId: admin.id } }),
+        createTestContext({ session: { userId: admin.id } })
       )
 
       const result = await caller.admin.roles.listUsers({ roleId: role.id })

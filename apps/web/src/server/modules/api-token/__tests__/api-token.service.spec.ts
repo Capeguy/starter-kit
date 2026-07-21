@@ -1,5 +1,5 @@
-import { resetTables } from '~tests/db/utils'
 import { beforeEach, describe, expect, it } from 'vitest'
+import { resetTables } from '~tests/db/utils'
 
 import { db } from '@acme/db'
 
@@ -29,7 +29,7 @@ describe('apiToken.service', () => {
 
       expect(result.plaintext).toMatch(/^vibe_pat_[A-Za-z0-9_-]{24}$/)
       expect(result.prefix).toBe(
-        result.plaintext.slice(0, TOKEN_PREFIX.length + 8),
+        result.plaintext.slice(0, TOKEN_PREFIX.length + 8)
       )
       expect(result.expiresAt).toBeNull()
       expect(result.id).toBeTruthy()
@@ -62,10 +62,10 @@ describe('apiToken.service', () => {
       const expiresMs = result.expiresAt!.getTime()
       // Allow ~1s wiggle for slow CI.
       expect(expiresMs).toBeGreaterThanOrEqual(
-        before + 7 * 24 * 60 * 60 * 1000 - 1000,
+        before + 7 * 24 * 60 * 60 * 1000 - 1000
       )
       expect(expiresMs).toBeLessThanOrEqual(
-        after + 7 * 24 * 60 * 60 * 1000 + 1000,
+        after + 7 * 24 * 60 * 60 * 1000 + 1000
       )
     })
   })

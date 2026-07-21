@@ -17,8 +17,6 @@ import type {
   ThHTMLAttributes,
 } from 'react'
 
-import { useScrollEdges } from '~/hooks/use-scroll-edges'
-import { cn } from '~/lib/utils'
 import {
   Table,
   TableBody,
@@ -27,6 +25,9 @@ import {
   TableHeader,
   TableRow,
 } from './table'
+
+import { useScrollEdges } from '~/hooks/use-scroll-edges'
+import { cn } from '~/lib/utils'
 
 // ---------------------------------------------------------------------------
 // DataTable — outer container
@@ -68,8 +69,7 @@ export const DataTable = ({ className, children, ...rest }: DataTableProps) => {
 // DataTableHeader — <thead>
 // ---------------------------------------------------------------------------
 
-export interface DataTableHeaderProps
-  extends HTMLAttributes<HTMLTableSectionElement> {
+export interface DataTableHeaderProps extends HTMLAttributes<HTMLTableSectionElement> {
   className?: string
 }
 
@@ -87,8 +87,7 @@ export const DataTableHeader = ({
 // DataTableHead — <th>
 // ---------------------------------------------------------------------------
 
-export interface DataTableHeadProps
-  extends ThHTMLAttributes<HTMLTableCellElement> {
+export interface DataTableHeadProps extends ThHTMLAttributes<HTMLTableCellElement> {
   className?: string
 }
 
@@ -100,8 +99,7 @@ export const DataTableHead = ({ className, ...rest }: DataTableHeadProps) => (
 // DataTableBody — <tbody>
 // ---------------------------------------------------------------------------
 
-export interface DataTableBodyProps
-  extends HTMLAttributes<HTMLTableSectionElement> {
+export interface DataTableBodyProps extends HTMLAttributes<HTMLTableSectionElement> {
   className?: string
 }
 
@@ -125,8 +123,7 @@ export const DataTableRow = ({ className, ...rest }: DataTableRowProps) => (
 // DataTableCell — <td>
 // ---------------------------------------------------------------------------
 
-export interface DataTableCellProps
-  extends TdHTMLAttributes<HTMLTableCellElement> {
+export interface DataTableCellProps extends TdHTMLAttributes<HTMLTableCellElement> {
   className?: string
 }
 

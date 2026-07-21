@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useSyncExternalStore } from 'react'
+
 import {
   useMutation,
   useQueryClient,
@@ -9,8 +10,9 @@ import {
 import { AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { TextField } from '@acme/ui/text-field'
+import { RelativeTime } from '../../../_components/relative-time'
 
+import { TextField } from '@acme/ui/text-field'
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -32,7 +34,6 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog'
 import { useTRPC } from '~/trpc/react'
-import { RelativeTime } from '../../../_components/relative-time'
 
 type ExpiryPreset = 7 | 30 | 90 | null
 
@@ -58,7 +59,7 @@ export const ApiTokensSection = () => {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
   const { data: tokens } = useSuspenseQuery(
-    trpc.apiToken.listMine.queryOptions(),
+    trpc.apiToken.listMine.queryOptions()
   )
   const [isCreating, setIsCreating] = useState(false)
 
@@ -71,7 +72,7 @@ export const ApiTokensSection = () => {
         })
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   return (
@@ -204,7 +205,7 @@ const NewTokenModal = ({ onClose }: NewTokenModalProps) => {
         })
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const handleSubmit = () => {
@@ -322,7 +323,7 @@ const useOrigin = () =>
   useSyncExternalStore(
     subscribeNoop,
     () => window.location.origin,
-    () => '',
+    () => ''
   )
 
 const HowToUseHelp = () => {

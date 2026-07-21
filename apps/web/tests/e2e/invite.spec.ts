@@ -62,7 +62,7 @@ test.describe('Admin invite flow', () => {
     const adminPage = await adminCtx.newPage()
     await adminPage.goto('/admin/users')
     await expect(
-      adminPage.getByRole('heading', { name: 'Invites' }),
+      adminPage.getByRole('heading', { name: 'Invites' })
     ).toBeVisible()
 
     await adminPage.getByRole('button', { name: 'New invite' }).click()
@@ -107,7 +107,7 @@ test.describe('Admin invite flow', () => {
           db.auditLog.count({
             where: { userId: admin.id, action: 'user.invite.issue' },
           }),
-        { timeout: 5_000 },
+        { timeout: 5_000 }
       )
       .toBe(1)
 
@@ -132,7 +132,7 @@ test.describe('Admin invite flow', () => {
 
     await recipientPage.goto(inviteUrl)
     await expect(
-      recipientPage.getByRole('heading', { name: /Accept your invite/ }),
+      recipientPage.getByRole('heading', { name: /Accept your invite/ })
     ).toBeVisible()
 
     const recipientName = `RecipientUser-${tag}`
@@ -175,7 +175,7 @@ test.describe('Admin invite flow', () => {
           db.auditLog.count({
             where: { userId: claimedUser?.id, action: 'user.invite.claim' },
           }),
-        { timeout: 5_000 },
+        { timeout: 5_000 }
       )
       .toBe(1)
 
@@ -222,7 +222,7 @@ test.describe('Admin invite flow', () => {
         async () =>
           (await db.invite.findUnique({ where: { id: invite.id } }))
             ?.revokedAt !== null,
-        { timeout: 5_000 },
+        { timeout: 5_000 }
       )
       .toBe(true)
 
@@ -239,7 +239,7 @@ test.describe('Admin invite flow', () => {
       .click()
 
     await expect(
-      recipientPage.getByText(/invalid|already been used/i),
+      recipientPage.getByText(/invalid|already been used/i)
     ).toBeVisible({ timeout: 10_000 })
 
     // No new user was created for the revoked invite.

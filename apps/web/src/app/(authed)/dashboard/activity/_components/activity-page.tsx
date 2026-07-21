@@ -2,17 +2,18 @@
 
 import { useSuspenseQuery } from '@tanstack/react-query'
 
+import { formatAuditEvent } from '../../../_components/audit-action-labels'
+import { RelativeTime } from '../../../_components/relative-time'
+
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { Card, CardBody } from '~/components/ui/card'
 import { EmptyState } from '~/components/ui/empty-state'
 import { useTRPC } from '~/trpc/react'
-import { formatAuditEvent } from '../../../_components/audit-action-labels'
-import { RelativeTime } from '../../../_components/relative-time'
 
 export const ActivityPage = () => {
   const trpc = useTRPC()
   const { data } = useSuspenseQuery(
-    trpc.audit.listMine.queryOptions({ limit: 50 }),
+    trpc.audit.listMine.queryOptions({ limit: 50 })
   )
 
   return (
@@ -43,7 +44,7 @@ export const ActivityPage = () => {
                     {formatAuditEvent(
                       { action: a.action, metadata: a.metadata },
                       'self',
-                      data.relatedUsers,
+                      data.relatedUsers
                     )}
                   </span>
                   <RelativeTime

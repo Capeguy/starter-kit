@@ -5,12 +5,12 @@ import NextTopLoader from 'nextjs-toploader'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 import '~/app/globals.css'
+import { ClientProviders } from './provider'
 
 import { Toaster } from '~/components/ui/sonner'
 import { env } from '~/env'
 import { ibmPlexMono, inter } from '~/lib/fonts'
 import { cn } from '~/lib/utils'
-import { ClientProviders } from './provider'
 
 export const metadata: Metadata = {
   title: env.NEXT_PUBLIC_APP_NAME,

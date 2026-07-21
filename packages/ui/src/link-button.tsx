@@ -1,7 +1,8 @@
 'use client'
 
-import type { VariantProps } from 'class-variance-authority'
 import type { AnchorHTMLAttributes, ReactNode } from 'react'
+
+import type { VariantProps } from 'class-variance-authority'
 import { cva } from 'class-variance-authority'
 
 import { cn } from './utils'
@@ -45,11 +46,12 @@ const linkButtonVariants = cva(
       variant: 'solid',
       size: 'default',
     },
-  },
+  }
 )
 
 export interface LinkButtonProps
-  extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'children'>,
+  extends
+    Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'children'>,
     VariantProps<typeof linkButtonVariants> {
   href: string
   children: ReactNode

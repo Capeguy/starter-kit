@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+
 import { useRouter } from 'next/navigation'
+
 import { startRegistration } from '@simplewebauthn/browser'
 import { useMutation } from '@tanstack/react-query'
 import { CheckCircle2, XCircle } from 'lucide-react'
 
 import { TextField } from '@acme/ui/text-field'
-
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
 import { AUTHED_ROOT_ROUTE } from '~/constants'
@@ -31,10 +32,10 @@ export const InviteClient = ({ token }: Props) => {
   const [done, setDone] = useState(false)
 
   const startMutation = useMutation(
-    trpc.auth.passkey.inviteWithToken.start.mutationOptions(),
+    trpc.auth.passkey.inviteWithToken.start.mutationOptions()
   )
   const finishMutation = useMutation(
-    trpc.auth.passkey.inviteWithToken.finish.mutationOptions(),
+    trpc.auth.passkey.inviteWithToken.finish.mutationOptions()
   )
 
   const isPending = startMutation.isPending || finishMutation.isPending

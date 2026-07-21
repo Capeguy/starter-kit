@@ -25,7 +25,7 @@ import { getSession } from '~/server/session'
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getSession()
   if (!session.userId) {
@@ -63,7 +63,7 @@ export async function GET(
   if (!upstream.ok || !upstream.body) {
     return Response.json(
       { error: `upstream blob fetch failed (${upstream.status})` },
-      { status: 502 },
+      { status: 502 }
     )
   }
 

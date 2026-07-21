@@ -12,7 +12,7 @@ const BLOB_TOKEN_PRESENT =
 test.describe('File upload flow', () => {
   test.skip(
     !BLOB_TOKEN_PRESENT,
-    'BLOB_READ_WRITE_TOKEN is not set — skipping (set in .env.e2e to enable)',
+    'BLOB_READ_WRITE_TOKEN is not set — skipping (set in .env.e2e to enable)'
   )
 
   test('upload preserves filename on download', async ({ browser }) => {

@@ -24,7 +24,7 @@ async function trpcPost(page: Page, path: string, input: unknown) {
       const body = (await res.json()) as unknown
       return { status: res.status, body }
     },
-    [path, input] as [string, unknown],
+    [path, input] as [string, unknown]
   )
 }
 
@@ -189,7 +189,7 @@ test.describe('Role bulk reassign', () => {
     await expect(
       updatedRow.getByRole('button', {
         name: new RegExp(`View 1 user in role ${role.name}`),
-      }),
+      })
     ).toBeVisible()
 
     await ctx.close()

@@ -54,7 +54,7 @@ export function EnvBanner() {
         // border. Vertical centering is handled by the Alert primitive's
         // grid layout (items-center), so no svg-positioning override here.
         'rounded-none border-0 border-b px-4 py-2',
-        variantClass,
+        variantClass
       )}
     >
       <Icon className="h-4 w-4" />

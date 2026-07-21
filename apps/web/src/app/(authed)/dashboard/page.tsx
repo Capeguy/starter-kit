@@ -1,5 +1,6 @@
-import { HydrateClient, prefetch, trpc } from '~/trpc/server'
 import { DashboardPage } from './_components/dashboard-page'
+
+import { HydrateClient, prefetch, trpc } from '~/trpc/server'
 
 export default async function DashboardRoute() {
   await Promise.all([

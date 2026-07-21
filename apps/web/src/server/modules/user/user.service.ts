@@ -4,9 +4,10 @@ import type { Logger } from '@acme/logging'
 
 import { db } from '@acme/db'
 
-import { SystemRoleId } from '~/lib/rbac'
 import { AccountProvider } from '../auth/auth.constants'
 import { defaultUserSelect } from './user.select'
+
+import { SystemRoleId } from '~/lib/rbac'
 
 export const loginUserByEmail = async (email: string, logger?: Logger) => {
   const parsedEmail = parseOneAddress(email)

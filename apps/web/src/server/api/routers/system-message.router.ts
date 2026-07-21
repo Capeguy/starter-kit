@@ -1,5 +1,6 @@
-import { getSystemMessage } from '~/server/modules/system-message/system-message.service'
 import { createTRPCRouter, protectedProcedure } from '../trpc'
+
+import { getSystemMessage } from '~/server/modules/system-message/system-message.service'
 
 /**
  * Public read of the singleton system message banner. Returns `enabled`,

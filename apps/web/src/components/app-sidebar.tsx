@@ -1,8 +1,10 @@
 'use client'
 
 import { useMemo } from 'react'
+
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+
 import { useQuery } from '@tanstack/react-query'
 import { LayoutDashboard, LogOut, Shield, Sparkles } from 'lucide-react'
 
@@ -58,7 +60,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const root = rootForPathname(pathname)
   const groups = useMemo(
     () => visibleGroups(root.groups, me?.role.capabilities),
-    [root, me?.role.capabilities],
+    [root, me?.role.capabilities]
   )
   const active = findActiveItem(pathname, root)
   // When the user is admin and currently on the dashboard, surface a quick

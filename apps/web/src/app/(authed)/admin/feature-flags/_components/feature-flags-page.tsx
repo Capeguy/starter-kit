@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+
 import {
   useMutation,
   useQueryClient,
@@ -8,6 +9,8 @@ import {
 } from '@tanstack/react-query'
 import { Info } from 'lucide-react'
 import { toast } from 'sonner'
+
+import { FeatureFlagEditor } from './feature-flag-editor'
 
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { Alert, AlertDescription } from '~/components/ui/alert'
@@ -23,7 +26,6 @@ import {
 } from '~/components/ui/data-table'
 import { Switch } from '~/components/ui/switch'
 import { useTRPC } from '~/trpc/react'
-import { FeatureFlagEditor } from './feature-flag-editor'
 
 interface FeatureFlagSummary {
   key: string
@@ -40,7 +42,7 @@ export const FeatureFlagsPage = () => {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState<FeatureFlagSummary | 'new' | null>(
-    null,
+    null
   )
 
   const { data } = useSuspenseQuery(trpc.admin.featureFlags.list.queryOptions())
@@ -53,7 +55,7 @@ export const FeatureFlagsPage = () => {
         })
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const deleteMutation = useMutation(
@@ -65,7 +67,7 @@ export const FeatureFlagsPage = () => {
         })
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   // Inline toggle from the row — mutates only `enabled`, preserving the
@@ -85,7 +87,7 @@ export const FeatureFlagsPage = () => {
         onSuccess: () => {
           toast.success(`${flag.name} is now ${next ? 'on' : 'off'}`)
         },
-      },
+      }
     )
   }
 
@@ -174,7 +176,7 @@ export const FeatureFlagsPage = () => {
                         onClick={() => {
                           if (
                             confirm(
-                              `Delete flag "${f.key}"? This cannot be undone.`,
+                              `Delete flag "${f.key}"? This cannot be undone.`
                             )
                           ) {
                             deleteMutation.mutate({ key: f.key })

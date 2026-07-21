@@ -30,7 +30,7 @@ test.describe('Cmd+K command palette', () => {
     // the shortcut. Without this we race the React mount and ~30% of runs
     // dropped the keydown.
     await expect(
-      page.getByRole('heading', { name: /Welcome/, level: 1 }),
+      page.getByRole('heading', { name: /Welcome/, level: 1 })
     ).toBeVisible()
     await page.locator('body').click()
 
@@ -73,7 +73,7 @@ test.describe('Cmd+K command palette', () => {
 
     await page.goto('/dashboard')
     await expect(
-      page.getByRole('heading', { name: /Welcome/, level: 1 }),
+      page.getByRole('heading', { name: /Welcome/, level: 1 })
     ).toBeVisible()
     await page.locator('body').click()
 
@@ -83,33 +83,33 @@ test.describe('Cmd+K command palette', () => {
 
     // The non-admin always-visible items are present.
     await expect(
-      palette.getByRole('option', { name: /Dashboard/ }),
+      palette.getByRole('option', { name: /Dashboard/ })
     ).toBeVisible()
     await expect(
-      palette.getByRole('option', { name: /My files/ }),
+      palette.getByRole('option', { name: /My files/ })
     ).toBeVisible()
 
     // None of the admin-gated entries are rendered for a plain user.
     await expect(
-      palette.getByRole('option', { name: /Audit log/ }),
+      palette.getByRole('option', { name: /Audit log/ })
     ).toHaveCount(0)
     await expect(
-      palette.getByRole('option', { name: /All files/ }),
+      palette.getByRole('option', { name: /All files/ })
     ).toHaveCount(0)
     await expect(
-      palette.getByRole('option', { name: /Notifications composer/ }),
+      palette.getByRole('option', { name: /Notifications composer/ })
     ).toHaveCount(0)
     await expect(
-      palette.getByRole('option', { name: /Roles & capabilities/ }),
+      palette.getByRole('option', { name: /Roles & capabilities/ })
     ).toHaveCount(0)
     await expect(
-      palette.getByRole('option', { name: /Admin home/ }),
+      palette.getByRole('option', { name: /Admin home/ })
     ).toHaveCount(0)
     await expect(palette.getByRole('option', { name: /^Users$/ })).toHaveCount(
-      0,
+      0
     )
     await expect(
-      palette.getByRole('option', { name: /^Open Admin$/ }),
+      palette.getByRole('option', { name: /^Open Admin$/ })
     ).toHaveCount(0)
 
     // Even when the user types a query that would match admin entries by name,
@@ -118,7 +118,7 @@ test.describe('Cmd+K command palette', () => {
     await input.focus()
     await input.fill('audit')
     await expect(
-      palette.getByRole('option', { name: /Audit log/ }),
+      palette.getByRole('option', { name: /Audit log/ })
     ).toHaveCount(0)
 
     await ctx.close()

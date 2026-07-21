@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+
 import type { RegistrationResponseJSON } from '@simplewebauthn/server'
 import {
   generateRegistrationOptions,
@@ -7,12 +8,14 @@ import {
 import { TRPCError } from '@trpc/server'
 
 import type { TransactionClient } from '@acme/db'
+
 import { db } from '@acme/db'
 
-import type { CapabilityCode } from '~/lib/rbac'
-import { env } from '~/env'
-import { Capability } from '~/lib/rbac'
 import { AccountProvider } from '../auth/auth.constants'
+
+import { env } from '~/env'
+import type { CapabilityCode } from '~/lib/rbac'
+import { Capability } from '~/lib/rbac'
 
 const RP_NAME = env.NEXT_PUBLIC_APP_NAME
 
@@ -117,7 +120,7 @@ export const getUser = async ({ userId }: { userId: string }) => {
 const assertNotLastWithCapability = async (
   tx: TransactionClient,
   capability: CapabilityCode,
-  excludingUserId: string,
+  excludingUserId: string
 ) => {
   const remaining = await tx.user.count({
     where: {

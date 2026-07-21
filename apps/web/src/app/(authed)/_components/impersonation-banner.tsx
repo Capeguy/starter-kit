@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -23,7 +24,7 @@ export const ImpersonationBanner = () => {
         router.refresh()
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   if (!me?.impersonator) return null

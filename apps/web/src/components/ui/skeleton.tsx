@@ -1,6 +1,5 @@
 import type { HTMLAttributes } from 'react'
 
-import { cn } from '~/lib/utils'
 import {
   DataTable,
   DataTableBody,
@@ -10,6 +9,8 @@ import {
   DataTableRoot,
   DataTableRow,
 } from './data-table'
+
+import { cn } from '~/lib/utils'
 
 export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
   className?: string
@@ -56,7 +57,7 @@ export const SkeletonCard = ({ className, lines = 3 }: SkeletonCardProps) => (
     aria-label="Loading card"
     className={cn(
       'border-base-divider-medium bg-base-canvas-default rounded-md border',
-      className,
+      className
     )}
   >
     <header className="border-base-divider-subtle flex items-center justify-between gap-3 border-b px-4 py-3">
@@ -104,7 +105,7 @@ export const SkeletonTable = ({
                 <Skeleton
                   className={cn(
                     'h-4',
-                    c === 0 ? 'w-32' : c === cols - 1 ? 'w-16' : 'w-24',
+                    c === 0 ? 'w-32' : c === cols - 1 ? 'w-16' : 'w-24'
                   )}
                 />
               </DataTableCell>

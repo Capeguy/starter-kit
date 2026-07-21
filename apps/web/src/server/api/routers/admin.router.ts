@@ -2,7 +2,14 @@ import { TRPCError } from '@trpc/server'
 import z from 'zod'
 
 import type { TransactionClient } from '@acme/db'
+
 import { db } from '@acme/db'
+
+import {
+  capabilityProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+} from '../trpc'
 
 import { ALL_CAPABILITIES, Capability, SystemRoleId } from '~/lib/rbac'
 import {
@@ -41,11 +48,6 @@ import {
   updateSystemMessage,
 } from '~/server/modules/system-message/system-message.service'
 import { extractIpAddress } from '~/server/utils/request'
-import {
-  capabilityProcedure,
-  createTRPCRouter,
-  protectedProcedure,
-} from '../trpc'
 
 export const adminRouter = createTRPCRouter({
   users: createTRPCRouter({
@@ -56,7 +58,7 @@ export const adminRouter = createTRPCRouter({
           roleId: z.string().nullish(),
           cursor: z.string().nullish(),
           limit: z.number().int().min(1).max(100).default(50),
-        }),
+        })
       )
       .query(({ input }) => listUsers(input)),
 
@@ -113,7 +115,7 @@ export const adminRouter = createTRPCRouter({
             .positive()
             .nullable()
             .default(RESET_DEFAULT_TTL_SECONDS),
-        }),
+        })
       )
       .mutation(async ({ input, ctx }) => {
         const proto =
@@ -152,7 +154,7 @@ export const adminRouter = createTRPCRouter({
         z.object({
           cursor: z.string().nullish(),
           limit: z.number().int().min(1).max(100).default(50),
-        }),
+        })
       )
       .query(({ input }) => listInvites(input)),
 
@@ -169,7 +171,7 @@ export const adminRouter = createTRPCRouter({
             .positive()
             .nullable()
             .default(INVITE_DEFAULT_TTL_SECONDS),
-        }),
+        })
       )
       .mutation(async ({ input, ctx }) => {
         const proto =
@@ -224,7 +226,7 @@ export const adminRouter = createTRPCRouter({
           q: z.string().nullish(),
           cursor: z.string().nullish(),
           limit: z.number().int().min(1).max(100).default(50),
-        }),
+        })
       )
       .query(({ input }) => listAllFiles(input)),
 
@@ -235,7 +237,7 @@ export const adminRouter = createTRPCRouter({
           fileId: input.fileId,
           actingUserId: ctx.user.id,
           actingUserCapabilities: ctx.user.capabilities,
-        }),
+        })
       ),
   }),
 
@@ -263,7 +265,7 @@ export const adminRouter = createTRPCRouter({
           name: z.string().min(1).max(50),
           description: z.string().max(500).nullish(),
           capabilities: z.array(z.string()).default([]),
-        }),
+        })
       )
       .mutation(async ({ input }) => {
         // Use slugified name as id; name is also unique (citext).
@@ -289,7 +291,7 @@ export const adminRouter = createTRPCRouter({
           name: z.string().min(1).max(50).optional(),
           description: z.string().max(500).nullish(),
           capabilities: z.array(z.string()).optional(),
-        }),
+        })
       )
       .mutation(async ({ input }) => {
         const role = await db.role.findUnique({ where: { id: input.id } })
@@ -326,7 +328,7 @@ export const adminRouter = createTRPCRouter({
         }
         if (role._count.users > 0) {
           throw new Error(
-            `Cannot delete: ${role._count.users} user(s) still hold this role. Reassign them first.`,
+            `Cannot delete: ${role._count.users} user(s) still hold this role. Reassign them first.`
           )
         }
         return db.role.delete({ where: { id: input.id } })
@@ -356,7 +358,7 @@ export const adminRouter = createTRPCRouter({
           fromRoleId: z.string(),
           toRoleId: z.string(),
           userIds: z.array(z.string()).min(1),
-        }),
+        })
       )
       .mutation(async ({ input, ctx }) => {
         if (input.fromRoleId === input.toRoleId) {
@@ -465,7 +467,7 @@ export const adminRouter = createTRPCRouter({
           title: z.string().min(1).max(120),
           body: z.string().max(2000).nullish(),
           href: z.string().max(500).nullish(),
-        }),
+        })
       )
       .mutation(({ input }) =>
         broadcast({
@@ -473,13 +475,13 @@ export const adminRouter = createTRPCRouter({
           title: input.title,
           body: input.body ?? null,
           href: input.href ?? null,
-        }),
+        })
       ),
   }),
 
   featureFlags: createTRPCRouter({
     list: capabilityProcedure(Capability.FeatureFlagManage).query(() =>
-      listFeatureFlags(),
+      listFeatureFlags()
     ),
 
     upsert: capabilityProcedure(Capability.FeatureFlagManage)
@@ -493,14 +495,14 @@ export const adminRouter = createTRPCRouter({
             .max(64)
             .regex(
               /^[a-z0-9][a-z0-9._-]*$/,
-              'Use lowercase letters, digits, dots, underscores, or hyphens.',
+              'Use lowercase letters, digits, dots, underscores, or hyphens.'
             ),
           name: z.string().min(1).max(120),
           description: z.string().max(500).nullish(),
           enabled: z.boolean(),
           rolloutPercent: z.number().int().min(0).max(100),
           allowedUserIds: z.array(z.string()).default([]),
-        }),
+        })
       )
       .mutation(async ({ input, ctx }) => {
         const result = await upsertFeatureFlag({
@@ -544,7 +546,7 @@ export const adminRouter = createTRPCRouter({
     // all admins have) is sufficient — these are operational toggles, not
     // RBAC-class settings.
     getSettings: capabilityProcedure(Capability.AdminAccess).query(() =>
-      getMcpSettings(),
+      getMcpSettings()
     ),
 
     setEnabled: capabilityProcedure(Capability.AdminAccess)
@@ -559,7 +561,7 @@ export const adminRouter = createTRPCRouter({
         z.object({
           name: z.enum(MCP_TOOLS.map((t) => t.name) as [string, ...string[]]),
           enabled: z.boolean(),
-        }),
+        })
       )
       .mutation(async ({ input }) => {
         await setToolEnabled(input.name, input.enabled)
@@ -576,7 +578,7 @@ export const adminRouter = createTRPCRouter({
           // is limited so anything longer would wrap awkwardly.
           message: z.string().max(500),
           severity: z.enum(SYSTEM_MESSAGE_SEVERITIES),
-        }),
+        })
       )
       .mutation(async ({ input, ctx }) => {
         const result = await updateSystemMessage({

@@ -15,11 +15,11 @@ import { TRPCError } from '@trpc/server'
 import { del, put } from '@vercel/blob'
 
 import { db } from '@acme/db'
+
 // kysely is hoisted via @acme/db's deps; the explicit import path is the
 // generated client's bundled kysely (avoids needing to add kysely as an
 // app-level dep).
 import { sql } from '@acme/db/kysely'
-
 import { Capability, hasCapability } from '~/lib/rbac'
 
 const MAX_BYTES_PER_FILE = 25 * 1024 * 1024 // 25 MB
@@ -199,7 +199,7 @@ export const searchMyFiles = async ({
     .where(sql<boolean>`searchable @@ plainto_tsquery('english', ${trimmed})`)
     .orderBy(
       sql`ts_rank(searchable, plainto_tsquery('english', ${trimmed}))`,
-      'desc',
+      'desc'
     )
     .limit(limit)
     .execute()
@@ -222,7 +222,7 @@ export const searchAllFiles = async ({
     .innerJoin(
       'vibe_stack.User',
       'vibe_stack.User.id',
-      'vibe_stack.File.user_id',
+      'vibe_stack.File.user_id'
     )
     .select([
       'vibe_stack.File.id as id',
@@ -237,7 +237,7 @@ export const searchAllFiles = async ({
     .where(sql<boolean>`searchable @@ plainto_tsquery('english', ${trimmed})`)
     .orderBy(
       sql`ts_rank(searchable, plainto_tsquery('english', ${trimmed}))`,
-      'desc',
+      'desc'
     )
     .limit(limit)
     .execute()

@@ -39,10 +39,10 @@
     "lint": "oxlint .",
     "migrate:deploy": "pnpm with-env prisma migrate deploy",
     "migrate:dev": "pnpm with-env prisma migrate dev",
+    "promote-admin": "pnpm with-env tsx prisma/promote-admin.ts",
     "push": "pnpm with-env prisma db push",
     "reset": "pnpm with-env prisma migrate reset",
     "seed": "pnpm with-env prisma db seed",
-    "promote-admin": "pnpm with-env tsx prisma/promote-admin.ts",
     "studio": "pnpm with-env prisma studio --port 5556",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "with-env": "dotenv -e ../../.env --"

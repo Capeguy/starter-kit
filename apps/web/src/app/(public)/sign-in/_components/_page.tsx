@@ -1,11 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+
 import { Fingerprint, Sparkles } from 'lucide-react'
+
+import { SignInWizard } from './wizard'
 
 import { Separator } from '~/components/ui/separator'
 import { env } from '~/env'
-import { SignInWizard } from './wizard'
 
 // Computed at module load — `new Date()` in render breaks react-hooks/purity.
 const COPYRIGHT_YEAR = new Date().getFullYear()

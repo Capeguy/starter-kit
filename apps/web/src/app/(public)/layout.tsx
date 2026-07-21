@@ -2,8 +2,8 @@ import { Landmark } from 'lucide-react'
 
 import { VersionCheckWrapper } from '../_components/version-check-wrapper'
 
-import type { DynamicLayoutProps } from '~/types/nextjs'
 import { env } from '~/env'
+import type { DynamicLayoutProps } from '~/types/nextjs'
 
 // Public/logged-out pages always render in light mode. ThemeProvider is
 // scoped to (authed) routes only — without it on public pages, no

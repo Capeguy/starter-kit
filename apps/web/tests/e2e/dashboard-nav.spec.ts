@@ -16,7 +16,7 @@ test.describe('Dashboard navigation + sub-routes + breadcrumbs', () => {
 
     await page.goto('/dashboard')
     await expect(
-      page.getByRole('heading', { name: /Welcome/, level: 1 }),
+      page.getByRole('heading', { name: /Welcome/, level: 1 })
     ).toBeVisible()
 
     // shadcn `Sidebar` doesn't auto-set a nav landmark, but it does render an
@@ -48,7 +48,7 @@ test.describe('Dashboard navigation + sub-routes + breadcrumbs', () => {
 
     await page.goto('/dashboard')
     await expect(
-      page.getByRole('heading', { name: /Welcome/, level: 1 }),
+      page.getByRole('heading', { name: /Welcome/, level: 1 })
     ).toBeVisible()
 
     const sidebar = page.locator('[data-sidebar="sidebar"]')
@@ -56,13 +56,13 @@ test.describe('Dashboard navigation + sub-routes + breadcrumbs', () => {
     await sidebar.getByRole('link', { name: 'Activity' }).click()
     await expect(page).toHaveURL(/\/dashboard\/activity$/, { timeout: 10_000 })
     await expect(
-      page.getByRole('heading', { name: 'Activity', level: 1 }),
+      page.getByRole('heading', { name: 'Activity', level: 1 })
     ).toBeVisible()
 
     await sidebar.getByRole('link', { name: 'Settings' }).click()
     await expect(page).toHaveURL(/\/dashboard\/settings$/, { timeout: 10_000 })
     await expect(
-      page.getByRole('heading', { name: 'Settings', level: 1 }),
+      page.getByRole('heading', { name: 'Settings', level: 1 })
     ).toBeVisible()
 
     await ctx.close()
@@ -78,7 +78,7 @@ test.describe('Dashboard navigation + sub-routes + breadcrumbs', () => {
 
     await page.goto('/dashboard/activity')
     await expect(
-      page.getByRole('heading', { name: 'Activity', level: 1 }),
+      page.getByRole('heading', { name: 'Activity', level: 1 })
     ).toBeVisible()
 
     // shadcn `Breadcrumb` renders as `<nav aria-label="breadcrumb">`.
@@ -94,7 +94,7 @@ test.describe('Dashboard navigation + sub-routes + breadcrumbs', () => {
     await dashboardCrumb.click()
     await expect(page).toHaveURL(/\/dashboard$/, { timeout: 10_000 })
     await expect(
-      page.getByRole('heading', { name: /Welcome/, level: 1 }),
+      page.getByRole('heading', { name: /Welcome/, level: 1 })
     ).toBeVisible()
 
     await ctx.close()
@@ -111,7 +111,7 @@ test.describe('Dashboard navigation + sub-routes + breadcrumbs', () => {
     await page.setViewportSize({ width: 375, height: 800 })
     await page.goto('/dashboard')
     await expect(
-      page.getByRole('heading', { name: /Welcome/, level: 1 }),
+      page.getByRole('heading', { name: /Welcome/, level: 1 })
     ).toBeVisible()
 
     // On mobile, shadcn `Sidebar` swaps the inline desktop sidebar for a
@@ -152,10 +152,10 @@ test.describe('Dashboard navigation + sub-routes + breadcrumbs', () => {
 
     await page.goto('/dashboard?tab=settings')
     await expect(
-      page.getByRole('heading', { name: /Welcome/, level: 1 }),
+      page.getByRole('heading', { name: /Welcome/, level: 1 })
     ).toBeVisible()
     await expect(
-      page.getByRole('heading', { name: 'Personal API tokens' }),
+      page.getByRole('heading', { name: 'Personal API tokens' })
     ).toHaveCount(0)
 
     await ctx.close()

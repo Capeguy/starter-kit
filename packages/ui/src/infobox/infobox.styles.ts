@@ -30,7 +30,7 @@ export const infoboxBase = cva(
       variant: 'info',
       size: 'md',
     },
-  },
+  }
 )
 
 export const infoboxIcon = cva('shrink-0', {

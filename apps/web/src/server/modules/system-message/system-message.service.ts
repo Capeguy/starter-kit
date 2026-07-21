@@ -73,7 +73,7 @@ interface UpdateSystemMessageInput {
  * usually an UPDATE; the upsert covers test DBs that didn't run the seed.
  */
 export const updateSystemMessage = async (
-  input: UpdateSystemMessageInput,
+  input: UpdateSystemMessageInput
 ): Promise<SystemMessageState> => {
   const row = await db.systemMessage.upsert({
     where: { id: SYSTEM_MESSAGE_SINGLETON_ID },

@@ -2,8 +2,8 @@ import type {
   AuthenticationResponseJSON,
   RegistrationResponseJSON,
 } from '@simplewebauthn/server'
-import { resetTables } from '~tests/db/utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { resetTables } from '~tests/db/utils'
 
 import { db } from '@acme/db'
 
@@ -18,7 +18,7 @@ vi.mock('@simplewebauthn/server', async () => {
   const actual =
     // eslint-disable-next-line @typescript-eslint/consistent-type-imports
     await vi.importActual<typeof import('@simplewebauthn/server')>(
-      '@simplewebauthn/server',
+      '@simplewebauthn/server'
     )
   return {
     ...actual,
@@ -87,7 +87,7 @@ describe('passkey.service', () => {
       })
       expect(challenge?.expiresAt.getTime()).toBeGreaterThan(before.getTime())
       expect(
-        (challenge?.expiresAt.getTime() ?? 0) - before.getTime(),
+        (challenge?.expiresAt.getTime() ?? 0) - before.getTime()
       ).toBeLessThan(5 * 60 * 1000 + 2000)
     })
   })
@@ -109,7 +109,7 @@ describe('passkey.service', () => {
               type: 'webauthn.create',
               challenge: options.challenge,
               origin: 'http://localhost:3000',
-            }),
+            })
           ).toString('base64url'),
           attestationObject: 'mock-attestation',
         },
@@ -168,7 +168,7 @@ describe('passkey.service', () => {
           response: mockResponse,
           expectedChallenge: options.challenge,
           headers: mockHeaders,
-        }),
+        })
       ).rejects.toThrow('Challenge has expired')
     })
 
@@ -183,7 +183,7 @@ describe('passkey.service', () => {
           response: mockResponse,
           expectedChallenge: 'does-not-exist',
           headers: mockHeaders,
-        }),
+        })
       ).rejects.toThrow('Challenge not found or invalid')
     })
   })
@@ -258,7 +258,7 @@ describe('passkey.service', () => {
               type: 'webauthn.get',
               challenge: options.challenge,
               origin: 'http://localhost:3000',
-            }),
+            })
           ).toString('base64url'),
           authenticatorData: 'mock-authenticator-data',
           signature: 'mock-signature',
@@ -278,7 +278,7 @@ describe('passkey.service', () => {
       const updated = await db.passkey.findUnique({ where: { id: passkey.id } })
       expect(updated?.counter).toBeGreaterThan(0n)
       expect(updated?.lastUsedAt.getTime()).toBeGreaterThan(
-        passkey.lastUsedAt.getTime() - 1,
+        passkey.lastUsedAt.getTime() - 1
       )
 
       const challenge = await db.passkeyChallenge.findUnique({
@@ -301,7 +301,7 @@ describe('passkey.service', () => {
           response: mockResponse,
           expectedChallenge: options.challenge,
           headers: mockHeaders,
-        }),
+        })
       ).rejects.toMatchObject({
         code: 'NOT_FOUND',
       })
@@ -322,7 +322,7 @@ describe('passkey.service', () => {
         generatePasskeyRegistrationOptions({
           name: 'jane doe',
           headers: mockHeaders,
-        }),
+        })
       ).rejects.toThrow(/already taken/i)
     })
 
@@ -347,7 +347,7 @@ describe('passkey.service', () => {
               type: 'webauthn.create',
               challenge: options.challenge,
               origin: 'http://localhost:3000',
-            }),
+            })
           ).toString('base64url'),
           attestationObject: 'mock-attestation',
         },
@@ -360,7 +360,7 @@ describe('passkey.service', () => {
           response: mockResponse,
           expectedChallenge: options.challenge,
           headers: mockHeaders,
-        }),
+        })
       ).rejects.toThrow(/already taken/i)
     })
   })

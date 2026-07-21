@@ -1,7 +1,9 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+
 import { useRouter } from 'next/navigation'
+
 import {
   useMutation,
   useQuery,
@@ -11,8 +13,10 @@ import {
 import { Info } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { TextField } from '@acme/ui/text-field'
+import { InviteModal } from '../../_components/invite-modal'
+import { ResetPasskeyModal } from '../../_components/reset-passkey-modal'
 
+import { TextField } from '@acme/ui/text-field'
 import { RegistryBreadcrumbs } from '~/components/registry-breadcrumbs'
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Avatar, AvatarFallback } from '~/components/ui/avatar'
@@ -36,8 +40,6 @@ import {
 } from '~/components/ui/select'
 import { Capability, hasCapability, SystemRoleId } from '~/lib/rbac'
 import { useTRPC } from '~/trpc/react'
-import { InviteModal } from '../../_components/invite-modal'
-import { ResetPasskeyModal } from '../../_components/reset-passkey-modal'
 
 const formatDateTime = (d: Date | null) =>
   d
@@ -87,20 +89,20 @@ export const UsersListPage = () => {
   const [inviteModalOpen, setInviteModalOpen] = useState(false)
 
   const { data: usersData } = useSuspenseQuery(
-    trpc.admin.users.list.queryOptions({ q: q || null, limit: 50 }),
+    trpc.admin.users.list.queryOptions({ q: q || null, limit: 50 })
   )
   const { data: rolesData } = useSuspenseQuery(
-    trpc.admin.roles.list.queryOptions(),
+    trpc.admin.roles.list.queryOptions()
   )
   const { data: me } = useSuspenseQuery(trpc.me.get.queryOptions())
 
   const canImpersonate = hasCapability(
     me?.role.capabilities,
-    Capability.UserImpersonate,
+    Capability.UserImpersonate
   )
   const canInvite = hasCapability(
     me?.role.capabilities,
-    Capability.UserInviteIssue,
+    Capability.UserInviteIssue
   )
 
   // Invites are only loaded when the admin actually has the capability —
@@ -120,7 +122,7 @@ export const UsersListPage = () => {
         router.refresh()
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const setRoleMutation = useMutation(
@@ -132,7 +134,7 @@ export const UsersListPage = () => {
         })
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const deleteUserMutation = useMutation(
@@ -144,7 +146,7 @@ export const UsersListPage = () => {
         })
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const revokeInviteMutation = useMutation(
@@ -156,7 +158,7 @@ export const UsersListPage = () => {
         })
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const rows: Row[] = useMemo(() => {
@@ -348,7 +350,7 @@ export const UsersListPage = () => {
                           onClick={() => {
                             if (
                               confirm(
-                                `Delete ${row.name ?? row.id}? This cannot be undone.`,
+                                `Delete ${row.name ?? row.id}? This cannot be undone.`
                               )
                             ) {
                               deleteUserMutation.mutate({ userId: row.id })
@@ -404,7 +406,7 @@ export const UsersListPage = () => {
                           onClick={() => {
                             if (
                               confirm(
-                                `Revoke invite for ${row.name ?? row.email ?? 'recipient'}? The link will stop working immediately.`,
+                                `Revoke invite for ${row.name ?? row.email ?? 'recipient'}? The link will stop working immediately.`
                               )
                             ) {
                               revokeInviteMutation.mutate({ id: row.id })
@@ -416,7 +418,7 @@ export const UsersListPage = () => {
                       </div>
                     </DataTableCell>
                   </DataTableRow>
-                ),
+                )
               )}
             </DataTableBody>
           </DataTableRoot>

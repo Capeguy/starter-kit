@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import { Info } from 'lucide-react'
 
 import { TextField } from '@acme/ui/text-field'
-
 import { Alert, AlertDescription } from '~/components/ui/alert'
 import { Avatar, AvatarFallback } from '~/components/ui/avatar'
 import { useTRPC } from '~/trpc/react'
@@ -36,8 +36,8 @@ export const UserPicker = ({ value, onChange }: UserPickerProps) => {
   const { data, isFetching } = useQuery(
     trpc.admin.users.list.queryOptions(
       { q: q.trim() || null, limit: 10 },
-      { enabled: q.trim().length > 0 },
-    ),
+      { enabled: q.trim().length > 0 }
+    )
   )
 
   if (value) {

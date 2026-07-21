@@ -28,14 +28,14 @@ interface CommandPaletteContextValue {
 }
 
 const CommandPaletteContext = createContext<CommandPaletteContextValue | null>(
-  null,
+  null
 )
 
 export const useCommandPalette = (): CommandPaletteContextValue => {
   const ctx = useContext(CommandPaletteContext)
   if (!ctx) {
     throw new Error(
-      'useCommandPalette must be used inside <CommandPaletteProvider>',
+      'useCommandPalette must be used inside <CommandPaletteProvider>'
     )
   }
   return ctx
@@ -72,7 +72,7 @@ export const CommandPaletteProvider = ({
 
   const value = useMemo<CommandPaletteContextValue>(
     () => ({ isOpen, open, close, toggle }),
-    [isOpen, open, close, toggle],
+    [isOpen, open, close, toggle]
   )
 
   return (

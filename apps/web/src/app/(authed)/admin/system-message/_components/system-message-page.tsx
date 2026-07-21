@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+
 import { toast } from '@opengovsg/oui/toast'
 import {
   useMutation,
@@ -79,7 +80,7 @@ export const SystemMessagePage = () => {
         })
       },
       onError: (err) => toast.error(err.message),
-    }),
+    })
   )
 
   const handleSave = () => {

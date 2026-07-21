@@ -75,7 +75,7 @@ test.describe('Audit log resolves metadata user-ids to clickable names', () => {
               },
             },
           }),
-        { timeout: 5_000 },
+        { timeout: 5_000 }
       )
       .toBe(2)
 
@@ -136,7 +136,7 @@ test.describe('Audit log resolves metadata user-ids to clickable names', () => {
           db.auditLog.count({
             where: { userId: admin.id, action: 'user.impersonate.stop' },
           }),
-        { timeout: 5_000 },
+        { timeout: 5_000 }
       )
       .toBe(1)
 

@@ -96,14 +96,14 @@ export const createTestUser = async ({
 export const signInAs = async (
   context: BrowserContext,
   userId: string,
-  baseUrl = 'http://localhost:3111',
+  baseUrl = 'http://localhost:3111'
 ) => {
   const sealed = await sealData(
     { userId },
     {
       password: { '1': SESSION_SECRET },
       ttl: 60 * 60 * 24 * 7,
-    },
+    }
   )
 
   // Use `url` (not {domain, path}) — Playwright derives the right domain

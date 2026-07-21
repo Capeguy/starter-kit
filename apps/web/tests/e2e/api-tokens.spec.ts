@@ -36,10 +36,10 @@ test.beforeAll(async ({ databaseContainer }) => {
     );
   `)
   await db.$executeRawUnsafe(
-    `CREATE UNIQUE INDEX IF NOT EXISTS "ApiToken_token_hash_key" ON "vibe_stack"."ApiToken"("token_hash");`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS "ApiToken_token_hash_key" ON "vibe_stack"."ApiToken"("token_hash");`
   )
   await db.$executeRawUnsafe(
-    `CREATE INDEX IF NOT EXISTS "ApiToken_user_id_revoked_at_idx" ON "vibe_stack"."ApiToken"("user_id", "revoked_at");`,
+    `CREATE INDEX IF NOT EXISTS "ApiToken_user_id_revoked_at_idx" ON "vibe_stack"."ApiToken"("user_id", "revoked_at");`
   )
   await db.$executeRawUnsafe(`
     DO $$
@@ -166,7 +166,7 @@ test.describe('Personal API tokens + REST + MCP', () => {
     await expect(
       page
         .getByRole('row', { name: new RegExp(`E2E ${t}`) })
-        .getByText('Revoked'),
+        .getByText('Revoked')
     ).toBeVisible()
 
     const meAfterRevoke = await apiCtx.get('/api/v1/me', {
