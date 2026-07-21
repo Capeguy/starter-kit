@@ -74,6 +74,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   // reflects the destination so it's clear at a glance which way you're going.
   const brandSubtitle = root === ADMIN_NAV ? 'Admin panel' : 'Workspace'
   const SwitchIcon = otherRoot === ADMIN_NAV ? Shield : LayoutDashboard
+  // Expose the link list as a labelled landmark. Two nav roots share this
+  // component, so screen-reader users (and the e2e specs) need to tell which
+  // one they are in; SidebarContent is otherwise an unlabelled <div>.
+  const navLabel =
+    root === ADMIN_NAV ? 'Admin navigation' : 'Dashboard navigation'
 
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
@@ -96,7 +101,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent role="navigation" aria-label={navLabel}>
         {groups.map((group) => (
           <SidebarGroup key={group.label}>
             <SidebarGroupLabel>{group.label}</SidebarGroupLabel>

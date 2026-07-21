@@ -34,7 +34,10 @@ export const ActivityPage = () => {
               description="Your recent actions will appear here."
             />
           ) : (
-            <ul className="prose-body-2 flex flex-col gap-1">
+            <ul
+              aria-label="Your activity"
+              className="prose-body-2 flex flex-col gap-1"
+            >
               {data.items.map((a) => (
                 <li
                   key={a.id}
