@@ -125,15 +125,22 @@ overrides:
   # Pinned by next@16.2.7 which still ships postcss 8.4.31:
   'postcss@8': '^8.5.10'
 
-# Upstream dropped this key; we keep it. Prisma's engines and @sentry/cli
-# both fetch binaries in postinstall, and pnpm 11 refuses to run build
-# scripts that are not explicitly approved here.
+# Upstream dropped this key; we keep it. Prisma's engines run a postinstall,
+# and pnpm 11 refuses to execute build scripts that are not approved here.
 onlyBuiltDependencies:
   - '@prisma/client'
   - '@prisma/engines'
-  - '@sentry/cli'
   - esbuild
   - prisma
+
+# @sentry/cli's postinstall downloads a binary we already get from the
+# @sentry/cli-darwin platform package, so skipping it is correct. It must be
+# acknowledged explicitly: pnpm 11 exits 1 on ANY unapproved build script, and
+# that failure surfaces through the deps-status check that runs before every
+# `pnpm -F <pkg> <script>` — so leaving it unlisted breaks every workspace
+# script (and the Vercel build) on a clean install, not just the install.
+ignoredBuiltDependencies:
+  - '@sentry/cli'
 
 publicHoistPattern:
   - '*oxfmt*'
