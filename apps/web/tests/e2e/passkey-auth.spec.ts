@@ -26,8 +26,11 @@ test.describe('Passkey Authentication', () => {
     // through to the "needs name" step.
     await page.getByRole('button', { name: 'Continue with Passkey' }).click()
 
+    // The button is disabled until a name is typed, so fill first. Label must
+    // match the UI exactly ("Create new account") — Playwright matches the
+    // accessible name by substring, and "Create account" is not one.
     await page.getByLabel('Your name').fill('E2E Test User')
-    await page.getByRole('button', { name: 'Create account' }).click()
+    await page.getByRole('button', { name: 'Create new account' }).click()
 
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 })
   })

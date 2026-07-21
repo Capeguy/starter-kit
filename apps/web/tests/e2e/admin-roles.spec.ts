@@ -62,7 +62,12 @@ test.describe('/admin/roles CRUD', () => {
 
     // Modal closes; the new role appears in the list.
     await expect(dialog).toBeHidden()
-    await expect(page.getByRole('cell', { name: newRoleName })).toBeVisible()
+    // `exact` matters: the row's action cell also contains the role name
+    // ("View 0 users in role <name>"), so a substring match hits two cells and
+    // trips strict mode.
+    await expect(
+      page.getByRole('cell', { name: newRoleName, exact: true })
+    ).toBeVisible()
 
     // DB shape matches what we expect.
     const created = await db.role.findFirst({

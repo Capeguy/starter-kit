@@ -9,7 +9,9 @@ import { createTestUser, signInAs } from './setup/auth'
 const uniq = () => `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`
 
 interface TrpcErrorBody {
-  error: { message: string }
+  // The router is configured with the superjson transformer, so the payload is
+  // nested under `error.json` rather than sitting directly on `error`.
+  error: { json?: { message?: string }; message?: string }
 }
 
 /**
@@ -37,7 +39,9 @@ async function trpcPost(page: Page, path: string, input: unknown) {
 /** Extract the error message string from a tRPC HTTP error response body. */
 function extractErrorMessage(body: unknown): string {
   const b = body as Partial<TrpcErrorBody>
-  return b.error?.message ?? ''
+  // superjson shape first, then the untransformed shape as a fallback so this
+  // keeps working if the transformer is ever dropped.
+  return b.error?.json?.message ?? b.error?.message ?? ''
 }
 
 test.describe('User impersonation', () => {
@@ -212,11 +216,21 @@ test.describe('User impersonation', () => {
     expect(first.status).toBe(200)
 
     // Attempt second impersonation while first is active.
+    //
+    // This is rejected by the CAPABILITY gate, not the "already impersonating"
+    // guard, and that ordering is the point: while impersonating, ctx.user is
+    // the *impersonated* user, who does not hold `user.impersonate`. So the
+    // stacking attempt fails as FORBIDDEN (403) before the domain check runs.
+    // Asserting 403 here pins that behaviour — a 400 would mean the admin's
+    // capabilities were still in effect mid-impersonation, which would be a
+    // privilege-escalation bug.
     const second = await trpcPost(page, 'impersonation.start', {
       userId: u2.id,
     })
-    expect(second.status).toBe(400)
-    expect(extractErrorMessage(second.body)).toMatch(/already impersonating/i)
+    expect(second.status).toBe(403)
+    expect(extractErrorMessage(second.body)).toMatch(
+      /missing capability: user\.impersonate/i
+    )
 
     await ctx.close()
   })

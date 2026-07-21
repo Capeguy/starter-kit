@@ -61,8 +61,11 @@ test.describe('Admin invite flow', () => {
     await signInAs(adminCtx, admin.id)
     const adminPage = await adminCtx.newPage()
     await adminPage.goto('/admin/users')
+    // There is no "Invites" heading — pending invites are interleaved into the
+    // users table, and the only invite-specific affordance is the button below.
+    // Gate on the page's own heading instead.
     await expect(
-      adminPage.getByRole('heading', { name: 'Invites' })
+      adminPage.getByRole('heading', { name: 'Users', level: 1 })
     ).toBeVisible()
 
     await adminPage.getByRole('button', { name: 'New invite' }).click()
@@ -70,7 +73,13 @@ test.describe('Admin invite flow', () => {
     const dialog = adminPage.getByRole('dialog', { name: /New invite/ })
     await dialog.getByLabel('Name (optional)').fill('Invited User')
     await dialog.getByLabel('Email (optional)').fill('invited@example.com')
-    await dialog.getByLabel('Role').selectOption(customRoleId)
+    // Radix/shadcn `Select`, not a native <select>: open the trigger and click
+    // the option (by visible name, since Radix exposes no value attribute).
+    // The listbox is portalled to the body, hence `adminPage`, not `dialog`.
+    await dialog.getByLabel('Role').click()
+    await adminPage
+      .getByRole('option', { name: customRoleName, exact: true })
+      .click()
     await dialog.getByRole('button', { name: 'Generate invite link' }).click()
 
     // Wait for the URL to render in the success view.

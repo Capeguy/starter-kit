@@ -81,9 +81,12 @@ test.describe('Cmd+K command palette', () => {
     const palette = page.getByRole('dialog', { name: 'Command palette' })
     await expect(palette).toBeVisible()
 
-    // The non-admin always-visible items are present.
+    // The non-admin always-visible items are present. Assert on an item
+    // LABEL, not "Dashboard" — that is the Command.Group heading (the nav
+    // root's name), not an option, so it never matches role=option. The
+    // dashboard root's own landing item is labelled "Overview".
     await expect(
-      palette.getByRole('option', { name: /Dashboard/ })
+      palette.getByRole('option', { name: /Overview/ })
     ).toBeVisible()
     await expect(
       palette.getByRole('option', { name: /My files/ })
