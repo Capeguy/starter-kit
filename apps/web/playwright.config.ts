@@ -31,6 +31,12 @@ export default defineConfig({
   },
   testDir: './tests/e2e',
   fullyParallel: false,
+  // `fullyParallel: false` only serialises tests WITHIN a file — Playwright
+  // still runs files across multiple workers (default: half the CPU cores).
+  // The e2e Postgres container binds a fixed host port (64321, pinned to match
+  // .env.e2e), so a second worker races the first for that port and dies with
+  // "port is already allocated". One worker is the only safe setting here.
+  workers: 1,
   outputDir: './tests/e2e/test-results',
   // 'github' for GitHub Actions CI to generate annotations, plus a concise 'dot'
   // default 'list' when running locally
