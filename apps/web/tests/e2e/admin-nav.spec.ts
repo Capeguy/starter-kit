@@ -51,9 +51,11 @@ test.describe('Admin navigation + role gating', () => {
       '/admin/files',
       '/admin/roles',
     ]) {
-      const res = await page.goto(path)
-      expect(res?.status(), `${path} status`).toBe(200)
-      await expect(page).toHaveURL(new RegExp(`${path}$`))
+      await test.step(`visit ${path}`, async () => {
+        const res = await page.goto(path)
+        expect(res?.status(), `${path} status`).toBe(200)
+        await expect(page).toHaveURL(new RegExp(`${path}$`))
+      })
     }
 
     await ctx.close()

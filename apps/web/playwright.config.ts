@@ -30,6 +30,11 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   testDir: './tests/e2e',
+  // CI runners are slow and always start a cold dev server (see
+  // reuseExistingServer above); even with the app-fixture route warmup,
+  // individual navigations and assertions need more headroom there.
+  timeout: process.env.CI ? 60_000 : 30_000,
+  expect: { timeout: process.env.CI ? 10_000 : 5_000 },
   fullyParallel: false,
   // `fullyParallel: false` only serialises tests WITHIN a file — Playwright
   // still runs files across multiple workers (default: half the CPU cores).
