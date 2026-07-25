@@ -100,8 +100,9 @@ Then open http://localhost:3000.
 | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | `DATABASE_URL` / `DATABASE_URL_UNPOOLED` / `DIRECT_URL`                          | Postgres connection strings; `?schema=<slug>` for multi-schema isolation              |
 | `SESSION_SECRET`                                                                 | iron-session cookie key (`openssl rand -base64 32`)                                   |
-| `CACHE_HOSTNAME` / `CACHE_PORT` / `CACHE_USERNAME` / `CACHE_PASSWORD`            | Redis (Redis Cloud or self-hosted)                                                    |
-| `CACHE_KEY_PREFIX`                                                               | per-app Redis namespacing — set to the project slug                                   |
+| `REDIS_URL`                                                                      | full Redis URL; `rediss://` enables TLS (Upstash) and wins over the `CACHE_*` fields  |
+| `CACHE_HOSTNAME` / `CACHE_PORT` / `CACHE_USERNAME` / `CACHE_PASSWORD`            | Redis (Redis Cloud or self-hosted) — alternative to `REDIS_URL`                       |
+| `REDIS_PREFIX` (alias `CACHE_KEY_PREFIX`)                                        | per-app Redis namespacing — set to the project slug                                   |
 | `BLOB_READ_WRITE_TOKEN`                                                          | Vercel Blob; auto-injected when you connect a store via `vercel blob create-store -y` |
 | `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` | Sentry error reporting                                                                |
 | `NEXT_PUBLIC_APP_NAME` / `NEXT_PUBLIC_APP_VERSION` / `LOG_LEVEL`                 | app identity + logging                                                                |

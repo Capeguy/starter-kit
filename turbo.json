@@ -51,7 +51,7 @@
     },
     "migrate:deploy": {
       "cache": false,
-      "env": ["DATABASE_URL"]
+      "env": ["DATABASE_URL", "DIRECT_URL"]
     },
     "test": {
       "dependsOn": ["@acme/db#generate"],
@@ -84,14 +84,18 @@
   },
   "globalEnv": [
     "DATABASE_URL",
+    "DIRECT_URL",
     "SESSION_SECRET",
     "PORT",
     "POSTMAN_API_KEY",
     "DD_SERVICE",
+    "REDIS_URL",
+    "REDIS_PREFIX",
     "CACHE_HOSTNAME",
     "CACHE_PORT",
     "CACHE_USERNAME",
     "CACHE_PASSWORD",
+    "CACHE_KEY_PREFIX",
     "NEXT_PUBLIC_SENTRY_DSN",
     "SENTRY_ORG",
     "SENTRY_PROJECT",

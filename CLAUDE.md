@@ -205,7 +205,7 @@ The `bootstrap:deploy` step auto-retries on Prisma's `P1002 advisory lock timeou
 **What "isolated" means here.** The starter kit shares one Neon DB and one Redis Cloud DB across all spin-offs (per `~/.claude/CLAUDE.md`'s shared-resource convention). Isolation is enforced via:
 
 - Postgres: each app has its own `?schema=<slug_underscored>` and only ever queries its own schema (every Prisma model carries `@@schema(...)`).
-- Redis: each app sets `CACHE_KEY_PREFIX=<slug>` so ioredis prepends every key with `<slug>:`.
+- Redis: each app sets `REDIS_PREFIX=<slug>` (preferred; `CACHE_KEY_PREFIX` is a legacy alias) so ioredis prepends every key with `<slug>:`. Connection is either a full `REDIS_URL` (`rediss://` enables TLS — required for Upstash) or the discrete `CACHE_*` fields; the URL wins when both are set.
 - Sessions: each app has its own `SESSION_SECRET` in keychain at `claude-code:<slug>` so iron-session cookies don't cross apps.
 - Sentry / Blob: per-app project + store.
 
