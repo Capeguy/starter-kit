@@ -3,6 +3,19 @@ import z from 'zod'
 
 export const env = createEnv({
   server: {
+    /**
+     * Full connection URL (`redis://` or `rediss://`). Takes precedence over
+     * the discrete CACHE_* fields below. Use `rediss://` for TLS-only
+     * providers like Upstash — ioredis enables TLS automatically for that
+     * scheme, which the host/port fields cannot express.
+     */
+    REDIS_URL: z.string().trim().min(1).optional(),
+    /**
+     * Per-app key prefix (preferred name; falls back to CACHE_KEY_PREFIX).
+     * Set to the app slug so multiple apps sharing one Redis DB don't collide
+     * on rate-limit or cache keys; ioredis prepends `<prefix>:` client-side.
+     */
+    REDIS_PREFIX: z.string().trim().min(1).optional(),
     CACHE_HOSTNAME: z.string().trim().min(1).optional(),
     CACHE_PORT: z.coerce.number().default(6379).optional(),
     CACHE_USERNAME: z.string().optional(),
