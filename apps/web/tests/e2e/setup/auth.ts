@@ -93,18 +93,22 @@ export const createTestUser = async ({
   })
 }
 
-export const signInAs = async (
-  context: BrowserContext,
-  userId: string,
-  baseUrl = 'http://localhost:3111'
-) => {
-  const sealed = await sealData(
+/** Seal a session cookie value for `userId` — same shape the server issues. */
+export const sealSession = (userId: string) =>
+  sealData(
     { userId },
     {
       password: { '1': SESSION_SECRET },
       ttl: 60 * 60 * 24 * 7,
     }
   )
+
+export const signInAs = async (
+  context: BrowserContext,
+  userId: string,
+  baseUrl = 'http://localhost:3111'
+) => {
+  const sealed = await sealSession(userId)
 
   // Use `url` (not {domain, path}) — Playwright derives the right domain
   // attributes for localhost more reliably this way, and matches how
